@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { BillboardRow } from '@/components/table/BillboardTable'
 import type { Filters } from '@/components/table/FilterBar'
 
@@ -37,6 +38,7 @@ function toRow(b: ApiBillboard): BillboardWithLatLng {
 }
 
 export function useBillboards(filters: Filters) {
+  const router = useRouter()
   const [billboards, setBillboards] = useState<BillboardWithLatLng[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,10 +52,15 @@ export function useBillboards(filters: Filters) {
     )
     fetch(`/api/billboards?${params}`, { signal: controller.signal })
       .then((r) => {
+        if (r.status === 401 || r.status === 403) {
+          router.push('/login')
+          return null
+        }
         if (!r.ok) throw new Error(`Request failed with status ${r.status}`)
         return r.json()
       })
-      .then((data: ApiBillboard[]) => {
+      .then((data: ApiBillboard[] | null) => {
+        if (data === null) return
         setBillboards(Array.isArray(data) ? data.map(toRow) : [])
         setError(null)
       })

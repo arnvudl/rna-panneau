@@ -27,8 +27,13 @@ export default function MapPage() {
       )}
       <FilterBar filters={filters} onChange={setFilters} />
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r">
+        <div className="relative w-1/2 border-r">
           <BillboardMap billboards={billboards} onSelect={select} selectedId={selectedId} />
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/60 text-sm text-slate-500">
+              Chargement…
+            </div>
+          )}
         </div>
         <div className="w-1/2 overflow-auto">
           {loading ? (
