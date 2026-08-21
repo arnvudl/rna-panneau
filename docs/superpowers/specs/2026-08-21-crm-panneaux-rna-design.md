@@ -23,7 +23,8 @@ moderniser la gestion du parc de panneaux, remplaçant les fichiers Excel.
 
 - < 500 panneaux
 - 3 utilisateurs simultanés
-- Budget hébergement visé : ~0€/mois (free tiers)
+- Budget hébergement visé : le plus bas possible, idéalement gratuit ou quelques
+  euros/mois — décision précise de l'hébergeur reportée à plus tard.
 
 ## Rôles utilisateurs
 
@@ -47,11 +48,18 @@ moderniser la gestion du parc de panneaux, remplaçant les fichiers Excel.
 - **Carte** : MapLibre GL JS. Deux fonds gratuits, basculables comme sur Google
   Maps : OpenStreetMap (plan) et Esri World Imagery (satellite). Carte bornée sur
   l'emprise de Madagascar.
-- **Base de données** : PostgreSQL (Supabase ou Neon, free tier) via Prisma ORM.
-- **Stockage photos** : Supabase Storage (free tier).
+- **Base de données** : PostgreSQL via Prisma ORM. En dev : conteneur Docker local
+  (Docker Compose). En prod : hébergée sur le même serveur que l'application
+  (choix d'hébergeur précis à faire plus tard — app + BD colocalisées, pas de
+  séparation type Vercel/Supabase).
+- **Stockage photos** : système de fichiers local du serveur (dossier sur disque,
+  monté en volume Docker en dev). À migrer vers un stockage cloud plus tard si le
+  volume ou une architecture multi-serveur l'exige.
 - **Authentification** : Auth.js (NextAuth), email + mot de passe, 3 rôles
   (dev/admin/user).
-- **Hébergement** : Vercel (free tier).
+- **Hébergement** : à décider plus tard (un seul serveur pour app + BD, ex: VPS ou
+  Railway avec Postgres managé). En attendant, développement 100% local via Docker
+  Compose (Postgres + volume photos).
 - **Historique des locations** : conservé en base PostgreSQL (jamais supprimé,
   seulement archivé) — pas de blockchain, complexité jugée inutile à cette échelle.
 - **Notifications** : in-app uniquement pour la V1 (pas d'email/SMS).
