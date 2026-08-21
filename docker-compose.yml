@@ -1,3 +1,21 @@
+# Two ways to run this project:
+#
+#   (a) Everything in Docker (no local Node/npm needed):
+#         docker compose up --build
+#       Starts Postgres + the Next.js dev server (hot reload) together.
+#       App: http://localhost:3000
+#       First run only, apply the schema + seed data:
+#         docker compose exec app npx prisma db seed
+#
+#   (b) Host-based dev (existing workflow, unchanged):
+#         docker compose up -d db
+#         npm run dev
+#       Uses .env's DATABASE_URL (localhost:5432) as before.
+#
+# Both flows require a .env file in the project root (copy .env.example -> .env).
+# The `app` service below overrides DATABASE_URL/NEXTAUTH_URL for the container;
+# NEXTAUTH_SECRET and UPLOADS_DIR are picked up from your .env via env_file.
+
 services:
   db:
     image: postgres:16-alpine
@@ -10,6 +28,38 @@ services:
       - '5432:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rna -d rna_panneaux']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Container reaches Postgres via the `db` service name, not localhost.
+      DATABASE_URL: postgresql://rna:rna_dev_password@db:5432/rna_panneaux
+      # The browser still hits the app via localhost, so this stays as-is.
+      NEXTAUTH_URL: http://localhost:3000
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - app_node_modules:/app/node_modules
+      - app_next:/app/.next
+    depends_on:
+      db:
+        condition: service_healthy
+    # Applies any pending migrations (no prompts, no new migrations created)
+    # before starting the dev server, so the schema is always up to date.
+    command: sh -c "npx prisma migrate deploy && npm run dev"
 
 volumes:
   db_data:
+  app_node_modules:
+  app_next:

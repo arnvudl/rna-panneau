@@ -16,6 +16,31 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### Running with Docker (app + database together)
+
+Copy `.env.example` to `.env`, then:
+
+```bash
+docker compose up --build
+```
+
+This starts Postgres and the Next.js dev server in containers, with hot reload — edits
+to files on disk are picked up immediately, no local Node/npm install required. On first
+run, seed the database once:
+
+```bash
+docker compose exec app npx prisma db seed
+```
+
+Prefer running the app on the host instead? That still works unchanged:
+
+```bash
+docker compose up -d db
+npm run dev
+```
+
+See the comments at the top of `docker-compose.yml` for details.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
