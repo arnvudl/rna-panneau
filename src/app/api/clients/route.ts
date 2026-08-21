@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
+import { requireSession, parseOrBadRequest } from '@/lib/api-helpers'
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = await requireSession()
+  if (error) return error
 
   const q = req.nextUrl.searchParams.get('q')
   const clients = await prisma.client.findMany({
@@ -18,18 +18,13 @@ export async function GET(req: NextRequest) {
 const createSchema = z.object({ name: z.string().min(1), contactInfo: z.string().optional() })
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { session, error } = await requireSession()
+  if (error) return error
   if (session.user.role === 'USER') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const result = createSchema.safeParse(await req.json())
-  if (!result.success) {
-    return NextResponse.json(
-      { error: 'Invalid request', details: result.error.flatten() },
-      { status: 400 }
-    )
-  }
+  const parsed = parseOrBadRequest(createSchema, await req.json())
+  if ('error' in parsed) return parsed.error
 
-  const client = await prisma.client.create({ data: result.data })
+  const client = await prisma.client.create({ data: parsed.data })
   return NextResponse.json(client, { status: 201 })
 }

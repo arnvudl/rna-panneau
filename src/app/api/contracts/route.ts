@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { addMonths } from 'date-fns'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
+import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 
 const createSchema = z.object({
   billboardId: z.string(),
@@ -13,17 +13,12 @@ const createSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { session, error } = await requireSession()
+  if (error) return error
 
-  const result = createSchema.safeParse(await req.json())
-  if (!result.success) {
-    return NextResponse.json(
-      { error: 'Invalid request', details: result.error.flatten() },
-      { status: 400 }
-    )
-  }
-  const body = result.data
+  const parsed = parseOrBadRequest(createSchema, await req.json())
+  if ('error' in parsed) return parsed.error
+  const body = parsed.data
   const startDate = new Date(body.startDate)
   const endDate = addMonths(startDate, body.durationMonths)
 
@@ -32,23 +27,19 @@ export async function POST(req: NextRequest) {
     // shaped as { billboardId: string, clientId: string, startDate: string (ISO),
     // amount: number, durationMonths: number, endDate: string (ISO) } — startDate
     // and endDate are pre-computed and serialized so approval simply persists them.
-    const request = await prisma.approvalRequest.create({
-      data: {
-        requestedById: session.user.id,
-        type: 'CREATE_CONTRACT',
-        payload: {
-          billboardId: body.billboardId,
-          clientId: body.clientId,
-          startDate: startDate.toISOString(),
-          amount: body.amount,
-          durationMonths: body.durationMonths,
-          endDate: endDate.toISOString(),
-        },
-      },
+    return createApprovalRequest(session, 'CREATE_CONTRACT', {
+      billboardId: body.billboardId,
+      clientId: body.clientId,
+      startDate: startDate.toISOString(),
+      amount: body.amount,
+      durationMonths: body.durationMonths,
+      endDate: endDate.toISOString(),
     })
-    return NextResponse.json(request, { status: 202 })
   }
 
+  // Known limitation (documented, not fixed, per current project scale): there is
+  // no guard preventing two overlapping ACTIVE contracts on the same billboard.
+  // Revisit if double-booking becomes an observed problem.
   const contract = await prisma.contract.create({
     data: {
       billboardId: body.billboardId,

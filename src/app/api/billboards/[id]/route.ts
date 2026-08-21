@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { deriveBillboardStatus } from '@/lib/status'
+import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = await requireSession()
+  if (error) return error
 
   const billboard = await prisma.billboard.findUnique({
     where: { id: params.id },
@@ -26,39 +26,27 @@ const patchSchema = z.object({
 })
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = await requireSession()
+  if (error) return error
 
-  const result = patchSchema.safeParse(await req.json())
-  if (!result.success) {
-    return NextResponse.json(
-      { error: 'Invalid request', details: result.error.flatten() },
-      { status: 400 }
-    )
-  }
+  const parsed = parseOrBadRequest(patchSchema, await req.json())
+  if ('error' in parsed) return parsed.error
 
   // USER role may only update the photo (part of "add photo" workflow); damaged
   // status is not sensitive enough to require approval per spec, but deletion is.
-  const billboard = await prisma.billboard.update({ where: { id: params.id }, data: result.data })
+  const billboard = await prisma.billboard.update({ where: { id: params.id }, data: parsed.data })
   return NextResponse.json(billboard)
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { session, error } = await requireSession()
+  if (error) return error
 
   if (session.user.role === 'USER') {
     // Contract for Task 8 (approvals API): DELETE_BILLBOARD payload is always
     // shaped as { billboardId: string } — the id of the billboard to remove
     // once the request is approved.
-    await prisma.approvalRequest.create({
-      data: {
-        requestedById: session.user.id,
-        type: 'DELETE_BILLBOARD',
-        payload: { billboardId: params.id },
-      },
-    })
-    return NextResponse.json({ status: 'pending_approval' }, { status: 202 })
+    return createApprovalRequest(session, 'DELETE_BILLBOARD', { billboardId: params.id })
   }
 
   await prisma.billboard.delete({ where: { id: params.id } })

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
+import { requireSession } from '@/lib/api-helpers'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = await requireSession()
+  if (error) return error
 
   const client = await prisma.client.findUnique({
     where: { id: params.id },

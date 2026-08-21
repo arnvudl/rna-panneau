@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { deriveBillboardStatus } from '@/lib/status'
 import { generateReference } from '@/lib/reference'
 import { buildBillboardWhere } from './where'
+import { requireSession, parseOrBadRequest } from '@/lib/api-helpers'
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = await requireSession()
+  if (error) return error
 
   const where = buildBillboardWhere(req.nextUrl.searchParams)
   const billboards = await prisma.billboard.findMany({
@@ -34,20 +34,15 @@ const createSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { session, error } = await requireSession()
+  if (error) return error
   if (session.user.role === 'USER') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const result = createSchema.safeParse(await req.json())
-  if (!result.success) {
-    return NextResponse.json(
-      { error: 'Invalid request', details: result.error.flatten() },
-      { status: 400 }
-    )
-  }
-  const body = result.data
+  const parsed = parseOrBadRequest(createSchema, await req.json())
+  if ('error' in parsed) return parsed.error
+  const body = parsed.data
 
   const count = await prisma.billboard.count({ where: { city: body.city } })
   const reference = generateReference({ sequence: count + 1, city: body.city })
