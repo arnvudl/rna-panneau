@@ -34,7 +34,7 @@ export function BillboardForm({
       const res = await fetch('/api/billboards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...initialLatLng, city, dimension, sides }),
+        body: JSON.stringify({ ...initialLatLng, city: city.trim(), dimension, sides }),
       })
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
       setCity('')
@@ -78,7 +78,7 @@ export function BillboardForm({
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={submit} className="w-full" disabled={submitting || !city}>
+          <Button onClick={submit} className="w-full" disabled={submitting || !city.trim()}>
             {submitting ? 'Création…' : 'Créer'}
           </Button>
         </div>

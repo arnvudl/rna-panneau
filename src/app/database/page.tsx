@@ -1,42 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { BillboardTable, type BillboardRow } from '@/components/table/BillboardTable'
+import { BillboardTable } from '@/components/table/BillboardTable'
 import { FilterBar, type Filters } from '@/components/table/FilterBar'
+import { useBillboards } from '@/hooks/useBillboards'
 
 export default function DatabasePage() {
   const router = useRouter()
   const [filters, setFilters] = useState<Filters>({})
-  const [billboards, setBillboards] = useState<BillboardRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    setLoading(true)
-    const params = new URLSearchParams(
-      Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== undefined)) as Record<string, string>
-    )
-    fetch(`/api/billboards?${params}`, { signal: controller.signal })
-      .then((r) => {
-        if (!r.ok) throw new Error(`Request failed with status ${r.status}`)
-        return r.json()
-      })
-      .then((data: BillboardRow[]) => {
-        setBillboards(Array.isArray(data) ? data : [])
-        setError(null)
-      })
-      .catch((err) => {
-        if (err instanceof DOMException && err.name === 'AbortError') return
-        setError('Erreur de chargement des panneaux')
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false)
-      })
-
-    return () => controller.abort()
-  }, [filters])
+  const { billboards, loading, error } = useBillboards(filters)
 
   return (
     <div className="flex h-[calc(100vh-56px)] flex-col">

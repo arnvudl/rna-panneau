@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
 export type ContractPanelContract = {
@@ -18,6 +19,7 @@ export function ContractPanel({
   contract: ContractPanelContract | undefined
   billboardId: string
 }) {
+  const router = useRouter()
   const [terminating, setTerminating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -33,9 +35,10 @@ export function ContractPanel({
         body: JSON.stringify({ status: 'TERMINATED' }),
       })
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
-      location.reload()
+      router.refresh()
     } catch {
       setError('Erreur lors de la résiliation du contrat')
+    } finally {
       setTerminating(false)
     }
   }

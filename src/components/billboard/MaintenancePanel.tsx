@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -19,6 +20,7 @@ export function MaintenancePanel({
   billboardId: string
   records: MaintenanceRecordItem[]
 }) {
+  const router = useRouter()
   const [type, setType] = useState('')
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -35,9 +37,12 @@ export function MaintenancePanel({
         body: JSON.stringify({ billboardId, date: new Date().toISOString(), type, comment: comment || undefined }),
       })
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
-      location.reload()
+      setType('')
+      setComment('')
+      router.refresh()
     } catch {
       setError("Erreur lors de l'ajout de l'intervention")
+    } finally {
       setSubmitting(false)
     }
   }
