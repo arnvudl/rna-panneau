@@ -12,13 +12,16 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setIsSubmitting(true)
     const result = await signIn('credentials', { email, password, redirect: false })
     if (result?.error) {
       setError('Email ou mot de passe incorrect')
+      setIsSubmitting(false)
       return
     }
     router.push('/map')
@@ -37,7 +40,7 @@ export default function LoginPage() {
           <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" className="w-full">Se connecter</Button>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>Se connecter</Button>
       </form>
     </div>
   )
