@@ -44,18 +44,34 @@ export default function MapPage() {
   const [filters, setFilters] = useState<Filters>({})
   const [billboards, setBillboards] = useState<BillboardApiItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
+    const controller = new AbortController()
     setLoading(true)
     const params = new URLSearchParams(
       Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== undefined)) as Record<string, string>
     )
-    fetch(`/api/billboards?${params}`)
-      .then((r) => r.json())
-      .then((data: ApiBillboard[]) => setBillboards(Array.isArray(data) ? data.map(toRow) : []))
-      .finally(() => setLoading(false))
+    fetch(`/api/billboards?${params}`, { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(`Request failed with status ${r.status}`)
+        return r.json()
+      })
+      .then((data: ApiBillboard[]) => {
+        setBillboards(Array.isArray(data) ? data.map(toRow) : [])
+        setError(null)
+      })
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        setError('Erreur de chargement des panneaux')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+
+    return () => controller.abort()
   }, [filters])
 
   const select = (id: string) => {
@@ -67,6 +83,9 @@ export default function MapPage() {
 
   return (
     <div className="flex h-[calc(100vh-56px)] flex-col">
+      {error && (
+        <div className="border-b bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
+      )}
       <FilterBar filters={filters} onChange={setFilters} />
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/2 border-r">
