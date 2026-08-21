@@ -18,32 +18,37 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const approval = await prisma.approvalRequest.findUnique({ where: { id: params.id } })
   if (!approval) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  if (decision === 'APPROVED') {
-    try {
-      await applyApproval(approval.type, approval.payload)
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        return NextResponse.json(
-          { error: 'Could not apply approval', code: err.code },
-          { status: 400 }
-        )
+  try {
+    const updated = await prisma.$transaction(async (tx) => {
+      if (decision === 'APPROVED') {
+        await applyApproval(tx, approval.type, approval.payload)
       }
-      throw err
+      return tx.approvalRequest.update({
+        where: { id: params.id },
+        data: { status: decision, reviewedById: session.user.id, reviewedAt: new Date() },
+      })
+    })
+    return NextResponse.json(updated)
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json(
+        { error: 'Could not apply approval', code: err.code },
+        { status: 400 }
+      )
     }
+    throw err
   }
-
-  const updated = await prisma.approvalRequest.update({
-    where: { id: params.id },
-    data: { status: decision, reviewedById: session.user.id, reviewedAt: new Date() },
-  })
-  return NextResponse.json(updated)
 }
 
-async function applyApproval(type: ApprovalType, payload: Prisma.JsonValue) {
+async function applyApproval(
+  tx: Prisma.TransactionClient,
+  type: ApprovalType,
+  payload: Prisma.JsonValue
+) {
   const data = payload as Record<string, unknown>
   switch (type) {
     case 'CREATE_CONTRACT':
-      await prisma.contract.create({
+      await tx.contract.create({
         data: {
           billboardId: data.billboardId as string,
           clientId: data.clientId as string,
@@ -54,7 +59,7 @@ async function applyApproval(type: ApprovalType, payload: Prisma.JsonValue) {
       })
       break
     case 'EDIT_CONTRACT':
-      await prisma.contract.update({
+      await tx.contract.update({
         where: { id: data.contractId as string },
         data: {
           status: data.status as 'ACTIVE' | 'EXPIRED' | 'TERMINATED' | undefined,
@@ -63,15 +68,19 @@ async function applyApproval(type: ApprovalType, payload: Prisma.JsonValue) {
       })
       break
     case 'DELETE_BILLBOARD':
-      await prisma.billboard.delete({ where: { id: data.billboardId as string } })
+      await tx.billboard.delete({ where: { id: data.billboardId as string } })
       break
     case 'EDIT_PRICE':
       // Speculative/future-proofing: no producer of this ApprovalType exists yet
       // anywhere in the codebase, but the case is implemented to match the enum.
-      await prisma.contract.update({
+      await tx.contract.update({
         where: { id: data.contractId as string },
         data: { amount: data.amount as number },
       })
       break
+    default: {
+      const _exhaustive: never = type
+      throw new Error(`Unhandled ApprovalType: ${_exhaustive}`)
+    }
   }
 }
