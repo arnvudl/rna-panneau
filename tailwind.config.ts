@@ -58,6 +58,17 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // The shadcn/base-ui generated components (e.g. src/components/ui/tabs.tsx)
+    // use bare `data-active:` utilities, which is Tailwind v4 syntax. This
+    // project is on Tailwind v3.4, which has no built-in `data-active` variant
+    // (only bracketed `data-[foo=bar]:` arbitrary variants and a fixed set of
+    // built-in `aria-*` variants), so those utilities silently compiled to
+    // nothing. Register `data-active` as a real variant so `&[data-active]`
+    // selectors are generated.
+    function ({ addVariant }: { addVariant: (name: string, selector: string) => void }) {
+      addVariant("data-active", "&[data-active]")
+    },
+  ],
 };
 export default config;
