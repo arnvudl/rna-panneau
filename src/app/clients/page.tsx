@@ -10,8 +10,8 @@ import { ClientForm } from '@/components/clients/ClientForm'
 type Client = { id: string; name: string; contactInfo: string | null }
 
 export default function ClientsPage() {
-  const { data: session } = useSession()
-  const canCreate = session?.user?.role !== 'USER'
+  const { data: session, status } = useSession()
+  const canCreate = status === 'authenticated' && session?.user?.role !== 'USER'
 
   const [query, setQuery] = useState('')
   const [clients, setClients] = useState<Client[]>([])
