@@ -9,6 +9,7 @@ type Approval = {
   requestedBy: { email: string }
   createdAt: string
   payload: Record<string, unknown>
+  resolvedNames?: Record<string, string>
 }
 
 const PAYLOAD_LABELS: Record<string, string> = {
@@ -21,17 +22,26 @@ const PAYLOAD_LABELS: Record<string, string> = {
   status: 'Statut',
 }
 
-function PayloadSummary({ payload }: { payload: Record<string, unknown> }) {
+function PayloadSummary({
+  payload,
+  resolvedNames,
+}: {
+  payload: Record<string, unknown>
+  resolvedNames?: Record<string, string>
+}) {
   const entries = Object.entries(payload ?? {})
   if (entries.length === 0) return null
   return (
     <ul className="mt-1 space-y-0.5 text-xs text-slate-500">
-      {entries.map(([key, value]) => (
-        <li key={key}>
-          <span className="font-medium">{PAYLOAD_LABELS[key] ?? key}:</span>{' '}
-          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-        </li>
-      ))}
+      {entries.map(([key, value]) => {
+        const resolved = resolvedNames?.[key]
+        const display = resolved ?? (typeof value === 'object' ? JSON.stringify(value) : String(value))
+        return (
+          <li key={key}>
+            <span className="font-medium">{PAYLOAD_LABELS[key] ?? key}:</span> {display}
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -100,7 +110,7 @@ export function ApprovalQueue() {
               <div>
                 <p className="font-medium">{a.type}</p>
                 <p className="text-sm text-slate-500">Demandé par {a.requestedBy.email}</p>
-                <PayloadSummary payload={a.payload} />
+                <PayloadSummary payload={a.payload} resolvedNames={a.resolvedNames} />
               </div>
               <div className="flex gap-2">
                 <Button
