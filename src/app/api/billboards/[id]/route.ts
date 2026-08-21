@@ -23,17 +23,28 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 const patchSchema = z.object({
   damaged: z.boolean().optional(),
   currentPhotoUrl: z.string().url().optional(),
+  city: z.string().trim().min(1).optional(),
+  dimension: z.enum(['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']).optional(),
+  sides: z.union([z.literal(1), z.literal(2)]).optional(),
 })
 
+const RESTRICTED_FIELDS = ['city', 'dimension', 'sides'] as const
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const { error } = await requireSession()
+  const { session, error } = await requireSession()
   if (error) return error
 
   const parsed = parseOrBadRequest(patchSchema, await req.json())
   if ('error' in parsed) return parsed.error
 
-  // USER role may only update the photo (part of "add photo" workflow); damaged
-  // status is not sensitive enough to require approval per spec, but deletion is.
+  // USER role may only update the photo (part of "add photo" workflow) or the
+  // damaged flag; editing core billboard attributes is more sensitive and
+  // requires DEV/ADMIN.
+  const touchesRestrictedField = RESTRICTED_FIELDS.some((field) => field in parsed.data)
+  if (touchesRestrictedField && session.user.role === 'USER') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const billboard = await prisma.billboard.update({ where: { id: params.id }, data: parsed.data })
   return NextResponse.json(billboard)
 }

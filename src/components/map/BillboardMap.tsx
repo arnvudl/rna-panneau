@@ -3,6 +3,7 @@
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useState } from 'react'
+import { STATUS_COLORS } from '@/lib/status-labels'
 
 const MADAGASCAR_BOUNDS: [number, number, number, number] = [42.0, -26.0, 51.0, -11.5]
 
@@ -31,14 +32,6 @@ export type BillboardPin = {
   lat: number
   lng: number
   status: string
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  AVAILABLE: '#16a34a',
-  RENTED: '#2563eb',
-  EXPIRING_SOON: '#f97316',
-  EXPIRED: '#dc2626',
-  MAINTENANCE: '#6b7280',
 }
 
 export function BillboardMap({
@@ -71,7 +64,7 @@ export function BillboardMap({
             <div
               className="h-4 w-4 cursor-pointer rounded-full border-2 border-white shadow-md transition-transform hover:scale-125"
               style={{
-                backgroundColor: STATUS_COLORS[b.status] ?? '#000',
+                backgroundColor: STATUS_COLORS[b.status as keyof typeof STATUS_COLORS] ?? '#000',
                 outline: selectedId === b.id ? '2px solid #1d4ed8' : 'none',
                 outlineOffset: selectedId === b.id ? '1px' : undefined,
               }}

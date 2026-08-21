@@ -1,10 +1,12 @@
 'use client'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { STATUS_LABELS } from '@/lib/status-labels'
+import type { BillboardStatus } from '@/lib/status'
 
 export type Filters = { status?: string; city?: string; dimension?: string; damaged?: string }
 
-const STATUSES = ['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EXPIRED', 'MAINTENANCE']
+const STATUSES: BillboardStatus[] = ['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EXPIRED', 'MAINTENANCE']
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
 function normalize(v: string | null): string | undefined {
@@ -18,7 +20,7 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
         <SelectTrigger className="w-44"><SelectValue placeholder="Statut" /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Tous les statuts</SelectItem>
-          {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+          {STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>)}
         </SelectContent>
       </Select>
 

@@ -3,6 +3,7 @@ import { deriveBillboardStatus } from '@/lib/status'
 import { requireRole } from '@/components/layout/RoleGate'
 import { ApprovalQueue } from '@/components/approvals/ApprovalQueue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CheckCircle2, KeyRound, Clock3 } from 'lucide-react'
 
 export default async function DashboardPage() {
   await requireRole(['DEV', 'ADMIN'])
@@ -25,9 +26,27 @@ export default async function DashboardPage() {
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card><CardHeader><CardTitle className="text-sm text-slate-500">Disponibles</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{available}</CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm text-slate-500">En location</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{rented}</CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm text-slate-500">Expirent bientôt</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{expiringSoon}</CardContent></Card>
+        <Card className="overflow-hidden border-t-4 border-t-green-500 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Disponibles</CardTitle>
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+          </CardHeader>
+          <CardContent className="text-3xl font-bold text-slate-900">{available}</CardContent>
+        </Card>
+        <Card className="overflow-hidden border-t-4 border-t-blue-600 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">En location</CardTitle>
+            <KeyRound className="h-5 w-5 text-blue-600" />
+          </CardHeader>
+          <CardContent className="text-3xl font-bold text-slate-900">{rented}</CardContent>
+        </Card>
+        <Card className="overflow-hidden border-t-4 border-t-orange-500 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Expirent bientôt</CardTitle>
+            <Clock3 className="h-5 w-5 text-orange-500" />
+          </CardHeader>
+          <CardContent className="text-3xl font-bold text-slate-900">{expiringSoon}</CardContent>
+        </Card>
       </div>
 
       <Card>
