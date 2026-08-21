@@ -29,11 +29,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = patchSchema.parse(await req.json())
+  const result = patchSchema.safeParse(await req.json())
+  if (!result.success) {
+    return NextResponse.json(
+      { error: 'Invalid request', details: result.error.flatten() },
+      { status: 400 }
+    )
+  }
 
   // USER role may only update the photo (part of "add photo" workflow); damaged
   // status is not sensitive enough to require approval per spec, but deletion is.
-  const billboard = await prisma.billboard.update({ where: { id: params.id }, data: body })
+  const billboard = await prisma.billboard.update({ where: { id: params.id }, data: result.data })
   return NextResponse.json(billboard)
 }
 
@@ -42,6 +48,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   if (session.user.role === 'USER') {
+    // Contract for Task 8 (approvals API): DELETE_BILLBOARD payload is always
+    // shaped as { billboardId: string } — the id of the billboard to remove
+    // once the request is approved.
     await prisma.approvalRequest.create({
       data: {
         requestedById: session.user.id,

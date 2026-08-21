@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { deriveBillboardStatus } from '@/lib/status'
@@ -39,13 +40,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = createSchema.parse(await req.json())
+  const result = createSchema.safeParse(await req.json())
+  if (!result.success) {
+    return NextResponse.json(
+      { error: 'Invalid request', details: result.error.flatten() },
+      { status: 400 }
+    )
+  }
+  const body = result.data
+
   const count = await prisma.billboard.count({ where: { city: body.city } })
   const reference = generateReference({ sequence: count + 1, city: body.city })
 
-  const billboard = await prisma.billboard.create({
-    data: { ...body, reference },
-  })
-
-  return NextResponse.json(billboard, { status: 201 })
+  try {
+    const billboard = await prisma.billboard.create({
+      data: { ...body, reference },
+    })
+    return NextResponse.json(billboard, { status: 201 })
+  } catch (err) {
+    // Reference is unique; under concurrent requests for the same city the
+    // count-then-create sequence can race and collide. At this project's
+    // scale (3 users, <500 billboards) a clean error is enough — no retry loop.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Reference collision, please retry the request' },
+        { status: 409 }
+      )
+    }
+    throw err
+  }
 }
