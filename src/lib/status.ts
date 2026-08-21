@@ -13,6 +13,7 @@ export function deriveBillboardStatus(billboard: {
 }): BillboardStatus {
   if (billboard.damaged) return 'MAINTENANCE'
 
+  // Assumes a billboard has at most one ACTIVE contract at a time.
   const activeContract = billboard.contracts.find((c) => c.status === 'ACTIVE')
   if (!activeContract) return 'AVAILABLE'
 

@@ -4,7 +4,7 @@ const CITY_CODES: Record<string, string> = {
   Fianarantsoa: 'FIA',
   Mahajanga: 'MJN',
   Toliara: 'TLE',
-  Antsiranda: 'DIE',
+  Antsiranana: 'DIE',
 }
 
 export function cityCode(city: string): string {
@@ -18,6 +18,6 @@ export function generateReference({
   sequence: number
   city: string
 }): string {
-  const padded = sequence < 1000 ? String(sequence).padStart(3, '0') : String(sequence)
+  const padded = String(sequence).padStart(3, '0')
   return `ANM ${padded} ${cityCode(city)}`
 }

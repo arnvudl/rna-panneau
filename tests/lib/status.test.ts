@@ -27,6 +27,12 @@ describe('deriveBillboardStatus', () => {
     ).toBe('EXPIRING_SOON')
   })
 
+  it('returns EXPIRING_SOON at the exact 30-day boundary', () => {
+    expect(
+      deriveBillboardStatus({ damaged: false, contracts: [activeContract(30)] })
+    ).toBe('EXPIRING_SOON')
+  })
+
   it('returns EXPIRED when the active contract end date is in the past', () => {
     expect(
       deriveBillboardStatus({ damaged: false, contracts: [activeContract(-5)] })
