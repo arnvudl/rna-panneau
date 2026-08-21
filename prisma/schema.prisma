@@ -1,0 +1,119 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DEV
+  ADMIN
+  USER
+}
+
+enum Dimension {
+  D2X1
+  D4X3
+  D6X3
+  D8X3
+  D12X3
+}
+
+enum ContractStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum ApprovalType {
+  CREATE_CONTRACT
+  EDIT_CONTRACT
+  DELETE_BILLBOARD
+  EDIT_PRICE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+
+  approvalRequests   ApprovalRequest[] @relation("RequestedBy")
+  reviewedApprovals  ApprovalRequest[] @relation("ReviewedBy")
+  maintenanceRecords MaintenanceRecord[]
+}
+
+model Billboard {
+  id              String    @id @default(cuid())
+  reference       String    @unique
+  lat             Float
+  lng             Float
+  city            String
+  dimension       Dimension
+  sides           Int       @default(1)
+  damaged         Boolean   @default(false)
+  currentPhotoUrl String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  contracts          Contract[]
+  maintenanceRecords MaintenanceRecord[]
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  contactInfo String?
+  createdAt   DateTime @default(now())
+
+  contracts Contract[]
+}
+
+model Contract {
+  id          String         @id @default(cuid())
+  billboardId String
+  clientId    String
+  startDate   DateTime
+  endDate     DateTime
+  amount      Float
+  status      ContractStatus @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+
+  billboard Billboard @relation(fields: [billboardId], references: [id])
+  client    Client    @relation(fields: [clientId], references: [id])
+}
+
+model MaintenanceRecord {
+  id          String   @id @default(cuid())
+  billboardId String
+  date        DateTime
+  type        String
+  comment     String?
+  technicianId String?
+
+  billboard  Billboard @relation(fields: [billboardId], references: [id])
+  technician User?     @relation(fields: [technicianId], references: [id])
+}
+
+model ApprovalRequest {
+  id           String         @id @default(cuid())
+  requestedById String
+  type         ApprovalType
+  payload      Json
+  status       ApprovalStatus @default(PENDING)
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime       @default(now())
+
+  requestedBy User  @relation("RequestedBy", fields: [requestedById], references: [id])
+  reviewedBy  User? @relation("ReviewedBy", fields: [reviewedById], references: [id])
+}
