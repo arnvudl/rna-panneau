@@ -55,6 +55,8 @@ moderniser la gestion du parc de panneaux, remplaçant les fichiers Excel.
 - **Historique des locations** : conservé en base PostgreSQL (jamais supprimé,
   seulement archivé) — pas de blockchain, complexité jugée inutile à cette échelle.
 - **Notifications** : in-app uniquement pour la V1 (pas d'email/SMS).
+- **Génération PDF** : librairie côté serveur (ex: `@react-pdf/renderer` ou
+  Puppeteer) pour générer le PDF de fiche panneau depuis Next.js.
 
 ## Modèle de données
 
@@ -66,6 +68,8 @@ moderniser la gestion du parc de panneaux, remplaçant les fichiers Excel.
 - `sides` (1 ou 2 faces)
 - `status` (dérivé automatiquement : disponible / en location / expire bientôt
   (< 1 mois) / expiré / en maintenance)
+- `damaged` (booléen, tag indépendant du statut locatif — visible en couleur
+  distincte sur la carte, filtrable dans le tableau/BD)
 - `currentPhotoUrl` (mis à jour à chaque nouvelle pose)
 - relations : `contracts[]`, `maintenanceRecords[]`, `installationHistory[]`
 
@@ -98,19 +102,22 @@ moderniser la gestion du parc de panneaux, remplaçant les fichiers Excel.
    Carte interactive à gauche, tableau des panneaux à droite (colonnes triables :
    référence, ville, statut, client, dates). Sélection synchronisée dans les deux
    sens (clic ligne → centre carte, clic marqueur → surligne ligne). Filtres
-   (statut, ville, dimension) au-dessus. Clic sur un panneau ouvre un drawer
-   d'aperçu rapide avec lien "voir en détail".
+   (statut, ville, dimension, endommagé) au-dessus. Clic sur un panneau ouvre un
+   drawer d'aperçu rapide avec lien "voir en détail".
 
 2. **Carte plein écran**
-   Même carte, sans le tableau, pour une vue terrain dégagée. Clic droit sur la
-   carte ou bouton "+ Ajouter un panneau" pour créer un panneau (positionnement par
-   pin).
+   Même carte, sans le tableau, mêmes filtres, pour une vue terrain dégagée. Clic
+   droit sur la carte ou bouton "+ Ajouter un panneau" pour créer un panneau
+   (positionnement par pin).
 
 3. **Base de données plein écran**
-   Même tableau, sans la carte, pour une consultation/tri/export type tableur.
+   Même tableau, sans la carte, mêmes filtres (statut, ville, dimension,
+   endommagé), pour une consultation/tri type tableur.
 
 4. **Fiche panneau dédiée** (page complète par panneau)
-   Photo grand format, référence, dimensions, ville, statut. Onglets :
+   Photo grand format, référence, dimensions, ville, statut, tag endommagé.
+   Bouton "exporter en PDF" (récapitulatif de la fiche : photo, infos, historique,
+   entretien). Onglets :
    - *Contrat en cours* (client, dates, montant, actions renouveler/terminer)
    - *Historique* (timeline des locations passées + photos)
    - *Entretien* (timeline des interventions + bouton "ajouter intervention")
@@ -130,9 +137,9 @@ moderniser la gestion du parc de panneaux, remplaçant les fichiers Excel.
 
 ## Évolutivité (hors périmètre V1, à garder en tête)
 
-- Filtrage/reporting sur panneaux endommagés.
 - Notifications email/SMS.
-- Export de rapports (PDF/Excel).
+- Export du tableau/BD filtré en PDF ou Excel (V1 ne couvre que l'export PDF de la
+  fiche panneau individuelle).
 - Gestion plus fine des permissions si l'équipe grandit au-delà de 3 users.
 
 ## Hors périmètre (explicitement écarté)
