@@ -9,41 +9,62 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
-export function BillboardForm({
-  open,
-  onOpenChange,
-  initialLatLng,
-  onCreated,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  initialLatLng: { lat: number; lng: number } | null
-  onCreated: () => void
-}) {
-  const [city, setCity] = useState('')
-  const [dimension, setDimension] = useState('D4X3')
-  const [sides, setSides] = useState<1 | 2>(1)
+export type EditableBillboard = { id: string; city: string; dimension: string; sides: number }
+
+type BillboardFormProps =
+  | {
+      mode: 'create'
+      open: boolean
+      onOpenChange: (open: boolean) => void
+      initialLatLng: { lat: number; lng: number } | null
+      onSaved: () => void
+    }
+  | {
+      mode: 'edit'
+      open: boolean
+      onOpenChange: (open: boolean) => void
+      billboard: EditableBillboard
+      onSaved: () => void
+    }
+
+export function BillboardForm(props: BillboardFormProps) {
+  const { mode, open, onOpenChange, onSaved } = props
+  const initial = mode === 'edit' ? props.billboard : null
+
+  const [city, setCity] = useState(initial?.city ?? '')
+  const [dimension, setDimension] = useState(initial?.dimension ?? 'D4X3')
+  const [sides, setSides] = useState<1 | 2>(initial?.sides === 2 ? 2 : 1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const submit = async () => {
-    if (!initialLatLng) return
+    if (mode === 'create' && !props.initialLatLng) return
     setSubmitting(true)
     setError(null)
     try {
-      const res = await fetch('/api/billboards', {
-        method: 'POST',
+      const url = mode === 'create' ? '/api/billboards' : `/api/billboards/${props.billboard.id}`
+      const method = mode === 'create' ? 'POST' : 'PATCH'
+      const body =
+        mode === 'create'
+          ? { ...props.initialLatLng, city: city.trim(), dimension, sides }
+          : { city: city.trim(), dimension, sides }
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...initialLatLng, city: city.trim(), dimension, sides }),
+        body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
-      setCity('')
-      setDimension('D4X3')
-      setSides(1)
+
+      if (mode === 'create') {
+        setCity('')
+        setDimension('D4X3')
+        setSides(1)
+      }
       onOpenChange(false)
-      onCreated()
+      onSaved()
     } catch {
-      setError('Erreur lors de la création du panneau')
+      setError(mode === 'create' ? 'Erreur lors de la création du panneau' : 'Erreur lors de la modification du panneau')
     } finally {
       setSubmitting(false)
     }
@@ -52,7 +73,9 @@ export function BillboardForm({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>Ajouter un panneau</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{mode === 'create' ? 'Ajouter un panneau' : 'Modifier le panneau'}</DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="space-y-1">
@@ -79,7 +102,7 @@ export function BillboardForm({
             </Select>
           </div>
           <Button onClick={submit} className="w-full" disabled={submitting || !city.trim()}>
-            {submitting ? 'Création…' : 'Créer'}
+            {submitting ? (mode === 'create' ? 'Création…' : 'Enregistrement…') : mode === 'create' ? 'Créer' : 'Enregistrer'}
           </Button>
         </div>
       </DialogContent>

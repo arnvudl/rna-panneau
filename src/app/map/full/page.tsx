@@ -49,7 +49,7 @@ export default function MapFullPage() {
         + Ajouter un panneau
       </Button>
       <BillboardDrawer billboard={selected} open={drawerOpen} onOpenChange={setDrawerOpen} />
-      <BillboardForm open={formOpen} onOpenChange={setFormOpen} initialLatLng={pendingLatLng} onCreated={reload} />
+      <BillboardForm mode="create" open={formOpen} onOpenChange={setFormOpen} initialLatLng={pendingLatLng} onSaved={reload} />
     </div>
   )
 }

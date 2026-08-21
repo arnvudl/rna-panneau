@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { BillboardEditForm, type EditableBillboard } from '@/components/billboard/BillboardEditForm'
+import { BillboardForm, type EditableBillboard } from '@/components/billboard/BillboardForm'
 
 export function BillboardDetailActions({ billboard }: { billboard: EditableBillboard }) {
   const { data: session, status } = useSession()
@@ -19,11 +19,12 @@ export function BillboardDetailActions({ billboard }: { billboard: EditableBillb
       <Button variant="outline" onClick={() => setOpen(true)}>
         Modifier
       </Button>
-      <BillboardEditForm
+      <BillboardForm
+        mode="edit"
         billboard={billboard}
         open={open}
         onOpenChange={setOpen}
-        onUpdated={() => router.refresh()}
+        onSaved={() => router.refresh()}
       />
     </>
   )
