@@ -5,6 +5,11 @@ import type { NextAuthConfig } from 'next-auth'
 // Node-only dependencies. The full config (with the Credentials
 // provider's authorize callback) lives in `src/lib/auth.ts`.
 export const authConfig = {
+  // Trust the incoming Host header instead of requiring an exact match to
+  // NEXTAUTH_URL/AUTH_URL. Required for self-hosted deployments behind a
+  // reverse proxy or on platforms (Railway, a VPS) where the production
+  // hostname isn't known at build time.
+  trustHost: true,
   session: { strategy: 'jwt' },
   pages: { signIn: '/login' },
   providers: [],
