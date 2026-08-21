@@ -6,7 +6,7 @@
 
 **Architecture:** Single Next.js (App Router, TypeScript) app. Server-side logic lives in API routes / server actions backed by Prisma + PostgreSQL. UI built with Tailwind + shadcn/ui. Map rendered client-side with MapLibre GL JS + `react-map-gl`. Auth via Auth.js (NextAuth) with a `role` field on the user. PDF generated server-side with `@react-pdf/renderer`.
 
-**Tech Stack:** Next.js 14 (App Router, TS), Prisma, PostgreSQL (Supabase/Neon), Tailwind CSS, shadcn/ui, MapLibre GL JS + react-map-gl, Auth.js, @react-pdf/renderer, Vitest + Testing Library for tests.
+**Tech Stack:** Next.js 14 (App Router, TS), Prisma, PostgreSQL (local via Docker Compose in dev; single co-located server in prod, provider TBD), Tailwind CSS, shadcn/ui, MapLibre GL JS + react-map-gl, Auth.js, @react-pdf/renderer, Vitest + Testing Library for tests. Billboard photos are stored on the server's local filesystem (a `public/uploads/` or dedicated volume path), not a cloud storage service.
 
 Reference spec: `docs/superpowers/specs/2026-08-21-crm-panneaux-rna-design.md`
 
@@ -300,16 +300,56 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient()
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 ```
 
-- [ ] **Step 3: Generate client and run first migration**
+- [ ] **Step 3: Add Docker Compose for local PostgreSQL**
+
+```yaml
+# docker-compose.yml
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rna
+      POSTGRES_PASSWORD: rna_dev_password
+      POSTGRES_DB: rna_panneaux
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+```
+
+- [ ] **Step 4: Create local `.env` and update `.env.example`**
+
+Update `.env.example` (created in Task 1) to drop the Supabase keys and add a local
+`DATABASE_URL` plus an `UPLOADS_DIR` for local photo storage:
+
+```
+DATABASE_URL="postgresql://rna:rna_dev_password@localhost:5432/rna_panneaux"
+NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
+NEXTAUTH_URL="http://localhost:3000"
+UPLOADS_DIR="./public/uploads"
+```
+
+Create a local `.env` (gitignored) with the same `DATABASE_URL`, a generated
+`NEXTAUTH_SECRET` (`openssl rand -base64 32`), `NEXTAUTH_URL=http://localhost:3000`,
+and `UPLOADS_DIR=./public/uploads`.
+
+- [ ] **Step 5: Start the database and run the first migration**
+
+Run: `docker compose up -d db`
+Expected: container starts, `docker compose ps` shows `db` healthy/running.
 
 Run: `npx prisma migrate dev --name init`
-Expected: migration created under `prisma/migrations/`, Prisma Client generated with no errors.
+Expected: migration created under `prisma/migrations/`, Prisma Client generated, applies cleanly against the local Docker Postgres with no errors.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add prisma src/lib/prisma.ts
-git commit -m "feat: add Prisma schema for billboards, contracts, clients, maintenance, approvals"
+git add prisma src/lib/prisma.ts docker-compose.yml .env.example
+git commit -m "feat: add Prisma schema and local Docker Postgres for billboards, contracts, clients, maintenance, approvals"
 ```
 
 ---
