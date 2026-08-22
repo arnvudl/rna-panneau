@@ -37,7 +37,13 @@ export default async function BillboardPage({ params }: { params: { id: string }
         </div>
         <div className="flex gap-2">
           <BillboardDetailActions
-            billboard={{ id: billboard.id, city: billboard.city, dimension: billboard.dimension, sides: billboard.sides }}
+            billboard={{
+              id: billboard.id,
+              city: billboard.city,
+              dimension: billboard.dimension,
+              sides: billboard.sides,
+              note: billboard.note,
+            }}
           />
           <ExportPdfButton billboardId={billboard.id} />
         </div>
