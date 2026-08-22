@@ -30,6 +30,10 @@ export default async function BillboardPage({ params }: { params: { id: string }
         <div>
           <h1 className="text-2xl font-semibold">{billboard.reference}</h1>
           <p className="text-slate-600">{billboard.city} — {billboard.dimension} — {billboard.sides} face(s)</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {billboard.lat.toFixed(5)}, {billboard.lng.toFixed(5)} — créé le {billboard.createdAt.toLocaleDateString('fr-FR')}
+          </p>
+          {billboard.note && <p className="mt-1 text-sm text-slate-500">Note : {billboard.note}</p>}
         </div>
         <div className="flex gap-2">
           <BillboardDetailActions

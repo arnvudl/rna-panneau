@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
-export type EditableBillboard = { id: string; city: string; dimension: string; sides: number }
+export type EditableBillboard = { id: string; city: string; dimension: string; sides: number; note?: string | null }
 
 type BillboardFormProps =
   | {
@@ -34,6 +34,7 @@ export function BillboardForm(props: BillboardFormProps) {
   const [city, setCity] = useState(initial?.city ?? '')
   const [dimension, setDimension] = useState(initial?.dimension ?? 'D4X3')
   const [sides, setSides] = useState<1 | 2>(initial?.sides === 2 ? 2 : 1)
+  const [note, setNote] = useState(initial?.note ?? '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -46,8 +47,8 @@ export function BillboardForm(props: BillboardFormProps) {
       const method = mode === 'create' ? 'POST' : 'PATCH'
       const body =
         mode === 'create'
-          ? { ...props.initialLatLng, city: city.trim(), dimension, sides }
-          : { city: city.trim(), dimension, sides }
+          ? { ...props.initialLatLng, city: city.trim(), dimension, sides, note: note.trim() || undefined }
+          : { city: city.trim(), dimension, sides, note: note.trim() || undefined }
 
       const res = await fetch(url, {
         method,
@@ -100,6 +101,15 @@ export function BillboardForm(props: BillboardFormProps) {
                 <SelectItem value="2">2 faces</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-1">
+            <Label>Note</Label>
+            <textarea
+              className="w-full rounded-md border border-slate-200 p-2 text-sm"
+              rows={3}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
           </div>
           <Button onClick={submit} className="w-full" disabled={submitting || !city.trim()}>
             {submitting ? (mode === 'create' ? 'Création…' : 'Enregistrement…') : mode === 'create' ? 'Créer' : 'Enregistrer'}

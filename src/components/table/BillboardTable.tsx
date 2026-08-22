@@ -13,6 +13,7 @@ export type BillboardRow = {
   status: string
   damaged: boolean
   activeClientName?: string
+  note?: string | null
 }
 
 export function BillboardTable({
@@ -42,6 +43,7 @@ export function BillboardTable({
           <TableHead>Dimension</TableHead>
           <TableHead>Statut</TableHead>
           <TableHead>Client</TableHead>
+          <TableHead>Note</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -63,6 +65,7 @@ export function BillboardTable({
               )}
             </TableCell>
             <TableCell>{r.activeClientName ?? '—'}</TableCell>
+            <TableCell className="max-w-[200px] truncate">{r.note ?? '—'}</TableCell>
           </TableRow>
         ))}
       </TableBody>

@@ -31,6 +31,7 @@ const createSchema = z.object({
   city: z.string().min(1),
   dimension: z.enum(['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']),
   sides: z.union([z.literal(1), z.literal(2)]),
+  note: z.string().trim().max(2000).optional(),
 })
 
 export async function POST(req: NextRequest) {

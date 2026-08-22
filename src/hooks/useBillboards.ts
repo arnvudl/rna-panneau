@@ -17,6 +17,7 @@ type ApiBillboard = {
   damaged: boolean
   lat: number
   lng: number
+  note?: string | null
   contracts?: ApiContract[]
 }
 
@@ -33,6 +34,7 @@ function toRow(b: ApiBillboard): BillboardWithLatLng {
     damaged: b.damaged,
     lat: b.lat,
     lng: b.lng,
+    note: b.note,
     activeClientName: activeContract?.client?.name ?? undefined,
   }
 }
