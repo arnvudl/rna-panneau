@@ -81,6 +81,9 @@ async function seedCityPrefixes() {
     // WAI in the source data, reassigned. Confirm/rename via the admin UI.
     { city: 'Ambositra', prefix: 'AOT' },
     { city: 'Andapa', prefix: 'ZWA' },
+    // Matches the reference template's fixed "ANM" prefix (format: ANM
+    // {sequence} {city-prefix}), producing refs like "ANM 001 ANM". Real
+    // client data, not an error — confirm/rename via the admin UI if desired.
     { city: 'Antalaha', prefix: 'ANM' },
     { city: 'Antsohihy', prefix: 'WAI' },
     { city: 'Arivonimamo', prefix: 'FMMA' },
