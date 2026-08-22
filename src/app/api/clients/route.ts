@@ -17,8 +17,8 @@ export async function GET(req: NextRequest) {
 
 const createSchema = z.object({
   name: z.string().min(1),
-  phone: z.string().optional(),
-  email: z.string().optional(),
+  phone: z.string().trim().optional(),
+  email: z.string().trim().email().optional().or(z.literal('')),
 })
 
 export async function POST(req: NextRequest) {
