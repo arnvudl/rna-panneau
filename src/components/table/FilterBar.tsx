@@ -1,10 +1,11 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { STATUS_LABELS } from '@/lib/status-labels'
 import type { BillboardStatus } from '@/lib/status'
 
-export type Filters = { status?: string; city?: string; dimension?: string; damaged?: string }
+export type Filters = { status?: string; city?: string; dimension?: string; damaged?: string; clientId?: string }
 
 const STATUSES: BillboardStatus[] = ['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EXPIRED', 'MAINTENANCE']
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
@@ -14,6 +15,12 @@ function normalize(v: string | null): string | undefined {
 }
 
 export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (f: Filters) => void }) {
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([])
+
+  useEffect(() => {
+    fetch('/api/clients').then((r) => r.json()).then(setClients)
+  }, [])
+
   return (
     <div className="flex flex-wrap items-center gap-2 border-b bg-white px-4 py-3">
       <Select value={filters.status ?? 'all'} onValueChange={(v: string | null) => onChange({ ...filters, status: normalize(v) })}>
@@ -38,6 +45,14 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
           <SelectItem value="all">Tous</SelectItem>
           <SelectItem value="true">Endommagé</SelectItem>
           <SelectItem value="false">Non endommagé</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Select value={filters.clientId ?? 'all'} onValueChange={(v: string | null) => onChange({ ...filters, clientId: normalize(v) })}>
+        <SelectTrigger className="w-48"><SelectValue placeholder="Client" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Tous les clients</SelectItem>
+          {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
         </SelectContent>
       </Select>
     </div>
