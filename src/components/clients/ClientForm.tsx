@@ -65,7 +65,7 @@ export function ClientForm({
           </div>
           <div className="space-y-1">
             <Label>Email</Label>
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <Button onClick={submit} className="w-full" disabled={submitting || !name.trim()}>
             {submitting ? 'Création…' : 'Créer'}

@@ -61,7 +61,7 @@ export default function ClientsPage() {
             <li key={c.id}>
               <Link href={`/clients/${c.id}`} className="block p-3 hover:bg-slate-50">
                 <p className="font-medium">{c.name}</p>
-                <p className="text-sm text-slate-500">{[c.phone, c.email].filter(Boolean).join(' · ')}</p>
+                <p className="text-sm text-slate-500">{[c.phone, c.email].filter(Boolean).join(' · ') || '—'}</p>
               </Link>
             </li>
           ))}
