@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { BillboardTable } from '@/components/table/BillboardTable'
 import { FilterBar, type Filters } from '@/components/table/FilterBar'
 import { BillboardForm } from '@/components/billboard/BillboardForm'
+import { StatusLegend } from '@/components/map/StatusLegend'
 import { Button } from '@/components/ui/button'
 import { useBillboards } from '@/hooks/useBillboards'
 
@@ -31,6 +32,7 @@ export default function DatabasePage() {
         + Ajouter un panneau
       </Button>
       <BillboardForm mode="create" open={formOpen} onOpenChange={setFormOpen} initialLatLng={null} onSaved={reload} />
+      <StatusLegend />
     </div>
   )
 }
