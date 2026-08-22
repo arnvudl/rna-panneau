@@ -33,6 +33,14 @@ enum ContractFace {
   BOTH
 }
 
+enum BillboardStatus {
+  AVAILABLE
+  RENTED
+  EXPIRING_SOON
+  EXPIRED
+  MAINTENANCE
+}
+
 enum ApprovalType {
   CREATE_CONTRACT
   EDIT_CONTRACT
@@ -70,6 +78,7 @@ model Billboard {
   damaged         Boolean   @default(false)
   currentPhotoUrl String?
   note            String?
+  statusOverride  BillboardStatus?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

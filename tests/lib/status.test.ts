@@ -61,4 +61,31 @@ describe('deriveBillboardStatus', () => {
     })
     expect(status).toBe('AVAILABLE')
   })
+
+  it('returns the override verbatim when set, ignoring contracts', () => {
+    const status = deriveBillboardStatus({
+      damaged: false,
+      statusOverride: 'RENTED',
+      contracts: [],
+    })
+    expect(status).toBe('RENTED')
+  })
+
+  it('returns the override even when damaged is true', () => {
+    const status = deriveBillboardStatus({
+      damaged: true,
+      statusOverride: 'AVAILABLE',
+      contracts: [],
+    })
+    expect(status).toBe('AVAILABLE')
+  })
+
+  it('falls back to automatic derivation when override is null', () => {
+    const status = deriveBillboardStatus({
+      damaged: true,
+      statusOverride: null,
+      contracts: [],
+    })
+    expect(status).toBe('MAINTENANCE')
+  })
 })

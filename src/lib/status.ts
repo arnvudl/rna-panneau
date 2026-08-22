@@ -22,8 +22,10 @@ function faceStatus(endDate: Date): 'EXPIRED' | 'EXPIRING_SOON' | 'RENTED' {
 
 export function deriveBillboardStatus(billboard: {
   damaged: boolean
+  statusOverride: BillboardStatus | null
   contracts: { status: 'ACTIVE' | 'EXPIRED' | 'TERMINATED'; endDate: Date; face: 'FACE_1' | 'FACE_2' | 'BOTH' }[]
 }): BillboardStatus {
+  if (billboard.statusOverride) return billboard.statusOverride
   if (billboard.damaged) return 'MAINTENANCE'
 
   const activeContracts = billboard.contracts.filter((c) => c.status === 'ACTIVE')

@@ -10,6 +10,7 @@ import { HistoryTimeline } from '@/components/billboard/HistoryTimeline'
 import { MaintenancePanel } from '@/components/billboard/MaintenancePanel'
 import { ExportPdfButton } from '@/components/billboard/ExportPdfButton'
 import { BillboardDetailActions } from '@/components/billboard/BillboardDetailActions'
+import { StatusOverrideControl } from '@/components/billboard/StatusOverrideControl'
 
 export default async function BillboardPage({ params }: { params: { id: string } }) {
   const billboard = await prisma.billboard.findUnique({
@@ -49,8 +50,9 @@ export default async function BillboardPage({ params }: { params: { id: string }
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <Badge variant={STATUS_BADGE_VARIANTS[status]}>{STATUS_LABELS[status]}</Badge>
+        <StatusOverrideControl billboardId={billboard.id} statusOverride={billboard.statusOverride} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
