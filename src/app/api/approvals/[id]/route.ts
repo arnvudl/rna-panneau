@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { Prisma, type ApprovalType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest } from '@/lib/api-helpers'
+import { isFaceAvailable } from '@/lib/contract-occupancy'
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 
@@ -47,17 +48,33 @@ async function applyApproval(
 ) {
   const data = payload as Record<string, unknown>
   switch (type) {
-    case 'CREATE_CONTRACT':
+    case 'CREATE_CONTRACT': {
+      // Plain Error (not a Prisma error) deliberately bypasses the
+      // PrismaClientKnownRequestError branch below and surfaces as a 500,
+      // leaving this approval PENDING (transaction rolls back) instead of a
+      // clean 400 — accepted tradeoff for the rare stale-approval case where
+      // the requested face was taken by another contract after the request
+      // was submitted but before admin review.
+      const face = (data.face as 'FACE_1' | 'FACE_2' | 'BOTH') ?? 'BOTH'
+      const activeContracts = await tx.contract.findMany({
+        where: { billboardId: data.billboardId as string, status: 'ACTIVE' },
+        select: { face: true },
+      })
+      if (!isFaceAvailable(face, activeContracts)) {
+        throw new Error('Face already occupied')
+      }
       await tx.contract.create({
         data: {
           billboardId: data.billboardId as string,
           clientId: data.clientId as string,
+          face,
           startDate: new Date(data.startDate as string),
           endDate: new Date(data.endDate as string),
           amount: data.amount as number,
         },
       })
       break
+    }
     case 'EDIT_CONTRACT':
       await tx.contract.update({
         where: { id: data.contractId as string },
@@ -78,6 +95,19 @@ async function applyApproval(
         data: { amount: data.amount as number },
       })
       break
+    case 'DELETE_CLIENT': {
+      // Plain Error (not a Prisma error) deliberately bypasses the
+      // PrismaClientKnownRequestError branch below and surfaces as a 500,
+      // leaving this approval PENDING (transaction rolls back) instead of a
+      // clean 400 — accepted tradeoff for the rare stale-approval case where
+      // contracts were added after the request but before admin review.
+      const contractCount = await tx.contract.count({ where: { clientId: data.clientId as string } })
+      if (contractCount > 0) {
+        throw new Error('Client has associated contracts, cannot delete')
+      }
+      await tx.client.delete({ where: { id: data.clientId as string } })
+      break
+    }
     default: {
       const _exhaustive: never = type
       throw new Error(`Unhandled ApprovalType: ${_exhaustive}`)

@@ -15,4 +15,10 @@ describe('buildBillboardWhere', () => {
     const params = new URLSearchParams({ dimension: 'D4X3' })
     expect(buildBillboardWhere(params)).toEqual({ dimension: 'D4X3' })
   })
+
+  it('filters by clientId via an active-contract relation', () => {
+    const params = new URLSearchParams({ clientId: 'client-1' })
+    const where = buildBillboardWhere(params)
+    expect(where.contracts).toEqual({ some: { clientId: 'client-1', status: 'ACTIVE' } })
+  })
 })

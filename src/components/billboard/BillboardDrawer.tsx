@@ -33,9 +33,11 @@ export function BillboardDrawer({
                 {billboard.damaged && <Badge variant="destructive">Endommagé</Badge>}
               </div>
             </div>
-            {billboard.activeClientName && (
+            {billboard.activeClientNames && billboard.activeClientNames.length > 0 && (
               <p className="text-sm">
-                Client actuel : <span className="font-medium">{billboard.activeClientName}</span>
+                Client{billboard.activeClientNames.length > 1 ? 's' : ''} actuel
+                {billboard.activeClientNames.length > 1 ? 's' : ''} :{' '}
+                <span className="font-medium">{billboard.activeClientNames.join(', ')}</span>
               </p>
             )}
             <Link

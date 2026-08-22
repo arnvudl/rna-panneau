@@ -1785,6 +1785,203 @@ git commit -m "feat: add logout button and settings link to Nav"
 
 ---
 
+### Task 15: Manual status override (hybrid — see design spec)
+
+See `docs/superpowers/specs/2026-08-22-billboard-status-override-design.md` for the full rationale. Run this task last (after Task 8, since it modifies `deriveBillboardStatus` again, and after Task 1's migration is applied).
+
+**Files:**
+- Modify: `prisma/schema.prisma`
+- Modify: `src/lib/status.ts`
+- Test: `tests/lib/status.test.ts`
+- Modify: `src/app/api/billboards/[id]/route.ts`
+- Modify: `src/app/billboards/[id]/page.tsx`
+- Create: `src/components/billboard/StatusOverrideControl.tsx`
+
+- [ ] **Step 1: Add the `BillboardStatus` enum and `statusOverride` column**
+
+In `prisma/schema.prisma`, add a new enum (near the other enums) and a field on `Billboard`:
+
+```prisma
+enum BillboardStatus {
+  AVAILABLE
+  RENTED
+  EXPIRING_SOON
+  EXPIRED
+  MAINTENANCE
+}
+```
+
+In the `Billboard` model, add (after `note`):
+```prisma
+  statusOverride  BillboardStatus?
+```
+
+Run: `docker compose up -d db && npx prisma migrate dev --name billboard_status_override`
+Expected: migration created and applied cleanly (additive, nullable column — no data loss).
+
+- [ ] **Step 2: Write the failing tests**
+
+Add to `tests/lib/status.test.ts`:
+
+```ts
+  it('returns the override verbatim when set, ignoring contracts', () => {
+    const status = deriveBillboardStatus({
+      damaged: false,
+      statusOverride: 'RENTED',
+      contracts: [],
+    })
+    expect(status).toBe('RENTED')
+  })
+
+  it('returns the override even when damaged is true', () => {
+    const status = deriveBillboardStatus({
+      damaged: true,
+      statusOverride: 'AVAILABLE',
+      contracts: [],
+    })
+    expect(status).toBe('AVAILABLE')
+  })
+
+  it('falls back to automatic derivation when override is null', () => {
+    const status = deriveBillboardStatus({
+      damaged: true,
+      statusOverride: null,
+      contracts: [],
+    })
+    expect(status).toBe('MAINTENANCE')
+  })
+```
+
+- [ ] **Step 3: Run tests to verify they fail**
+
+Run: `npx vitest run tests/lib/status.test.ts`
+Expected: FAIL — TypeScript error, `statusOverride` isn't part of the `deriveBillboardStatus` parameter type yet.
+
+- [ ] **Step 4: Update `deriveBillboardStatus`**
+
+In `src/lib/status.ts`, add `statusOverride: BillboardStatus | null` to the parameter type and check it first:
+
+```ts
+export function deriveBillboardStatus(billboard: {
+  damaged: boolean
+  statusOverride: BillboardStatus | null
+  contracts: { status: 'ACTIVE' | 'EXPIRED' | 'TERMINATED'; endDate: Date; face: 'FACE_1' | 'FACE_2' | 'BOTH' }[]
+}): BillboardStatus {
+  if (billboard.statusOverride) return billboard.statusOverride
+  if (billboard.damaged) return 'MAINTENANCE'
+
+  const activeContracts = billboard.contracts.filter((c) => c.status === 'ACTIVE')
+  if (activeContracts.length === 0) return 'AVAILABLE'
+
+  const statuses = activeContracts.map((c) => faceStatus(c.endDate))
+  return STATUS_PRIORITY.find((s) => statuses.includes(s)) ?? 'AVAILABLE'
+}
+```
+
+(Keep the existing `faceStatus`/`STATUS_PRIORITY`/`EXPIRING_SOON_WINDOW_DAYS` from Task 8 unchanged — only the parameter type and the new first check are added.)
+
+- [ ] **Step 5: Run tests to verify they pass**
+
+Run: `npx vitest run tests/lib/status.test.ts`
+Expected: PASS (10 tests — 7 from Task 8 + 3 new).
+
+- [ ] **Step 6: Fix call sites**
+
+Grep for `deriveBillboardStatus(` across `src/` (called from `src/app/api/billboards/route.ts`, `src/app/api/billboards/[id]/route.ts`, `src/app/dashboard/page.tsx`). Each already passes the full Prisma `billboard` record, which now includes `statusOverride` after this task's migration and `npx prisma generate` — no call-site changes should be needed. Run `npx prisma generate` before the build check in Step 8 to regenerate the client with the new field.
+
+- [ ] **Step 7: Allow ADMIN/DEV to set/clear the override via PATCH**
+
+In `src/app/api/billboards/[id]/route.ts`:
+- Add `statusOverride: z.enum(['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EXPIRED', 'MAINTENANCE']).nullable().optional()` to `patchSchema`.
+- Add `'statusOverride'` to the `RESTRICTED_FIELDS` array (ADMIN/DEV only, same tier as `city`/`dimension`/`sides` — this is an administrative correction tool, not something USER should touch).
+
+- [ ] **Step 8: Add the status override control to the billboard detail page**
+
+Create `src/components/billboard/StatusOverrideControl.tsx`:
+
+```tsx
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { STATUS_LABELS } from '@/lib/status-labels'
+import type { BillboardStatus } from '@/lib/status'
+
+const OPTIONS: BillboardStatus[] = ['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EXPIRED', 'MAINTENANCE']
+
+export function StatusOverrideControl({
+  billboardId,
+  statusOverride,
+}: {
+  billboardId: string
+  statusOverride: BillboardStatus | null
+}) {
+  const router = useRouter()
+  const { data: session, status } = useSession()
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const isAdmin = status === 'authenticated' && session?.user?.role !== 'USER'
+  if (!isAdmin) return null
+
+  const set = async (value: string | null) => {
+    setSubmitting(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/billboards/${billboardId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statusOverride: value === 'auto' ? null : value }),
+      })
+      if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+      router.refresh()
+    } catch {
+      setError('Erreur lors de la mise à jour du statut')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      <Select value={statusOverride ?? 'auto'} onValueChange={(v: string | null) => v && set(v)} disabled={submitting}>
+        <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="auto">Automatique</SelectItem>
+          {OPTIONS.map((s) => <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+```
+
+Read `src/app/billboards/[id]/page.tsx` first to find where the status/damaged info is currently rendered, and add `<StatusOverrideControl billboardId={billboard.id} statusOverride={billboard.statusOverride} />` there.
+
+- [ ] **Step 9: Build and test check**
+
+Run: `npm run build && npx vitest run`
+Expected: clean build, all tests pass.
+
+- [ ] **Step 10: Manual verification**
+
+Run `docker compose up -d db && npm run dev`, log in as ADMIN, open a billboard with no contracts (shows "Disponible"):
+- Set the status override to "Maintenance" — confirm the map/table/detail page all show Maintenance immediately, with no contract or `damaged` flag involved.
+- Set it back to "Automatique" — confirm it reverts to the auto-derived status.
+- Log in as USER — confirm the control doesn't appear (or is read-only) on the detail page.
+
+- [ ] **Step 11: Commit**
+
+```bash
+git add prisma/schema.prisma prisma/migrations src/lib/status.ts tests/lib/status.test.ts src/app/api/billboards/[id]/route.ts src/app/billboards/[id]/page.tsx src/components/billboard/StatusOverrideControl.tsx
+git commit -m "feat: allow ADMIN/DEV to manually override billboard status, falling back to automatic derivation"
+```
+
+---
+
 ## Final verification (run once all tasks are complete)
 
 ```bash
@@ -1805,3 +2002,4 @@ Then manually walk through, in the running app:
 8. Check the legend appears on `/map`, `/map/full`, `/database`.
 9. Click "Déconnexion" — confirm it logs out.
 10. Visit `/settings/city-prefixes` as ADMIN — confirm the seeded list appears, including the two flagged collisions (Ambositra, Fenerive Est) — resolve them with the client during review.
+11. Open a billboard with no contracts, set its status override to "Maintenance", confirm it reflects everywhere, then set it back to "Automatique" and confirm it reverts.

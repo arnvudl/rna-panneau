@@ -5,6 +5,7 @@ import { BillboardMap } from '@/components/map/BillboardMap'
 import { FilterBar, type Filters } from '@/components/table/FilterBar'
 import { BillboardDrawer } from '@/components/billboard/BillboardDrawer'
 import { BillboardForm } from '@/components/billboard/BillboardForm'
+import { StatusLegend } from '@/components/map/StatusLegend'
 import { Button } from '@/components/ui/button'
 import { useBillboards } from '@/hooks/useBillboards'
 
@@ -50,6 +51,7 @@ export default function MapFullPage() {
       </Button>
       <BillboardDrawer billboard={selected} open={drawerOpen} onOpenChange={setDrawerOpen} />
       <BillboardForm mode="create" open={formOpen} onOpenChange={setFormOpen} initialLatLng={pendingLatLng} onSaved={reload} />
+      <StatusLegend />
     </div>
   )
 }

@@ -31,6 +31,7 @@ const createSchema = z.object({
   city: z.string().min(1),
   dimension: z.enum(['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']),
   sides: z.union([z.literal(1), z.literal(2)]),
+  note: z.string().trim().max(2000).optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -44,8 +45,11 @@ export async function POST(req: NextRequest) {
   if ('error' in parsed) return parsed.error
   const body = parsed.data
 
-  const count = await prisma.billboard.count({ where: { city: body.city } })
-  const reference = generateReference({ sequence: count + 1, city: body.city })
+  const [count, prefixes] = await Promise.all([
+    prisma.billboard.count({ where: { city: body.city } }),
+    prisma.cityPrefix.findMany(),
+  ])
+  const reference = generateReference({ sequence: count + 1, city: body.city, prefixes })
 
   try {
     const billboard = await prisma.billboard.create({

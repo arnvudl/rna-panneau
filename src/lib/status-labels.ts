@@ -27,3 +27,9 @@ export const STATUS_COLORS: Record<BillboardStatus, string> = {
   EXPIRED: '#dc2626',
   MAINTENANCE: '#6b7280',
 }
+
+export const FACE_LABELS: Record<'FACE_1' | 'FACE_2' | 'BOTH', string> = {
+  FACE_1: 'Face 1',
+  FACE_2: 'Face 2',
+  BOTH: 'Faces 1 et 2',
+}

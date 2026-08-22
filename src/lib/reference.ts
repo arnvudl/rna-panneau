@@ -1,23 +1,17 @@
-const CITY_CODES: Record<string, string> = {
-  Antananarivo: 'TNR',
-  Toamasina: 'TOA',
-  Fianarantsoa: 'FIA',
-  Mahajanga: 'MJN',
-  Toliara: 'TLE',
-  Antsiranana: 'DIE',
-}
-
-export function cityCode(city: string): string {
-  return CITY_CODES[city] ?? city.slice(0, 3).toUpperCase()
+export function resolveCityPrefix(city: string, prefixes: { city: string; prefix: string }[]): string {
+  const match = prefixes.find((p) => p.city.toLowerCase() === city.toLowerCase())
+  return match ? match.prefix : city.slice(0, 3).toUpperCase()
 }
 
 export function generateReference({
   sequence,
   city,
+  prefixes,
 }: {
   sequence: number
   city: string
+  prefixes: { city: string; prefix: string }[]
 }): string {
   const padded = String(sequence).padStart(3, '0')
-  return `ANM ${padded} ${cityCode(city)}`
+  return `ANM ${padded} ${resolveCityPrefix(city, prefixes)}`
 }

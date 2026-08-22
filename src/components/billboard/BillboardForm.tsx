@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
-export type EditableBillboard = { id: string; city: string; dimension: string; sides: number }
+export type EditableBillboard = { id: string; city: string; dimension: string; sides: number; note?: string | null }
 
 type BillboardFormProps =
   | {
@@ -34,11 +34,22 @@ export function BillboardForm(props: BillboardFormProps) {
   const [city, setCity] = useState(initial?.city ?? '')
   const [dimension, setDimension] = useState(initial?.dimension ?? 'D4X3')
   const [sides, setSides] = useState<1 | 2>(initial?.sides === 2 ? 2 : 1)
+  const [note, setNote] = useState(initial?.note ?? '')
+  const [lat, setLat] = useState(mode === 'create' ? props.initialLatLng?.lat?.toString() ?? '' : '')
+  const [lng, setLng] = useState(mode === 'create' ? props.initialLatLng?.lng?.toString() ?? '' : '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (mode === 'create' && props.initialLatLng) {
+      setLat(String(props.initialLatLng.lat))
+      setLng(String(props.initialLatLng.lng))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode === 'create' ? props.initialLatLng : null])
+
   const submit = async () => {
-    if (mode === 'create' && !props.initialLatLng) return
+    if (mode === 'create' && (!lat.trim() || !lng.trim())) return
     setSubmitting(true)
     setError(null)
     try {
@@ -46,8 +57,8 @@ export function BillboardForm(props: BillboardFormProps) {
       const method = mode === 'create' ? 'POST' : 'PATCH'
       const body =
         mode === 'create'
-          ? { ...props.initialLatLng, city: city.trim(), dimension, sides }
-          : { city: city.trim(), dimension, sides }
+          ? { lat: Number(lat), lng: Number(lng), city: city.trim(), dimension, sides, note: note.trim() || undefined }
+          : { city: city.trim(), dimension, sides, note: note.trim() === '' ? null : note.trim() }
 
       const res = await fetch(url, {
         method,
@@ -60,6 +71,8 @@ export function BillboardForm(props: BillboardFormProps) {
         setCity('')
         setDimension('D4X3')
         setSides(1)
+        setLat('')
+        setLng('')
       }
       onOpenChange(false)
       onSaved()
@@ -78,13 +91,29 @@ export function BillboardForm(props: BillboardFormProps) {
         </DialogHeader>
         <div className="space-y-3">
           {error && <p className="text-sm text-red-600">{error}</p>}
+          {mode === 'create' && (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label>Latitude</Label>
+                <Input type="number" step="any" value={lat} onChange={(e) => setLat(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label>Longitude</Label>
+                <Input type="number" step="any" value={lng} onChange={(e) => setLng(e.target.value)} />
+              </div>
+            </div>
+          )}
           <div className="space-y-1">
             <Label>Ville</Label>
             <Input value={city} onChange={(e) => setCity(e.target.value)} />
           </div>
           <div className="space-y-1">
             <Label>Dimension</Label>
-            <Select value={dimension} onValueChange={(v: string | null) => v && setDimension(v)}>
+            <Select
+              items={Object.fromEntries(DIMENSIONS.map((d) => [d, d]))}
+              value={dimension}
+              onValueChange={(v: string | null) => v && setDimension(v)}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {DIMENSIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -93,7 +122,11 @@ export function BillboardForm(props: BillboardFormProps) {
           </div>
           <div className="space-y-1">
             <Label>Faces</Label>
-            <Select value={String(sides)} onValueChange={(v: string | null) => v && setSides(Number(v) as 1 | 2)}>
+            <Select
+              items={{ '1': '1 face', '2': '2 faces' }}
+              value={String(sides)}
+              onValueChange={(v: string | null) => v && setSides(Number(v) as 1 | 2)}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">1 face</SelectItem>
@@ -101,7 +134,21 @@ export function BillboardForm(props: BillboardFormProps) {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={submit} className="w-full" disabled={submitting || !city.trim()}>
+          <div className="space-y-1">
+            <Label>Note</Label>
+            <textarea
+              className="w-full rounded-md border border-slate-200 p-2 text-sm"
+              rows={3}
+              maxLength={2000}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+          <Button
+            onClick={submit}
+            className="w-full"
+            disabled={submitting || !city.trim() || (mode === 'create' && (!lat.trim() || !lng.trim()))}
+          >
             {submitting ? (mode === 'create' ? 'Création…' : 'Enregistrement…') : mode === 'create' ? 'Créer' : 'Enregistrer'}
           </Button>
         </div>

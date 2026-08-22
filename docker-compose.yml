@@ -55,9 +55,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # The named app_node_modules volume persists across rebuilds, so a schema
+    # change doesn't automatically refresh the generated client living in it —
+    # `prisma generate` must run here, not just at image build time, or the
+    # container keeps using a stale client after a migration is added.
     # Applies any pending migrations (no prompts, no new migrations created)
     # before starting the dev server, so the schema is always up to date.
-    command: sh -c "npx prisma migrate deploy && npm run dev"
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"
 
 volumes:
   db_data:

@@ -5,6 +5,7 @@ import { BillboardMap } from '@/components/map/BillboardMap'
 import { BillboardTable } from '@/components/table/BillboardTable'
 import { FilterBar, type Filters } from '@/components/table/FilterBar'
 import { BillboardDrawer } from '@/components/billboard/BillboardDrawer'
+import { StatusLegend } from '@/components/map/StatusLegend'
 import { useBillboards } from '@/hooks/useBillboards'
 
 export default function MapPage() {
@@ -44,6 +45,7 @@ export default function MapPage() {
         </div>
       </div>
       <BillboardDrawer billboard={selected} open={drawerOpen} onOpenChange={setDrawerOpen} />
+      <StatusLegend />
     </div>
   )
 }

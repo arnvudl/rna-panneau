@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { formatContactInfo } from '@/lib/client-format'
+import { ClientDetailActions } from '@/components/clients/ClientDetailActions'
 
 export default async function ClientPage({ params }: { params: { id: string } }) {
   const client = await prisma.client.findUnique({
@@ -11,8 +13,11 @@ export default async function ClientPage({ params }: { params: { id: string } })
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-6">
-      <h1 className="text-2xl font-semibold">{client.name}</h1>
-      <p className="text-slate-600">{client.contactInfo}</p>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">{client.name}</h1>
+        <ClientDetailActions client={{ id: client.id, name: client.name }} />
+      </div>
+      <p className="text-slate-600">{formatContactInfo(client.phone, client.email)}</p>
       <h2 className="text-lg font-medium">Historique des contrats</h2>
       <ul className="space-y-2">
         {client.contracts.map((c) => (

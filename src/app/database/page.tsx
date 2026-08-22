@@ -4,15 +4,19 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { BillboardTable } from '@/components/table/BillboardTable'
 import { FilterBar, type Filters } from '@/components/table/FilterBar'
+import { BillboardForm } from '@/components/billboard/BillboardForm'
+import { StatusLegend } from '@/components/map/StatusLegend'
+import { Button } from '@/components/ui/button'
 import { useBillboards } from '@/hooks/useBillboards'
 
 export default function DatabasePage() {
   const router = useRouter()
   const [filters, setFilters] = useState<Filters>({})
-  const { billboards, loading, error } = useBillboards(filters)
+  const { billboards, loading, error, reload } = useBillboards(filters)
+  const [formOpen, setFormOpen] = useState(false)
 
   return (
-    <div className="flex h-[calc(100vh-56px)] flex-col">
+    <div className="relative flex h-[calc(100vh-56px)] flex-col">
       {error && (
         <div className="border-b bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
       )}
@@ -24,6 +28,11 @@ export default function DatabasePage() {
           <BillboardTable rows={billboards} onSelect={(id) => router.push(`/billboards/${id}`)} />
         )}
       </div>
+      <Button className="absolute bottom-6 right-6" onClick={() => setFormOpen(true)}>
+        + Ajouter un panneau
+      </Button>
+      <BillboardForm mode="create" open={formOpen} onOpenChange={setFormOpen} initialLatLng={null} onSaved={reload} />
+      <StatusLegend />
     </div>
   )
 }
