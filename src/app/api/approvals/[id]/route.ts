@@ -79,6 +79,11 @@ async function applyApproval(
       })
       break
     case 'DELETE_CLIENT': {
+      // Plain Error (not a Prisma error) deliberately bypasses the
+      // PrismaClientKnownRequestError branch below and surfaces as a 500,
+      // leaving this approval PENDING (transaction rolls back) instead of a
+      // clean 400 — accepted tradeoff for the rare stale-approval case where
+      // contracts were added after the request but before admin review.
       const contractCount = await tx.contract.count({ where: { clientId: data.clientId as string } })
       if (contractCount > 0) {
         throw new Error('Client has associated contracts, cannot delete')
