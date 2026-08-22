@@ -7,16 +7,20 @@ import { Button } from '@/components/ui/button'
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
 
 export function ClientDetailActions({ client }: { client: { id: string; name: string } }) {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [open, setOpen] = useState(false)
 
-  const canDelete = status === 'authenticated' && session?.user?.role !== 'USER'
-  if (!canDelete) return null
+  // Any authenticated role may trigger deletion — the API itself routes USER
+  // requests to the approval queue instead of deleting directly.
+  if (status !== 'authenticated') return null
 
   const deleteClient = async () => {
     const res = await fetch(`/api/clients/${client.id}`, { method: 'DELETE' })
-    if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+    if (!res.ok) {
+      const body = await res.json().catch(() => null)
+      throw new Error(typeof body?.error === 'string' ? body.error : `Request failed with status ${res.status}`)
+    }
     router.push('/clients')
   }
 

@@ -33,8 +33,8 @@ export function ConfirmDeleteDialog({
       await onConfirm()
       onOpenChange(false)
       setTyped('')
-    } catch {
-      setError('Erreur lors de la suppression')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression')
     } finally {
       setSubmitting(false)
     }
