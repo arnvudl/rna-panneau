@@ -22,7 +22,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
   if (!billboard) notFound()
 
   const status = deriveBillboardStatus(billboard)
-  const activeContract = billboard.contracts.find((c) => c.status === 'ACTIVE')
+  const activeContracts = billboard.contracts.filter((c) => c.status === 'ACTIVE')
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
@@ -77,7 +77,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
             <TabsTrigger value="maintenance">Entretien</TabsTrigger>
           </TabsList>
           <TabsContent value="contract">
-            <ContractPanel contract={activeContract} billboardId={billboard.id} />
+            <ContractPanel contracts={activeContracts} billboardId={billboard.id} sides={billboard.sides} />
           </TabsContent>
           <TabsContent value="history">
             <HistoryTimeline contracts={billboard.contracts} />
