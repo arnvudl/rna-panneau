@@ -1,16 +1,26 @@
 import { describe, it, expect } from 'vitest'
-import { generateReference } from '@/lib/reference'
+import { generateReference, resolveCityPrefix } from '@/lib/reference'
+
+describe('resolveCityPrefix', () => {
+  it('matches a known city case-insensitively', () => {
+    expect(resolveCityPrefix('antananarivo', [{ city: 'Antananarivo', prefix: 'TNR' }])).toBe('TNR')
+  })
+
+  it('falls back to the first 3 letters uppercased when no match exists', () => {
+    expect(resolveCityPrefix('Nouvelleville', [])).toBe('NOU')
+  })
+})
 
 describe('generateReference', () => {
-  it('formats as ANM <padded-number> <city-code>', () => {
-    expect(generateReference({ sequence: 1, city: 'Antananarivo' })).toBe('ANM 001 TNR')
+  it('pads sequence to 3 digits and uses the resolved prefix', () => {
+    expect(generateReference({ sequence: 1, city: 'Antananarivo', prefixes: [{ city: 'Antananarivo', prefix: 'TNR' }] })).toBe(
+      'ANM 001 TNR'
+    )
   })
 
-  it('pads sequence numbers under 100', () => {
-    expect(generateReference({ sequence: 42, city: 'Toamasina' })).toBe('ANM 042 TOA')
-  })
-
-  it('does not pad sequence numbers over 999', () => {
-    expect(generateReference({ sequence: 1234, city: 'Fianarantsoa' })).toBe('ANM 1234 FIA')
+  it('does not pad sequences over 999', () => {
+    expect(generateReference({ sequence: 1200, city: 'Diego', prefixes: [{ city: 'Diego', prefix: 'DIE' }] })).toBe(
+      'ANM 1200 DIE'
+    )
   })
 })

@@ -44,8 +44,11 @@ export async function POST(req: NextRequest) {
   if ('error' in parsed) return parsed.error
   const body = parsed.data
 
-  const count = await prisma.billboard.count({ where: { city: body.city } })
-  const reference = generateReference({ sequence: count + 1, city: body.city })
+  const [count, prefixes] = await Promise.all([
+    prisma.billboard.count({ where: { city: body.city } }),
+    prisma.cityPrefix.findMany(),
+  ])
+  const reference = generateReference({ sequence: count + 1, city: body.city, prefixes })
 
   try {
     const billboard = await prisma.billboard.create({
