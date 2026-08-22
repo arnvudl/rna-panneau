@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ContractForm } from '@/components/billboard/ContractForm'
 import { isFaceAvailable } from '@/lib/contract-occupancy'
+import { FACE_LABELS } from '@/lib/status-labels'
 
 export type ContractPanelContract = {
   id: string
@@ -14,12 +15,6 @@ export type ContractPanelContract = {
   amount: number
   status: string
   face: 'FACE_1' | 'FACE_2' | 'BOTH'
-}
-
-const FACE_LABELS: Record<ContractPanelContract['face'], string> = {
-  FACE_1: 'Face 1',
-  FACE_2: 'Face 2',
-  BOTH: 'Faces 1 et 2',
 }
 
 function ContractCard({ contract }: { contract: ContractPanelContract }) {

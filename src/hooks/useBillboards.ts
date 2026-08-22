@@ -24,7 +24,10 @@ type ApiBillboard = {
 export type BillboardWithLatLng = BillboardRow & { lat: number; lng: number }
 
 function toRow(b: ApiBillboard): BillboardWithLatLng {
-  const activeContract = b.contracts?.find((c) => c.status === 'ACTIVE')
+  const activeClientNames = (b.contracts ?? [])
+    .filter((c) => c.status === 'ACTIVE')
+    .map((c) => c.client?.name)
+    .filter((n): n is string => Boolean(n))
   return {
     id: b.id,
     reference: b.reference,
@@ -35,7 +38,7 @@ function toRow(b: ApiBillboard): BillboardWithLatLng {
     lat: b.lat,
     lng: b.lng,
     note: b.note,
-    activeClientName: activeContract?.client?.name ?? undefined,
+    activeClientNames,
   }
 }
 

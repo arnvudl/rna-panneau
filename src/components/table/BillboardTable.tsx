@@ -12,7 +12,7 @@ export type BillboardRow = {
   dimension: string
   status: string
   damaged: boolean
-  activeClientName?: string
+  activeClientNames?: string[]
   note?: string | null
 }
 
@@ -42,7 +42,7 @@ export function BillboardTable({
           <TableHead>Ville</TableHead>
           <TableHead>Dimension</TableHead>
           <TableHead>Statut</TableHead>
-          <TableHead>Client</TableHead>
+          <TableHead>Clients</TableHead>
           <TableHead>Note</TableHead>
         </TableRow>
       </TableHeader>
@@ -64,7 +64,7 @@ export function BillboardTable({
                 <Badge variant="destructive" className="ml-1">Endommagé</Badge>
               )}
             </TableCell>
-            <TableCell>{r.activeClientName ?? '—'}</TableCell>
+            <TableCell>{r.activeClientNames && r.activeClientNames.length > 0 ? r.activeClientNames.join(', ') : '—'}</TableCell>
             <TableCell className="max-w-[200px] truncate" title={r.note ?? undefined}>{r.note ?? '—'}</TableCell>
           </TableRow>
         ))}
