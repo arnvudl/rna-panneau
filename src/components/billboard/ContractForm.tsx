@@ -11,6 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 type Client = { id: string; name: string }
 type Face = 'FACE_1' | 'FACE_2' | 'BOTH'
 
+const FACE_SELECT_LABELS: Record<Face, string> = {
+  FACE_1: 'Face 1',
+  FACE_2: 'Face 2',
+  BOTH: 'Les deux faces',
+}
+
 export function ContractForm({
   open,
   onOpenChange,
@@ -97,7 +103,11 @@ export function ContractForm({
           <div className="space-y-1">
             <Label>Client</Label>
             <Input placeholder="Rechercher un client…" onChange={(e) => loadClients(e.target.value)} />
-            <Select value={clientId} onValueChange={(v: string | null) => v && setClientId(v)}>
+            <Select
+              items={Object.fromEntries(clients.map((c) => [c.id, c.name]))}
+              value={clientId}
+              onValueChange={(v: string | null) => v && setClientId(v)}
+            >
               <SelectTrigger><SelectValue placeholder="Sélectionner un client" /></SelectTrigger>
               <SelectContent>
                 {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -107,7 +117,11 @@ export function ContractForm({
           {sides === 2 && (
             <div className="space-y-1">
               <Label>Face</Label>
-              <Select value={face} onValueChange={(v: string | null) => v && setFace(v as Face)}>
+              <Select
+                items={Object.fromEntries(availableFaces.map((f) => [f, FACE_SELECT_LABELS[f]]))}
+                value={face}
+                onValueChange={(v: string | null) => v && setFace(v as Face)}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {availableFaces.includes('FACE_1') && <SelectItem value="FACE_1">Face 1</SelectItem>}

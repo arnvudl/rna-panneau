@@ -109,7 +109,11 @@ export function BillboardForm(props: BillboardFormProps) {
           </div>
           <div className="space-y-1">
             <Label>Dimension</Label>
-            <Select value={dimension} onValueChange={(v: string | null) => v && setDimension(v)}>
+            <Select
+              items={Object.fromEntries(DIMENSIONS.map((d) => [d, d]))}
+              value={dimension}
+              onValueChange={(v: string | null) => v && setDimension(v)}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {DIMENSIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -118,7 +122,11 @@ export function BillboardForm(props: BillboardFormProps) {
           </div>
           <div className="space-y-1">
             <Label>Faces</Label>
-            <Select value={String(sides)} onValueChange={(v: string | null) => v && setSides(Number(v) as 1 | 2)}>
+            <Select
+              items={{ '1': '1 face', '2': '2 faces' }}
+              value={String(sides)}
+              onValueChange={(v: string | null) => v && setSides(Number(v) as 1 | 2)}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">1 face</SelectItem>

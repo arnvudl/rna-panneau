@@ -23,7 +23,11 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b bg-white px-4 py-3">
-      <Select value={filters.status ?? 'all'} onValueChange={(v: string | null) => onChange({ ...filters, status: normalize(v) })}>
+      <Select
+        items={{ all: 'Tous les statuts', ...Object.fromEntries(STATUSES.map((s) => [s, STATUS_LABELS[s]])) }}
+        value={filters.status ?? 'all'}
+        onValueChange={(v: string | null) => onChange({ ...filters, status: normalize(v) })}
+      >
         <SelectTrigger className="w-44"><SelectValue placeholder="Statut" /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Tous les statuts</SelectItem>
@@ -31,7 +35,14 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
         </SelectContent>
       </Select>
 
-      <Select value={filters.dimension ?? 'all'} onValueChange={(v: string | null) => onChange({ ...filters, dimension: normalize(v) })}>
+      <Select
+        items={{
+          all: 'Toutes dimensions',
+          ...Object.fromEntries(DIMENSIONS.map((d) => [d, d.replace('D', '').replace('X', 'x')])),
+        }}
+        value={filters.dimension ?? 'all'}
+        onValueChange={(v: string | null) => onChange({ ...filters, dimension: normalize(v) })}
+      >
         <SelectTrigger className="w-36"><SelectValue placeholder="Dimension" /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Toutes dimensions</SelectItem>
@@ -39,7 +50,11 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
         </SelectContent>
       </Select>
 
-      <Select value={filters.damaged ?? 'all'} onValueChange={(v: string | null) => onChange({ ...filters, damaged: normalize(v) })}>
+      <Select
+        items={{ all: 'Tous', true: 'Endommagé', false: 'Non endommagé' }}
+        value={filters.damaged ?? 'all'}
+        onValueChange={(v: string | null) => onChange({ ...filters, damaged: normalize(v) })}
+      >
         <SelectTrigger className="w-40"><SelectValue placeholder="Endommagé" /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Tous</SelectItem>
@@ -48,7 +63,11 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
         </SelectContent>
       </Select>
 
-      <Select value={filters.clientId ?? 'all'} onValueChange={(v: string | null) => onChange({ ...filters, clientId: normalize(v) })}>
+      <Select
+        items={{ all: 'Tous les clients', ...Object.fromEntries(clients.map((c) => [c.id, c.name])) }}
+        value={filters.clientId ?? 'all'}
+        onValueChange={(v: string | null) => onChange({ ...filters, clientId: normalize(v) })}
+      >
         <SelectTrigger className="w-48"><SelectValue placeholder="Client" /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Tous les clients</SelectItem>

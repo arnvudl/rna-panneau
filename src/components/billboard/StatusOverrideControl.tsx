@@ -45,7 +45,12 @@ export function StatusOverrideControl({
   return (
     <div className="space-y-1">
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <Select value={statusOverride ?? 'auto'} onValueChange={(v: string | null) => v && set(v)} disabled={submitting}>
+      <Select
+        items={{ auto: 'Automatique', ...Object.fromEntries(OPTIONS.map((s) => [s, STATUS_LABELS[s]])) }}
+        value={statusOverride ?? 'auto'}
+        onValueChange={(v: string | null) => v && set(v)}
+        disabled={submitting}
+      >
         <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="auto">Automatique</SelectItem>
