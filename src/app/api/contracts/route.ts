@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { addMonths } from 'date-fns'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
+import { isFaceAvailable } from '@/lib/contract-occupancy'
 
 const createSchema = z.object({
   billboardId: z.string(),
@@ -10,6 +11,7 @@ const createSchema = z.object({
   startDate: z.string().datetime(),
   amount: z.number().positive(),
   durationMonths: z.number().int().positive().default(6),
+  face: z.enum(['FACE_1', 'FACE_2', 'BOTH']).default('BOTH'),
 })
 
 export async function POST(req: NextRequest) {
@@ -25,8 +27,9 @@ export async function POST(req: NextRequest) {
   if (session.user.role === 'USER') {
     // Contract for Task 8 (approvals API): CREATE_CONTRACT payload is always
     // shaped as { billboardId: string, clientId: string, startDate: string (ISO),
-    // amount: number, durationMonths: number, endDate: string (ISO) } — startDate
-    // and endDate are pre-computed and serialized so approval simply persists them.
+    // amount: number, durationMonths: number, endDate: string (ISO), face: 'FACE_1' |
+    // 'FACE_2' | 'BOTH' } — startDate and endDate are pre-computed and serialized so
+    // approval simply persists them.
     return createApprovalRequest(session, 'CREATE_CONTRACT', {
       billboardId: body.billboardId,
       clientId: body.clientId,
@@ -34,16 +37,23 @@ export async function POST(req: NextRequest) {
       amount: body.amount,
       durationMonths: body.durationMonths,
       endDate: endDate.toISOString(),
+      face: body.face,
     })
   }
 
-  // Known limitation (documented, not fixed, per current project scale): there is
-  // no guard preventing two overlapping ACTIVE contracts on the same billboard.
-  // Revisit if double-booking becomes an observed problem.
+  const activeContracts = await prisma.contract.findMany({
+    where: { billboardId: body.billboardId, status: 'ACTIVE' },
+    select: { face: true },
+  })
+  if (!isFaceAvailable(body.face, activeContracts)) {
+    return NextResponse.json({ error: 'Cette face du panneau est déjà louée' }, { status: 409 })
+  }
+
   const contract = await prisma.contract.create({
     data: {
       billboardId: body.billboardId,
       clientId: body.clientId,
+      face: body.face,
       startDate,
       endDate,
       amount: body.amount,
