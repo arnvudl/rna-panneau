@@ -9,34 +9,34 @@ const activeContract = (daysUntilEnd: number) => ({
 
 describe('deriveBillboardStatus', () => {
   it('returns MAINTENANCE when the billboard is flagged damaged', () => {
-    expect(deriveBillboardStatus({ damaged: true, contracts: [] })).toBe('MAINTENANCE')
+    expect(deriveBillboardStatus({ damaged: true, statusOverride: null, contracts: [] })).toBe('MAINTENANCE')
   })
 
   it('returns AVAILABLE when there is no active contract', () => {
-    expect(deriveBillboardStatus({ damaged: false, contracts: [] })).toBe('AVAILABLE')
+    expect(deriveBillboardStatus({ damaged: false, statusOverride: null, contracts: [] })).toBe('AVAILABLE')
   })
 
   it('returns RENTED when the active contract ends in more than 30 days', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, contracts: [activeContract(60)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contracts: [activeContract(60)] })
     ).toBe('RENTED')
   })
 
   it('returns EXPIRING_SOON when the active contract ends within 30 days', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, contracts: [activeContract(10)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contracts: [activeContract(10)] })
     ).toBe('EXPIRING_SOON')
   })
 
   it('returns EXPIRING_SOON at the exact 30-day boundary', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, contracts: [activeContract(30)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contracts: [activeContract(30)] })
     ).toBe('EXPIRING_SOON')
   })
 
   it('returns EXPIRED when the active contract end date is in the past', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, contracts: [activeContract(-5)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contracts: [activeContract(-5)] })
     ).toBe('EXPIRED')
   })
 
@@ -46,6 +46,7 @@ describe('deriveBillboardStatus', () => {
     const later = new Date(now.getTime() + 200 * 24 * 60 * 60 * 1000)
     const status = deriveBillboardStatus({
       damaged: false,
+      statusOverride: null,
       contracts: [
         { status: 'ACTIVE', endDate: soon, face: 'FACE_1' },
         { status: 'ACTIVE', endDate: later, face: 'FACE_2' },
@@ -57,6 +58,7 @@ describe('deriveBillboardStatus', () => {
   it('is AVAILABLE only when no face has an active contract', () => {
     const status = deriveBillboardStatus({
       damaged: false,
+      statusOverride: null,
       contracts: [{ status: 'TERMINATED', endDate: new Date(), face: 'FACE_1' }],
     })
     expect(status).toBe('AVAILABLE')
