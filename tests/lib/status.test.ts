@@ -4,6 +4,7 @@ import { deriveBillboardStatus } from '@/lib/status'
 const activeContract = (daysUntilEnd: number) => ({
   status: 'ACTIVE' as const,
   endDate: new Date(Date.now() + daysUntilEnd * 24 * 60 * 60 * 1000),
+  face: 'FACE_1' as const,
 })
 
 describe('deriveBillboardStatus', () => {
@@ -37,5 +38,27 @@ describe('deriveBillboardStatus', () => {
     expect(
       deriveBillboardStatus({ damaged: false, contracts: [activeContract(-5)] })
     ).toBe('EXPIRED')
+  })
+
+  it('returns the most urgent status across two active faces', () => {
+    const now = new Date()
+    const soon = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000)
+    const later = new Date(now.getTime() + 200 * 24 * 60 * 60 * 1000)
+    const status = deriveBillboardStatus({
+      damaged: false,
+      contracts: [
+        { status: 'ACTIVE', endDate: soon, face: 'FACE_1' },
+        { status: 'ACTIVE', endDate: later, face: 'FACE_2' },
+      ],
+    })
+    expect(status).toBe('EXPIRING_SOON')
+  })
+
+  it('is AVAILABLE only when no face has an active contract', () => {
+    const status = deriveBillboardStatus({
+      damaged: false,
+      contracts: [{ status: 'TERMINATED', endDate: new Date(), face: 'FACE_1' }],
+    })
+    expect(status).toBe('AVAILABLE')
   })
 })
