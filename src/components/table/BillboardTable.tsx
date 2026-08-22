@@ -65,7 +65,7 @@ export function BillboardTable({
               )}
             </TableCell>
             <TableCell>{r.activeClientName ?? '—'}</TableCell>
-            <TableCell className="max-w-[200px] truncate">{r.note ?? '—'}</TableCell>
+            <TableCell className="max-w-[200px] truncate" title={r.note ?? undefined}>{r.note ?? '—'}</TableCell>
           </TableRow>
         ))}
       </TableBody>

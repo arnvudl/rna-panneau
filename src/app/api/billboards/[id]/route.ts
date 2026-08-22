@@ -26,7 +26,7 @@ const patchSchema = z.object({
   city: z.string().trim().min(1).optional(),
   dimension: z.enum(['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']).optional(),
   sides: z.union([z.literal(1), z.literal(2)]).optional(),
-  note: z.string().trim().max(2000).optional(),
+  note: z.string().trim().max(2000).nullable().optional(),
 })
 
 const RESTRICTED_FIELDS = ['city', 'dimension', 'sides'] as const

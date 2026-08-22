@@ -48,7 +48,7 @@ export function BillboardForm(props: BillboardFormProps) {
       const body =
         mode === 'create'
           ? { ...props.initialLatLng, city: city.trim(), dimension, sides, note: note.trim() || undefined }
-          : { city: city.trim(), dimension, sides, note: note.trim() || undefined }
+          : { city: city.trim(), dimension, sides, note: note.trim() === '' ? null : note.trim() }
 
       const res = await fetch(url, {
         method,
@@ -107,6 +107,7 @@ export function BillboardForm(props: BillboardFormProps) {
             <textarea
               className="w-full rounded-md border border-slate-200 p-2 text-sm"
               rows={3}
+              maxLength={2000}
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />

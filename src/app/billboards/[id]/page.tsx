@@ -33,7 +33,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
           <p className="mt-1 text-sm text-slate-500">
             {billboard.lat.toFixed(5)}, {billboard.lng.toFixed(5)} — créé le {billboard.createdAt.toLocaleDateString('fr-FR')}
           </p>
-          {billboard.note && <p className="mt-1 text-sm text-slate-500">Note : {billboard.note}</p>}
+          {billboard.note && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-500">Note : {billboard.note}</p>}
         </div>
         <div className="flex gap-2">
           <BillboardDetailActions
