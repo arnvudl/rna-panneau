@@ -42,14 +42,18 @@ export function ContractForm({
   // The dialog's `open` prop is set by the parent (ContractPanel), not by
   // user interaction with the Dialog itself, so Dialog's onOpenChange never
   // fires for that transition. Load the initial client list here instead.
-  // This also re-syncs `face`: ContractForm stays mounted across contract
-  // creations (only `open` toggles), so without this, `face` would keep
-  // pointing at whichever face was selected last even after `availableFaces`
-  // changes (e.g. right after creating a contract, without a full reload).
+  // This also resets all fields: ContractForm stays mounted across contract
+  // creations (only `open` toggles), so without this, stale values (a
+  // previously selected client, amount, or now-unavailable face) would
+  // silently carry over into the next contract creation.
   useEffect(() => {
     if (open) {
       loadClients('')
       setFace(availableFaces[0] ?? 'BOTH')
+      setClientId('')
+      setAmount('')
+      setDurationMonths('6')
+      setError(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
