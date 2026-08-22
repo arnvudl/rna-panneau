@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,11 +35,21 @@ export function BillboardForm(props: BillboardFormProps) {
   const [dimension, setDimension] = useState(initial?.dimension ?? 'D4X3')
   const [sides, setSides] = useState<1 | 2>(initial?.sides === 2 ? 2 : 1)
   const [note, setNote] = useState(initial?.note ?? '')
+  const [lat, setLat] = useState(mode === 'create' ? props.initialLatLng?.lat?.toString() ?? '' : '')
+  const [lng, setLng] = useState(mode === 'create' ? props.initialLatLng?.lng?.toString() ?? '' : '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (mode === 'create' && props.initialLatLng) {
+      setLat(String(props.initialLatLng.lat))
+      setLng(String(props.initialLatLng.lng))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode === 'create' ? props.initialLatLng : null])
+
   const submit = async () => {
-    if (mode === 'create' && !props.initialLatLng) return
+    if (mode === 'create' && (!lat.trim() || !lng.trim())) return
     setSubmitting(true)
     setError(null)
     try {
@@ -47,7 +57,7 @@ export function BillboardForm(props: BillboardFormProps) {
       const method = mode === 'create' ? 'POST' : 'PATCH'
       const body =
         mode === 'create'
-          ? { ...props.initialLatLng, city: city.trim(), dimension, sides, note: note.trim() || undefined }
+          ? { lat: Number(lat), lng: Number(lng), city: city.trim(), dimension, sides, note: note.trim() || undefined }
           : { city: city.trim(), dimension, sides, note: note.trim() === '' ? null : note.trim() }
 
       const res = await fetch(url, {
@@ -61,6 +71,8 @@ export function BillboardForm(props: BillboardFormProps) {
         setCity('')
         setDimension('D4X3')
         setSides(1)
+        setLat('')
+        setLng('')
       }
       onOpenChange(false)
       onSaved()
@@ -79,6 +91,18 @@ export function BillboardForm(props: BillboardFormProps) {
         </DialogHeader>
         <div className="space-y-3">
           {error && <p className="text-sm text-red-600">{error}</p>}
+          {mode === 'create' && (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label>Latitude</Label>
+                <Input type="number" step="any" value={lat} onChange={(e) => setLat(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label>Longitude</Label>
+                <Input type="number" step="any" value={lng} onChange={(e) => setLng(e.target.value)} />
+              </div>
+            </div>
+          )}
           <div className="space-y-1">
             <Label>Ville</Label>
             <Input value={city} onChange={(e) => setCity(e.target.value)} />
@@ -112,7 +136,11 @@ export function BillboardForm(props: BillboardFormProps) {
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
-          <Button onClick={submit} className="w-full" disabled={submitting || !city.trim()}>
+          <Button
+            onClick={submit}
+            className="w-full"
+            disabled={submitting || !city.trim() || (mode === 'create' && (!lat.trim() || !lng.trim()))}
+          >
             {submitting ? (mode === 'create' ? 'Création…' : 'Enregistrement…') : mode === 'create' ? 'Créer' : 'Enregistrer'}
           </Button>
         </div>
