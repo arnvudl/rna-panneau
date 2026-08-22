@@ -12,7 +12,7 @@ export default async function ClientPage({ params }: { params: { id: string } })
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-6">
       <h1 className="text-2xl font-semibold">{client.name}</h1>
-      <p className="text-slate-600">{client.contactInfo}</p>
+      <p className="text-slate-600">{[client.phone, client.email].filter(Boolean).join(' · ')}</p>
       <h2 className="text-lg font-medium">Historique des contrats</h2>
       <ul className="space-y-2">
         {client.contracts.map((c) => (

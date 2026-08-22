@@ -15,7 +15,11 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(clients)
 }
 
-const createSchema = z.object({ name: z.string().min(1), contactInfo: z.string().optional() })
+const createSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+})
 
 export async function POST(req: NextRequest) {
   const { session, error } = await requireSession()

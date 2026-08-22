@@ -25,7 +25,7 @@ async function seedSampleData() {
   const client = await prisma.client.upsert({
     where: { id: 'seed-client-orange' },
     update: {},
-    create: { id: 'seed-client-orange', name: 'Orange Madagascar', contactInfo: 'contact@orange.mg' },
+    create: { id: 'seed-client-orange', name: 'Orange Madagascar', email: 'contact@orange.mg' },
   })
 
   const billboard = await prisma.billboard.upsert({

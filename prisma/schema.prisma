@@ -27,10 +27,17 @@ enum ContractStatus {
   TERMINATED
 }
 
+enum ContractFace {
+  FACE_1
+  FACE_2
+  BOTH
+}
+
 enum ApprovalType {
   CREATE_CONTRACT
   EDIT_CONTRACT
   DELETE_BILLBOARD
+  DELETE_CLIENT
   EDIT_PRICE
 }
 
@@ -62,6 +69,7 @@ model Billboard {
   sides           Int       @default(1)
   damaged         Boolean   @default(false)
   currentPhotoUrl String?
+  note            String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -70,10 +78,11 @@ model Billboard {
 }
 
 model Client {
-  id          String   @id @default(cuid())
-  name        String
-  contactInfo String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
 
   contracts Contract[]
 }
@@ -82,6 +91,7 @@ model Contract {
   id          String         @id @default(cuid())
   billboardId String
   clientId    String
+  face        ContractFace   @default(BOTH)
   startDate   DateTime
   endDate     DateTime
   amount      Float
@@ -125,4 +135,10 @@ model ApprovalRequest {
 
   @@index([requestedById])
   @@index([reviewedById])
+}
+
+model CityPrefix {
+  id     String @id @default(cuid())
+  city   String @unique
+  prefix String
 }

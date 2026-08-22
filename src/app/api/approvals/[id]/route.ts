@@ -78,6 +78,11 @@ async function applyApproval(
         data: { amount: data.amount as number },
       })
       break
+    case 'DELETE_CLIENT':
+      // Speculative/future-proofing: no producer of this ApprovalType exists yet
+      // anywhere in the codebase, but the case is implemented to match the enum.
+      await tx.client.delete({ where: { id: data.clientId as string } })
+      break
     default: {
       const _exhaustive: never = type
       throw new Error(`Unhandled ApprovalType: ${_exhaustive}`)

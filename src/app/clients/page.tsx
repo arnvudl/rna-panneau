@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ClientForm } from '@/components/clients/ClientForm'
 
-type Client = { id: string; name: string; contactInfo: string | null }
+type Client = { id: string; name: string; phone: string | null; email: string | null }
 
 export default function ClientsPage() {
   const { data: session, status } = useSession()
@@ -61,7 +61,7 @@ export default function ClientsPage() {
             <li key={c.id}>
               <Link href={`/clients/${c.id}`} className="block p-3 hover:bg-slate-50">
                 <p className="font-medium">{c.name}</p>
-                <p className="text-sm text-slate-500">{c.contactInfo}</p>
+                <p className="text-sm text-slate-500">{[c.phone, c.email].filter(Boolean).join(' · ')}</p>
               </Link>
             </li>
           ))}

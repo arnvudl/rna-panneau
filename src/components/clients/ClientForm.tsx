@@ -16,7 +16,8 @@ export function ClientForm({
   onCreated: () => void
 }) {
   const [name, setName] = useState('')
-  const [contactInfo, setContactInfo] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,11 +30,16 @@ export function ClientForm({
       const res = await fetch('/api/clients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmedName, contactInfo: contactInfo.trim() || undefined }),
+        body: JSON.stringify({
+          name: trimmedName,
+          phone: phone.trim() || undefined,
+          email: email.trim() || undefined,
+        }),
       })
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
       setName('')
-      setContactInfo('')
+      setPhone('')
+      setEmail('')
       onOpenChange(false)
       onCreated()
     } catch {
@@ -54,8 +60,12 @@ export function ClientForm({
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="space-y-1">
-            <Label>Coordonnées</Label>
-            <Input value={contactInfo} onChange={(e) => setContactInfo(e.target.value)} />
+            <Label>Téléphone</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label>Email</Label>
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <Button onClick={submit} className="w-full" disabled={submitting || !name.trim()}>
             {submitting ? 'Création…' : 'Créer'}
