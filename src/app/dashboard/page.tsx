@@ -8,18 +8,12 @@ import { CheckCircle2, KeyRound, Clock3 } from 'lucide-react'
 export default async function DashboardPage() {
   await requireRole(['DEV', 'ADMIN'])
 
-  const billboards = await prisma.billboard.findMany({ include: { contracts: true } })
+  const billboards = await prisma.billboard.findMany({ include: { occupancies: true } })
   const withStatus = billboards.map((b) => ({ ...b, status: deriveBillboardStatus(b) }))
 
   const available = withStatus.filter((b) => b.status === 'AVAILABLE').length
   const rented = withStatus.filter((b) => b.status === 'RENTED' || b.status === 'EXPIRING_SOON').length
   const expiringSoon = withStatus.filter((b) => b.status === 'EXPIRING_SOON').length
-
-  const revenueByCity = withStatus.reduce<Record<string, number>>((acc, b) => {
-    const active = b.contracts.find((c) => c.status === 'ACTIVE')
-    if (active) acc[b.city] = (acc[b.city] ?? 0) + active.amount
-    return acc
-  }, {})
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
@@ -48,20 +42,6 @@ export default async function DashboardPage() {
           <CardContent className="text-3xl font-bold text-slate-900">{expiringSoon}</CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader><CardTitle>Revenus par ville (contrats actifs)</CardTitle></CardHeader>
-        <CardContent>
-          <ul className="space-y-1 text-sm">
-            {Object.entries(revenueByCity).map(([city, amount]) => (
-              <li key={city} className="flex justify-between"><span>{city}</span><span>{amount.toLocaleString('fr-FR')} MGA</span></li>
-            ))}
-            {Object.keys(revenueByCity).length === 0 && (
-              <li className="text-slate-500">Aucun contrat actif</li>
-            )}
-          </ul>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader><CardTitle>Demandes d&apos;approbation</CardTitle></CardHeader>
