@@ -5,7 +5,7 @@ import { deriveBillboardStatus } from '@/lib/status'
 import { STATUS_LABELS, STATUS_BADGE_VARIANTS } from '@/lib/status-labels'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { ContractPanel } from '@/components/billboard/ContractPanel'
+import { OccupancyPanel } from '@/components/billboard/OccupancyPanel'
 import { HistoryTimeline } from '@/components/billboard/HistoryTimeline'
 import { MaintenancePanel } from '@/components/billboard/MaintenancePanel'
 import { ExportPdfButton } from '@/components/billboard/ExportPdfButton'
@@ -16,14 +16,14 @@ export default async function BillboardPage({ params }: { params: { id: string }
   const billboard = await prisma.billboard.findUnique({
     where: { id: params.id },
     include: {
-      contracts: { include: { client: true }, orderBy: { startDate: 'desc' } },
+      occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
     },
   })
   if (!billboard) notFound()
 
   const status = deriveBillboardStatus(billboard)
-  const activeContracts = billboard.contracts.filter((c) => c.status === 'ACTIVE')
+  const activeOccupancies = billboard.occupancies.filter((o) => o.status === 'ACTIVE')
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
@@ -33,6 +33,10 @@ export default async function BillboardPage({ params }: { params: { id: string }
           <p className="text-slate-600">{billboard.city} — {billboard.dimension} — {billboard.sides} face(s)</p>
           <p className="mt-1 text-sm text-slate-500">
             {billboard.lat.toFixed(5)}, {billboard.lng.toFixed(5)} — créé le {billboard.createdAt.toLocaleDateString('fr-FR')}
+          </p>
+          {billboard.permitNumber && <p className="mt-1 text-sm text-slate-500">Autorisation municipale : {billboard.permitNumber}</p>}
+          <p className="mt-1 text-sm text-slate-500">
+            Taxe communale : {billboard.taxPaymentRef ? `payée (réf. ${billboard.taxPaymentRef})` : 'non payée'}
           </p>
           {billboard.note && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-500">Note : {billboard.note}</p>}
         </div>
@@ -44,6 +48,10 @@ export default async function BillboardPage({ params }: { params: { id: string }
               dimension: billboard.dimension,
               sides: billboard.sides,
               note: billboard.note,
+              lat: billboard.lat,
+              lng: billboard.lng,
+              permitNumber: billboard.permitNumber,
+              taxPaymentRef: billboard.taxPaymentRef,
             }}
           />
           <ExportPdfButton billboardId={billboard.id} />
@@ -79,10 +87,10 @@ export default async function BillboardPage({ params }: { params: { id: string }
             <TabsTrigger value="maintenance">Entretien</TabsTrigger>
           </TabsList>
           <TabsContent value="contract">
-            <ContractPanel contracts={activeContracts} billboardId={billboard.id} sides={billboard.sides} />
+            <OccupancyPanel occupancies={activeOccupancies} billboardId={billboard.id} sides={billboard.sides} />
           </TabsContent>
           <TabsContent value="history">
-            <HistoryTimeline contracts={billboard.contracts} />
+            <HistoryTimeline occupancies={billboard.occupancies} />
           </TabsContent>
           <TabsContent value="maintenance">
             <MaintenancePanel billboardId={billboard.id} records={billboard.maintenanceRecords} />
