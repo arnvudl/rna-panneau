@@ -16,13 +16,27 @@ function normalize(v: string | null): string | undefined {
 
 export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (f: Filters) => void }) {
   const [clients, setClients] = useState<{ id: string; name: string }[]>([])
+  const [cities, setCities] = useState<{ city: string; prefix: string }[]>([])
 
   useEffect(() => {
     fetch('/api/clients').then((r) => r.json()).then(setClients)
+    fetch('/api/city-prefixes').then((r) => r.json()).then(setCities)
   }, [])
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b bg-white px-4 py-3">
+      <Select
+        items={{ all: 'Toutes les villes', ...Object.fromEntries(cities.map((c) => [c.city, c.city])) }}
+        value={filters.city ?? 'all'}
+        onValueChange={(v: string | null) => onChange({ ...filters, city: normalize(v) })}
+      >
+        <SelectTrigger className="w-44"><SelectValue placeholder="Ville" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Toutes les villes</SelectItem>
+          {cities.map((c) => <SelectItem key={c.city} value={c.city}>{c.city}</SelectItem>)}
+        </SelectContent>
+      </Select>
+
       <Select
         items={{ all: 'Tous les statuts', ...Object.fromEntries(STATUSES.map((s) => [s, STATUS_LABELS[s]])) }}
         value={filters.status ?? 'all'}
