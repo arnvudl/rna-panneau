@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { isFaceAvailable } from '@/lib/contract-occupancy'
+import { isFaceAvailable } from '@/lib/face-occupancy'
 
 describe('isFaceAvailable', () => {
-  it('allows BOTH when no active contracts exist', () => {
+  it('allows BOTH when no active occupancies exist', () => {
     expect(isFaceAvailable('BOTH', [])).toBe(true)
   })
 
