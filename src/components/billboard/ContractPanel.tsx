@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ContractForm } from '@/components/billboard/ContractForm'
-import { isFaceAvailable } from '@/lib/contract-occupancy'
+import { isFaceAvailable } from '@/lib/face-occupancy'
 import { FACE_LABELS } from '@/lib/status-labels'
 
 export type ContractPanelContract = {
