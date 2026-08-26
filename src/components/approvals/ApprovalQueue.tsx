@@ -15,8 +15,9 @@ type Approval = {
 const PAYLOAD_LABELS: Record<string, string> = {
   billboardId: 'Panneau',
   clientId: 'Client',
-  contractId: 'Contrat',
-  amount: 'Montant',
+  occupancyId: 'Contrat',
+  face: 'Face',
+  contractRef: 'Référence du contrat',
   startDate: 'Début',
   endDate: 'Fin',
   status: 'Statut',
