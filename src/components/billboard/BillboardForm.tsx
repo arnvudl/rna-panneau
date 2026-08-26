@@ -9,7 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
-export type EditableBillboard = { id: string; city: string; dimension: string; sides: number; note?: string | null }
+export type EditableBillboard = {
+  id: string
+  city: string
+  dimension: string
+  sides: number
+  note?: string | null
+  lat: number
+  lng: number
+  permitNumber?: string | null
+  taxPaymentRef?: string | null
+}
 
 type BillboardFormProps =
   | {
@@ -35,11 +45,20 @@ export function BillboardForm(props: BillboardFormProps) {
   const [dimension, setDimension] = useState(initial?.dimension ?? 'D4X3')
   const [sides, setSides] = useState<1 | 2>(initial?.sides === 2 ? 2 : 1)
   const [note, setNote] = useState(initial?.note ?? '')
-  const [lat, setLat] = useState(mode === 'create' ? props.initialLatLng?.lat?.toString() ?? '' : '')
-  const [lng, setLng] = useState(mode === 'create' ? props.initialLatLng?.lng?.toString() ?? '' : '')
+  const [permitNumber, setPermitNumber] = useState(initial?.permitNumber ?? '')
+  const [taxPaymentRef, setTaxPaymentRef] = useState(initial?.taxPaymentRef ?? '')
+  const [lat, setLat] = useState(
+    mode === 'create' ? props.initialLatLng?.lat?.toString() ?? '' : String(initial?.lat ?? '')
+  )
+  const [lng, setLng] = useState(
+    mode === 'create' ? props.initialLatLng?.lng?.toString() ?? '' : String(initial?.lng ?? '')
+  )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Only the create flow's lat/lng need to re-sync from a changing prop (a
+  // map right-click while the dialog is open); edit mode's initial value is
+  // fixed for the lifetime of one dialog open, no effect needed there.
   useEffect(() => {
     if (mode === 'create' && props.initialLatLng) {
       setLat(String(props.initialLatLng.lat))
@@ -49,16 +68,25 @@ export function BillboardForm(props: BillboardFormProps) {
   }, [mode === 'create' ? props.initialLatLng : null])
 
   const submit = async () => {
-    if (mode === 'create' && (!lat.trim() || !lng.trim())) return
+    if (!lat.trim() || !lng.trim()) return
     setSubmitting(true)
     setError(null)
     try {
       const url = mode === 'create' ? '/api/billboards' : `/api/billboards/${props.billboard.id}`
       const method = mode === 'create' ? 'POST' : 'PATCH'
+      const shared = {
+        lat: Number(lat),
+        lng: Number(lng),
+        city: city.trim(),
+        dimension,
+        sides,
+        permitNumber: permitNumber.trim() || (mode === 'edit' ? null : undefined),
+        taxPaymentRef: taxPaymentRef.trim() || (mode === 'edit' ? null : undefined),
+      }
       const body =
         mode === 'create'
-          ? { lat: Number(lat), lng: Number(lng), city: city.trim(), dimension, sides, note: note.trim() || undefined }
-          : { city: city.trim(), dimension, sides, note: note.trim() === '' ? null : note.trim() }
+          ? { ...shared, note: note.trim() || undefined }
+          : { ...shared, note: note.trim() === '' ? null : note.trim() }
 
       const res = await fetch(url, {
         method,
@@ -73,6 +101,8 @@ export function BillboardForm(props: BillboardFormProps) {
         setSides(1)
         setLat('')
         setLng('')
+        setPermitNumber('')
+        setTaxPaymentRef('')
       }
       onOpenChange(false)
       onSaved()
@@ -91,18 +121,16 @@ export function BillboardForm(props: BillboardFormProps) {
         </DialogHeader>
         <div className="space-y-3">
           {error && <p className="text-sm text-red-600">{error}</p>}
-          {mode === 'create' && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label>Latitude</Label>
-                <Input type="number" step="any" value={lat} onChange={(e) => setLat(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label>Longitude</Label>
-                <Input type="number" step="any" value={lng} onChange={(e) => setLng(e.target.value)} />
-              </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label>Latitude</Label>
+              <Input type="number" step="any" value={lat} onChange={(e) => setLat(e.target.value)} />
             </div>
-          )}
+            <div className="space-y-1">
+              <Label>Longitude</Label>
+              <Input type="number" step="any" value={lng} onChange={(e) => setLng(e.target.value)} />
+            </div>
+          </div>
           <div className="space-y-1">
             <Label>Ville</Label>
             <Input value={city} onChange={(e) => setCity(e.target.value)} />
@@ -135,6 +163,18 @@ export function BillboardForm(props: BillboardFormProps) {
             </Select>
           </div>
           <div className="space-y-1">
+            <Label>Numéro d&apos;autorisation municipale (optionnel)</Label>
+            <Input value={permitNumber} onChange={(e) => setPermitNumber(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label>Référence taxe communale payée (optionnel)</Label>
+            <Input
+              placeholder="Vide si pas encore payée"
+              value={taxPaymentRef}
+              onChange={(e) => setTaxPaymentRef(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
             <Label>Note</Label>
             <textarea
               className="w-full rounded-md border border-slate-200 p-2 text-sm"
@@ -147,7 +187,7 @@ export function BillboardForm(props: BillboardFormProps) {
           <Button
             onClick={submit}
             className="w-full"
-            disabled={submitting || !city.trim() || (mode === 'create' && (!lat.trim() || !lng.trim()))}
+            disabled={submitting || !city.trim() || !lat.trim() || !lng.trim()}
           >
             {submitting ? (mode === 'create' ? 'Création…' : 'Enregistrement…') : mode === 'create' ? 'Créer' : 'Enregistrer'}
           </Button>
