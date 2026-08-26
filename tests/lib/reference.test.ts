@@ -12,15 +12,21 @@ describe('resolveCityPrefix', () => {
 })
 
 describe('generateReference', () => {
-  it('pads sequence to 3 digits and uses the resolved prefix', () => {
+  it('pads sequence to 3 digits and uses the resolved prefix, prefix first', () => {
     expect(generateReference({ sequence: 1, city: 'Antananarivo', prefixes: [{ city: 'Antananarivo', prefix: 'TNR' }] })).toBe(
-      'ANM 001 TNR'
+      'TNR 001'
     )
   })
 
   it('does not pad sequences over 999', () => {
     expect(generateReference({ sequence: 1200, city: 'Diego', prefixes: [{ city: 'Diego', prefix: 'DIE' }] })).toBe(
-      'ANM 1200 DIE'
+      'DIE 1200'
+    )
+  })
+
+  it('never contains the old hardcoded ANM prefix for a city whose real prefix differs', () => {
+    expect(generateReference({ sequence: 1, city: 'Antananarivo', prefixes: [{ city: 'Antananarivo', prefix: 'TNR' }] })).not.toContain(
+      'ANM'
     )
   })
 })
