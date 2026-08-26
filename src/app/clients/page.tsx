@@ -69,7 +69,7 @@ export default function ClientsPage() {
           {clients.length === 0 && <li className="p-3 text-sm text-slate-500">Aucun client</li>}
         </ul>
       )}
-      {canCreate && <ClientForm open={formOpen} onOpenChange={setFormOpen} onCreated={reload} />}
+      {canCreate && <ClientForm mode="create" open={formOpen} onOpenChange={setFormOpen} onSaved={reload} />}
     </div>
   )
 }

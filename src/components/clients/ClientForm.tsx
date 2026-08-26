@@ -6,18 +6,19 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
-export function ClientForm({
-  open,
-  onOpenChange,
-  onCreated,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onCreated: () => void
-}) {
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
+export type EditableClient = { id: string; name: string; phone: string | null; email: string | null }
+
+type ClientFormProps =
+  | { mode: 'create'; open: boolean; onOpenChange: (open: boolean) => void; onSaved: () => void }
+  | { mode: 'edit'; client: EditableClient; open: boolean; onOpenChange: (open: boolean) => void; onSaved: () => void }
+
+export function ClientForm(props: ClientFormProps) {
+  const { mode, open, onOpenChange, onSaved } = props
+  const initial = mode === 'edit' ? props.client : null
+
+  const [name, setName] = useState(initial?.name ?? '')
+  const [phone, setPhone] = useState(initial?.phone ?? '')
+  const [email, setEmail] = useState(initial?.email ?? '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,8 +28,10 @@ export function ClientForm({
     setSubmitting(true)
     setError(null)
     try {
-      const res = await fetch('/api/clients', {
-        method: 'POST',
+      const url = mode === 'create' ? '/api/clients' : `/api/clients/${props.client.id}`
+      const method = mode === 'create' ? 'POST' : 'PATCH'
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: trimmedName,
@@ -37,13 +40,15 @@ export function ClientForm({
         }),
       })
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
-      setName('')
-      setPhone('')
-      setEmail('')
+      if (mode === 'create') {
+        setName('')
+        setPhone('')
+        setEmail('')
+      }
       onOpenChange(false)
-      onCreated()
+      onSaved()
     } catch {
-      setError('Erreur lors de la création du client')
+      setError(mode === 'create' ? 'Erreur lors de la création du client' : 'Erreur lors de la modification du client')
     } finally {
       setSubmitting(false)
     }
@@ -52,7 +57,7 @@ export function ClientForm({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>Nouveau client</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{mode === 'create' ? 'Nouveau client' : 'Modifier le client'}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="space-y-1">
@@ -68,7 +73,7 @@ export function ClientForm({
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <Button onClick={submit} className="w-full" disabled={submitting || !name.trim()}>
-            {submitting ? 'Création…' : 'Créer'}
+            {submitting ? 'Enregistrement…' : mode === 'create' ? 'Créer' : 'Enregistrer'}
           </Button>
         </div>
       </DialogContent>
