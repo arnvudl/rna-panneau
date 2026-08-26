@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const billboard = await prisma.billboard.findUnique({
     where: { id: params.id },
     include: {
-      contracts: { include: { client: true }, orderBy: { startDate: 'desc' } },
+      occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
     },
   })
@@ -27,11 +27,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         sides: billboard.sides,
         status: deriveBillboardStatus(billboard),
         currentPhotoUrl: billboard.currentPhotoUrl,
-        contracts: billboard.contracts.map((c) => ({
-          clientName: c.client.name,
-          startDate: c.startDate.toLocaleDateString('fr-FR'),
-          endDate: c.endDate.toLocaleDateString('fr-FR'),
-          amount: c.amount,
+        permitNumber: billboard.permitNumber,
+        taxPaymentRef: billboard.taxPaymentRef,
+        occupancies: billboard.occupancies.map((o) => ({
+          clientName: o.client.name,
+          face: o.face,
+          contractRef: o.contractRef,
+          endDate: o.endDate ? o.endDate.toLocaleDateString('fr-FR') : null,
         })),
         maintenanceRecords: billboard.maintenanceRecords.map((m) => ({
           date: m.date.toLocaleDateString('fr-FR'),
