@@ -35,8 +35,11 @@ export function ClientForm(props: ClientFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: trimmedName,
-          phone: phone.trim() || undefined,
-          email: email.trim() || undefined,
+          // In edit mode, an emptied field must clear the existing value
+          // (send null); in create mode there's nothing to clear, so an
+          // omitted key (undefined) is correct there.
+          phone: phone.trim() || (mode === 'edit' ? null : undefined),
+          email: email.trim() || (mode === 'edit' ? null : undefined),
         }),
       })
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`)

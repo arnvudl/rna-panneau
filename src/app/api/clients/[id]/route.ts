@@ -17,8 +17,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 const patchSchema = z.object({
   name: z.string().min(1).optional(),
-  phone: z.string().trim().optional(),
-  email: z.string().trim().email().optional().or(z.literal('')),
+  phone: z.string().trim().nullable().optional(),
+  email: z.string().trim().email().or(z.literal('')).nullable().optional(),
 })
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
