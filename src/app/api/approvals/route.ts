@@ -23,15 +23,17 @@ async function attachResolvedNames<
   const billboardIds = new Set<string>()
   const clientIds = new Set<string>()
   const occupancyIds = new Set<string>()
+  const photoIds = new Set<string>()
 
   for (const r of requests) {
     const data = (r.payload ?? {}) as Record<string, unknown>
     if (typeof data.billboardId === 'string') billboardIds.add(data.billboardId)
     if (typeof data.clientId === 'string') clientIds.add(data.clientId)
     if (typeof data.occupancyId === 'string') occupancyIds.add(data.occupancyId)
+    if (typeof data.photoId === 'string') photoIds.add(data.photoId)
   }
 
-  const [billboards, clients, occupancies] = await Promise.all([
+  const [billboards, clients, occupancies, photos] = await Promise.all([
     billboardIds.size
       ? prisma.billboard.findMany({
           where: { id: { in: Array.from(billboardIds) } },
@@ -54,7 +56,17 @@ async function attachResolvedNames<
           },
         })
       : Promise.resolve([]),
+    photoIds.size
+      ? prisma.billboardPhoto.findMany({
+          where: { id: { in: Array.from(photoIds) } },
+          select: { id: true, filename: true, billboard: { select: { reference: true } } },
+        })
+      : Promise.resolve([]),
   ])
+
+  const photoMap = new Map(
+    photos.map((p) => [p.id, `${p.billboard.reference} — ${p.filename}`])
+  )
 
   const billboardMap = new Map(billboards.map((b) => [b.id, b.reference]))
   const clientMap = new Map(clients.map((c) => [c.id, c.name]))
@@ -76,6 +88,10 @@ async function attachResolvedNames<
     if (typeof data.occupancyId === 'string') {
       const name = occupancyMap.get(data.occupancyId)
       if (name) resolvedNames.occupancyId = name
+    }
+    if (typeof data.photoId === 'string') {
+      const name = photoMap.get(data.photoId)
+      if (name) resolvedNames.photoId = name
     }
     return { ...r, resolvedNames }
   })

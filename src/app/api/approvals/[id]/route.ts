@@ -87,6 +87,35 @@ async function applyApproval(
     case 'DELETE_BILLBOARD':
       await tx.billboard.delete({ where: { id: data.billboardId as string } })
       break
+    case 'EDIT_BILLBOARD': {
+      const { billboardId, ...fields } = data
+      await tx.billboard.update({
+        where: { id: billboardId as string },
+        data: fields as Record<string, unknown>,
+      })
+      break
+    }
+    case 'EDIT_CLIENT': {
+      const { clientId, ...fields } = data
+      await tx.client.update({
+        where: { id: clientId as string },
+        data: fields as Record<string, unknown>,
+      })
+      break
+    }
+    case 'DELETE_PHOTO': {
+      const photo = await tx.billboardPhoto.findUnique({
+        where: { id: data.photoId as string },
+      })
+      if (photo) {
+        const { unlink } = await import('fs/promises')
+        const pathMod = await import('path')
+        const uploadsDir = process.env.UPLOADS_DIR ?? './uploads'
+        await unlink(pathMod.join(uploadsDir, 'photos', photo.filename)).catch(() => {})
+        await tx.billboardPhoto.delete({ where: { id: data.photoId as string } })
+      }
+      break
+    }
     case 'DELETE_CLIENT': {
       // Plain Error (not a Prisma error) deliberately bypasses the
       // PrismaClientKnownRequestError branch below and surfaces as a 500,
