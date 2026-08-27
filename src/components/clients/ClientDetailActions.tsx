@@ -8,15 +8,11 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
 import { ClientForm, type EditableClient } from '@/components/clients/ClientForm'
 
 export function ClientDetailActions({ client }: { client: EditableClient }) {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
 
-  const canEdit = status === 'authenticated' && session?.user?.role !== 'USER'
-
-  // Any authenticated role may trigger deletion — the API itself routes USER
-  // requests to the approval queue instead of deleting directly.
   if (status !== 'authenticated') return null
 
   const deleteClient = async () => {
@@ -30,20 +26,16 @@ export function ClientDetailActions({ client }: { client: EditableClient }) {
 
   return (
     <div className="flex gap-2">
-      {canEdit && (
-        <>
-          <Button variant="outline" onClick={() => setEditOpen(true)}>
-            Modifier
-          </Button>
-          <ClientForm
-            mode="edit"
-            client={client}
-            open={editOpen}
-            onOpenChange={setEditOpen}
-            onSaved={() => router.refresh()}
-          />
-        </>
-      )}
+      <Button variant="outline" onClick={() => setEditOpen(true)}>
+        Modifier
+      </Button>
+      <ClientForm
+        mode="edit"
+        client={client}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSaved={() => router.refresh()}
+      />
       <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
         Supprimer
       </Button>

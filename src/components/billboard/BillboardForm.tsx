@@ -93,19 +93,21 @@ export function BillboardForm(props: BillboardFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
-
-      if (mode === 'create') {
-        setCity('')
-        setDimension('D4X3')
-        setSides(1)
-        setLat('')
-        setLng('')
-        setPermitNumber('')
-        setTaxPaymentRef('')
+      if (res.status === 202 || res.ok) {
+        if (mode === 'create') {
+          setCity('')
+          setDimension('D4X3')
+          setSides(1)
+          setLat('')
+          setLng('')
+          setPermitNumber('')
+          setTaxPaymentRef('')
+        }
+        onOpenChange(false)
+        onSaved()
+        return
       }
-      onOpenChange(false)
-      onSaved()
+      throw new Error(`Request failed with status ${res.status}`)
     } catch {
       setError(mode === 'create' ? 'Erreur lors de la création du panneau' : 'Erreur lors de la modification du panneau')
     } finally {

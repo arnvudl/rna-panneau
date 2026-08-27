@@ -7,12 +7,11 @@ import { Button } from '@/components/ui/button'
 import { BillboardForm, type EditableBillboard } from '@/components/billboard/BillboardForm'
 
 export function BillboardDetailActions({ billboard }: { billboard: EditableBillboard }) {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [open, setOpen] = useState(false)
 
-  const canEdit = status === 'authenticated' && session?.user?.role !== 'USER'
-  if (!canEdit) return null
+  if (status !== 'authenticated') return null
 
   return (
     <>

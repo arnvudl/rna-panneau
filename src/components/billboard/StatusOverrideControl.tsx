@@ -21,8 +21,7 @@ export function StatusOverrideControl({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const isAdmin = status === 'authenticated' && session?.user?.role !== 'USER'
-  if (!isAdmin) return null
+  if (status !== 'authenticated') return null
 
   const set = async (value: string | null) => {
     setSubmitting(true)

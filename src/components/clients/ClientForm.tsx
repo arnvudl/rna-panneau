@@ -42,14 +42,17 @@ export function ClientForm(props: ClientFormProps) {
           email: email.trim() || (mode === 'edit' ? null : undefined),
         }),
       })
-      if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
-      if (mode === 'create') {
-        setName('')
-        setPhone('')
-        setEmail('')
+      if (res.status === 202 || res.ok) {
+        if (mode === 'create') {
+          setName('')
+          setPhone('')
+          setEmail('')
+        }
+        onOpenChange(false)
+        onSaved()
+        return
       }
-      onOpenChange(false)
-      onSaved()
+      throw new Error(`Request failed with status ${res.status}`)
     } catch {
       setError(mode === 'create' ? 'Erreur lors de la création du client' : 'Erreur lors de la modification du client')
     } finally {
