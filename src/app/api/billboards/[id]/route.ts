@@ -22,7 +22,6 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 const patchSchema = z.object({
   damaged: z.boolean().optional(),
-  currentPhotoUrl: z.string().url().optional(),
   city: z.string().trim().min(1).optional(),
   dimension: z.enum(['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']).optional(),
   sides: z.union([z.literal(1), z.literal(2)]).optional(),
@@ -37,17 +36,6 @@ const patchSchema = z.object({
   taxPaymentRef: z.string().trim().max(200).nullable().optional(),
 })
 
-const RESTRICTED_FIELDS = [
-  'city',
-  'dimension',
-  'sides',
-  'statusOverride',
-  'lat',
-  'lng',
-  'permitNumber',
-  'taxPaymentRef',
-] as const
-
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireSession()
   if (error) return error
@@ -55,13 +43,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const parsed = parseOrBadRequest(patchSchema, await req.json())
   if ('error' in parsed) return parsed.error
 
-  // USER role may only update the photo (part of "add photo" workflow) or the
-  // damaged flag; editing core billboard attributes is more sensitive and
-  // requires DEV/ADMIN. The identifier itself (`reference`) is never in this
-  // schema at all — no role can change it once generated at creation.
-  const touchesRestrictedField = RESTRICTED_FIELDS.some((field) => field in parsed.data)
-  if (touchesRestrictedField && session.user.role === 'USER') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (session.user.role === 'USER') {
+    return createApprovalRequest(session, 'EDIT_BILLBOARD', {
+      billboardId: params.id,
+      ...parsed.data,
+    })
   }
 
   const billboard = await prisma.billboard.update({ where: { id: params.id }, data: parsed.data })

@@ -39,10 +39,6 @@ const createSchema = z.object({
 export async function POST(req: NextRequest) {
   const { session, error } = await requireSession()
   if (error) return error
-  if (session.user.role === 'USER') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const parsed = parseOrBadRequest(createSchema, await req.json())
   if ('error' in parsed) return parsed.error
   const body = parsed.data
