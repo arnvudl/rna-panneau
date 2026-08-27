@@ -17,26 +17,36 @@ export default function DatabasePage() {
   const [formOpen, setFormOpen] = useState(false)
 
   return (
-    <div className="relative flex h-[calc(100vh-56px)] flex-col">
+    <div className="flex h-[calc(100vh-56px)] flex-col gap-6 bg-slate-50 p-6">
       {error && (
-        <div className="border-b bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+          {error}
+        </div>
       )}
+      
       <div className="flex items-center justify-between">
-        <FilterBar filters={filters} onChange={setFilters} />
-        <div className="px-4">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Base de données</h1>
+        <div className="flex items-center gap-4">
           <ExportParkPdfButton filters={filters} />
+          <Button onClick={() => setFormOpen(true)} className="shadow-sm">
+            + Ajouter un panneau
+          </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-auto">
-        {loading ? (
-          <div className="flex h-full items-center justify-center text-sm text-slate-500">Chargement…</div>
-        ) : (
-          <BillboardTable rows={billboards} onSelect={(id) => router.push(`/billboards/${id}`)} />
-        )}
+      
+      <div className="flex flex-1 flex-col overflow-hidden rounded-xl border bg-white shadow-sm">
+        <FilterBar filters={filters} onChange={setFilters} />
+        <div className="flex-1 overflow-auto">
+          {loading ? (
+            <div className="flex h-full items-center justify-center text-sm font-medium text-slate-500">
+              Chargement des données…
+            </div>
+          ) : (
+            <BillboardTable rows={billboards} onSelect={(id) => router.push(`/billboards/${id}`)} />
+          )}
+        </div>
       </div>
-      <Button className="absolute bottom-6 right-6" onClick={() => setFormOpen(true)}>
-        + Ajouter un panneau
-      </Button>
+
       <BillboardForm mode="create" open={formOpen} onOpenChange={setFormOpen} initialLatLng={null} onSaved={reload} />
       <StatusLegend />
     </div>

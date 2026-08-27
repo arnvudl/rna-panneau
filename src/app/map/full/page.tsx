@@ -25,11 +25,29 @@ export default function MapFullPage() {
   const selected = billboards.find((b) => b.id === selectedId) ?? null
 
   return (
-    <div className="relative flex h-[calc(100vh-56px)] flex-col">
+    <div className="flex h-[calc(100vh-56px)] flex-col bg-slate-50">
       {error && (
-        <div className="border-b bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
+        <div className="border-b border-red-200 bg-red-50 px-6 py-2 text-sm font-medium text-red-700">
+          {error}
+        </div>
       )}
-      <FilterBar filters={filters} onChange={setFilters} />
+
+      {/* Solid Top Bar for Filters and Actions */}
+      <div className="flex flex-col border-b bg-white shadow-sm sm:flex-row sm:items-center sm:justify-between pr-0 sm:pr-6 z-10">
+        <div className="flex-1 overflow-x-auto">
+          <FilterBar filters={filters} onChange={setFilters} className="border-b-0 bg-transparent" />
+        </div>
+        <div className="p-4 sm:p-0">
+          <Button
+            onClick={() => { setPendingLatLng({ lat: -19, lng: 47 }); setFormOpen(true) }}
+            className="w-full sm:w-auto shadow-sm"
+          >
+            + Ajouter un panneau
+          </Button>
+        </div>
+      </div>
+
+      {/* Map Area */}
       <div className="relative flex-1">
         <BillboardMap
           billboards={billboards}
@@ -38,20 +56,21 @@ export default function MapFullPage() {
           onMapRightClick={(latLng) => { setPendingLatLng(latLng); setFormOpen(true) }}
         />
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/60 text-sm text-slate-500">
-            Chargement…
+          <div className="absolute inset-0 flex items-center justify-center bg-white/40 text-sm font-medium text-slate-700 backdrop-blur-sm">
+            <span className="rounded-lg bg-white px-4 py-2 shadow-sm">Chargement de la carte…</span>
           </div>
         )}
+
+        {/* Bottom Floating Legend */}
+        <div className="pointer-events-none absolute bottom-6 left-6 z-10 hidden sm:block">
+          <div className="pointer-events-auto rounded-lg border bg-white/95 shadow-md backdrop-blur-sm">
+            <StatusLegend />
+          </div>
+        </div>
       </div>
-      <Button
-        className="absolute bottom-6 right-6"
-        onClick={() => { setPendingLatLng({ lat: -19, lng: 47 }); setFormOpen(true) }}
-      >
-        + Ajouter un panneau
-      </Button>
+
       <BillboardDrawer billboard={selected} open={drawerOpen} onOpenChange={setDrawerOpen} />
       <BillboardForm mode="create" open={formOpen} onOpenChange={setFormOpen} initialLatLng={pendingLatLng} onSaved={reload} />
-      <StatusLegend />
     </div>
   )
 }

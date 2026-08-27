@@ -6,11 +6,11 @@ import { signOut, useSession } from 'next-auth/react'
 import { NotificationBell } from '@/components/layout/NotificationBell'
 
 const LINKS = [
-  { href: '/map', label: 'Carte + BD' },
-  { href: '/map/full', label: 'Carte' },
-  { href: '/database', label: 'Base de données' },
+  { href: '/dashboard', label: 'Tableau de bord' },
+  { href: '/map', label: 'Vue Globale (Carte + Table)' },
+  { href: '/map/full', label: 'Carte interactive' },
+  { href: '/database', label: 'Inventaire' },
   { href: '/clients', label: 'Clients' },
-  { href: '/dashboard', label: 'Dashboard' },
 ]
 
 export function Nav() {
@@ -21,32 +21,38 @@ export function Nav() {
   const isAdmin = status === 'authenticated' && session?.user?.role !== 'USER'
 
   return (
-    <nav className="flex h-14 items-center justify-between gap-6 border-b bg-blue-900 px-4 text-white shadow-sm">
-      <div className="flex items-center gap-6">
-        <span className="font-semibold tracking-tight">RNA</span>
-        <div className="flex items-center gap-4">
+    <nav className="flex h-14 items-center justify-between gap-6 border-b bg-white px-6 shadow-sm">
+      <div className="flex h-full items-center gap-8">
+        <span className="text-lg font-bold tracking-tight text-primary">RNA</span>
+        <div className="flex h-full items-center gap-6">
           {LINKS.map((l) => {
-            const active = pathname === l.href || pathname?.startsWith(`${l.href}/`)
+            const active = pathname === l.href || (l.href !== '/map' && pathname?.startsWith(`${l.href}/`))
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`text-sm transition-colors ${
-                  active ? 'font-semibold text-white underline underline-offset-4' : 'text-blue-100 hover:text-white'
+                className={`relative flex h-full items-center text-sm font-medium transition-colors ${
+                  active ? 'text-primary' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 {l.label}
+                {active && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                )}
               </Link>
             )
           })}
           {isAdmin && (
             <Link
               href="/settings/city-prefixes"
-              className={`text-sm transition-colors ${
-                pathname?.startsWith('/settings') ? 'font-semibold text-white underline underline-offset-4' : 'text-blue-100 hover:text-white'
+              className={`relative flex h-full items-center text-sm font-medium transition-colors ${
+                pathname?.startsWith('/settings') ? 'text-primary' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               Réglages
+              {pathname?.startsWith('/settings') && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+              )}
             </Link>
           )}
         </div>
@@ -55,7 +61,7 @@ export function Nav() {
         {status === 'authenticated' && <NotificationBell />}
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="text-sm text-blue-100 transition-colors hover:text-white"
+          className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
         >
           Déconnexion
         </button>

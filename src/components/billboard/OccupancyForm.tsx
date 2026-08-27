@@ -100,17 +100,29 @@ export function OccupancyForm({
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="space-y-1">
             <Label>Client</Label>
-            <Input placeholder="Rechercher un client…" onChange={(e) => loadClients(e.target.value)} />
-            <Select
-              items={Object.fromEntries(clients.map((c) => [c.id, c.name]))}
-              value={clientId}
-              onValueChange={(v: string | null) => v && setClientId(v)}
-            >
-              <SelectTrigger><SelectValue placeholder="Sélectionner un client" /></SelectTrigger>
-              <SelectContent>
-                {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <div className="rounded-lg border bg-slate-50 p-3 space-y-3 shadow-sm">
+              <Input 
+                placeholder="Tapez pour rechercher un client…" 
+                onChange={(e) => loadClients(e.target.value)} 
+                className="bg-white shadow-sm"
+              />
+              <Select
+                items={Object.fromEntries(clients.map((c) => [c.id, c.name]))}
+                value={clientId}
+                onValueChange={(v: string | null) => v && setClientId(v)}
+              >
+                <SelectTrigger className="w-full bg-white shadow-sm">
+                  <SelectValue placeholder="Sélectionnez un client dans la liste" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.length === 0 ? (
+                    <SelectItem value="empty" disabled>Aucun client trouvé</SelectItem>
+                  ) : (
+                    clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           {sides === 2 && (
             <div className="space-y-1">

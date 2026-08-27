@@ -51,9 +51,11 @@ export function BillboardTable({
           <TableRow
             key={r.id}
             onClick={() => onSelect(r.id)}
-            className={`cursor-pointer transition-colors hover:bg-slate-50 ${selectedId === r.id ? 'bg-blue-50 hover:bg-blue-50' : ''}`}
+            className={`cursor-pointer transition-all hover:bg-slate-50/80 ${
+              selectedId === r.id ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'
+            }`}
           >
-            <TableCell className="font-medium">{r.reference}</TableCell>
+            <TableCell className="font-semibold text-slate-700 pl-4">{r.reference}</TableCell>
             <TableCell>{r.city}</TableCell>
             <TableCell>{r.dimension.replace('D', '').replace('X', 'x')}</TableCell>
             <TableCell>

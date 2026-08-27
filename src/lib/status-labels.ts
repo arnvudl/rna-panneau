@@ -10,13 +10,13 @@ export const STATUS_LABELS: Record<BillboardStatus, string> = {
 
 export const STATUS_BADGE_VARIANTS: Record<
   BillboardStatus,
-  'default' | 'secondary' | 'destructive' | 'outline'
+  'available' | 'rented' | 'expiring' | 'destructive' | 'maintenance'
 > = {
-  AVAILABLE: 'secondary',
-  RENTED: 'default',
-  EXPIRING_SOON: 'outline',
+  AVAILABLE: 'available',
+  RENTED: 'rented',
+  EXPIRING_SOON: 'expiring',
   EXPIRED: 'destructive',
-  MAINTENANCE: 'outline',
+  MAINTENANCE: 'maintenance',
 }
 
 // Hex colors for non-Tailwind contexts (map markers, inline styles).

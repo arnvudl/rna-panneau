@@ -22,30 +22,41 @@ export default function MapPage() {
   const selected = billboards.find((b) => b.id === selectedId) ?? null
 
   return (
-    <div className="flex h-[calc(100vh-56px)] flex-col">
+    <div className="flex h-[calc(100vh-56px)] flex-col gap-6 bg-slate-50 p-6">
       {error && (
-        <div className="border-b bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+          {error}
+        </div>
       )}
-      <FilterBar filters={filters} onChange={setFilters} />
-      <div className="flex flex-1 overflow-hidden">
-        <div className="relative w-1/2 border-r">
+      
+      <div className="flex flex-1 gap-6 overflow-hidden">
+        {/* MAP CONTAINER */}
+        <div className="relative flex w-1/2 flex-col overflow-hidden rounded-xl border bg-white shadow-sm">
           <BillboardMap billboards={billboards} onSelect={select} selectedId={selectedId} />
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/60 text-sm text-slate-500">
-              Chargement…
+            <div className="absolute inset-0 flex items-center justify-center bg-white/60 text-sm font-medium text-slate-500 backdrop-blur-sm">
+              Chargement de la carte…
             </div>
           )}
+          <StatusLegend />
         </div>
-        <div className="w-1/2 overflow-auto">
-          {loading ? (
-            <div className="flex h-full items-center justify-center text-sm text-slate-500">Chargement…</div>
-          ) : (
-            <BillboardTable rows={billboards} onSelect={select} selectedId={selectedId} />
-          )}
+
+        {/* TABLE CONTAINER */}
+        <div className="flex w-1/2 flex-col overflow-hidden rounded-xl border bg-white shadow-sm">
+          <FilterBar filters={filters} onChange={setFilters} />
+          <div className="flex-1 overflow-auto">
+            {loading ? (
+              <div className="flex h-full items-center justify-center text-sm font-medium text-slate-500">
+                Chargement des données…
+              </div>
+            ) : (
+              <BillboardTable rows={billboards} onSelect={select} selectedId={selectedId} />
+            )}
+          </div>
         </div>
       </div>
+      
       <BillboardDrawer billboard={selected} open={drawerOpen} onOpenChange={setDrawerOpen} />
-      <StatusLegend />
     </div>
   )
 }
