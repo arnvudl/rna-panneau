@@ -24,10 +24,16 @@ const patchSchema = z.object({
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireSession()
   if (error) return error
-  if (session.user.role === 'USER') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const parsed = parseOrBadRequest(patchSchema, await req.json())
   if ('error' in parsed) return parsed.error
+
+  if (session.user.role === 'USER') {
+    return createApprovalRequest(session, 'EDIT_CLIENT', {
+      clientId: params.id,
+      ...parsed.data,
+    })
+  }
 
   const client = await prisma.client.update({ where: { id: params.id }, data: parsed.data })
   return NextResponse.json(client)
