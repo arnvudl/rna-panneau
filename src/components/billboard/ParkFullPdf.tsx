@@ -1,0 +1,111 @@
+import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer'
+
+const styles = StyleSheet.create({
+  page: { padding: 32, fontSize: 11, fontFamily: 'Helvetica' },
+  title: { fontSize: 18, marginBottom: 12, color: '#1e3a8a' },
+  section: { marginBottom: 16 },
+  label: { color: '#64748b', fontSize: 9 },
+  photo: { width: '100%', height: 200, objectFit: 'cover', marginBottom: 12 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+  sectionTitle: { fontSize: 14, marginBottom: 8, color: '#1e3a8a' },
+  footer: { position: 'absolute', bottom: 16, right: 32, fontSize: 8, color: '#94a3b8' },
+})
+
+export type ParkFullBillboard = {
+  reference: string
+  city: string
+  dimension: string
+  sides: number
+  status: string
+  photoUrl: string | null
+  permitNumber: string | null
+  taxPaymentRef: string | null
+  occupancies: {
+    clientName: string
+    face: string
+    contractRef: string | null
+    endDate: string | null
+  }[]
+  maintenanceRecords: { date: string; type: string; comment: string | null }[]
+}
+
+export function ParkFullPdf({
+  billboards,
+  generatedAt,
+}: {
+  billboards: ParkFullBillboard[]
+  generatedAt: string
+}) {
+  return (
+    <Document>
+      {billboards.map((data, i) => (
+        <Page key={i} size="A4" style={styles.page}>
+          <Text style={styles.title}>{data.reference}</Text>
+          {data.photoUrl && <Image src={data.photoUrl} style={styles.photo} />}
+
+          <View style={styles.section}>
+            <View style={styles.row}>
+              <Text style={styles.label}>Ville</Text>
+              <Text>{data.city}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Dimensions</Text>
+              <Text>{data.dimension}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Faces</Text>
+              <Text>{data.sides}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Statut</Text>
+              <Text>{data.status}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Autorisation</Text>
+              <Text>{data.permitNumber ?? '—'}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Taxe communale</Text>
+              <Text>{data.taxPaymentRef ?? 'Non payée'}</Text>
+            </View>
+          </View>
+
+          {data.occupancies.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Contrats</Text>
+              {data.occupancies.map((o, j) => (
+                <View key={j} style={styles.row}>
+                  <Text>
+                    {o.face} — {o.clientName}
+                  </Text>
+                  <Text>
+                    {o.contractRef ?? 'Sans référence'}
+                    {o.endDate ? ` (jusqu'au ${o.endDate})` : ''}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {data.maintenanceRecords.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Entretien</Text>
+              {data.maintenanceRecords.map((m, j) => (
+                <View key={j} style={styles.row}>
+                  <Text>
+                    {m.date} — {m.type}
+                  </Text>
+                  <Text>{m.comment ?? ''}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <Text style={styles.footer}>
+            Généré le {generatedAt} — {i + 1}/{billboards.length}
+          </Text>
+        </Page>
+      ))}
+    </Document>
+  )
+}
