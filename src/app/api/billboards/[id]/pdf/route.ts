@@ -14,6 +14,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     include: {
       occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
+      photos: { orderBy: { createdAt: 'desc' }, take: 1 },
     },
   })
   if (!billboard) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -26,7 +27,9 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         dimension: billboard.dimension,
         sides: billboard.sides,
         status: deriveBillboardStatus(billboard),
-        currentPhotoUrl: billboard.currentPhotoUrl,
+        photoUrl: billboard.photos[0]
+          ? `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/uploads/${billboard.photos[0].filename}`
+          : null,
         permitNumber: billboard.permitNumber,
         taxPaymentRef: billboard.taxPaymentRef,
         occupancies: billboard.occupancies.map((o) => ({
