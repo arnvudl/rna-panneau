@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
+import { NotificationBell } from '@/components/layout/NotificationBell'
 
 const LINKS = [
   { href: '/map', label: 'Carte + BD' },
@@ -50,12 +51,15 @@ export function Nav() {
           )}
         </div>
       </div>
-      <button
-        onClick={() => signOut({ callbackUrl: '/login' })}
-        className="text-sm text-blue-100 transition-colors hover:text-white"
-      >
-        Déconnexion
-      </button>
+      <div className="flex items-center gap-3">
+        {status === 'authenticated' && <NotificationBell />}
+        <button
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          className="text-sm text-blue-100 transition-colors hover:text-white"
+        >
+          Déconnexion
+        </button>
+      </div>
     </nav>
   )
 }

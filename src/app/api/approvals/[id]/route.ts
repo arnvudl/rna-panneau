@@ -4,6 +4,7 @@ import { Prisma, type ApprovalType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest } from '@/lib/api-helpers'
 import { isFaceAvailable } from '@/lib/face-occupancy'
+import { createNotification } from '@/lib/notifications'
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 
@@ -29,6 +30,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         data: { status: decision, reviewedById: session.user.id, reviewedAt: new Date() },
       })
     })
+
+    const statusLabel = decision === 'APPROVED' ? 'approuvée' : 'rejetée'
+    await createNotification({
+      userId: approval.requestedById,
+      type: 'APPROVAL_RESULT',
+      title: `Demande ${statusLabel}`,
+      message: `Votre demande a été ${statusLabel} par ${session.user.email}`,
+      linkUrl: '/dashboard',
+    })
+
     return NextResponse.json(updated)
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {

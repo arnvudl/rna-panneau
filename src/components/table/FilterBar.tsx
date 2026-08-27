@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { STATUS_LABELS } from '@/lib/status-labels'
 import type { BillboardStatus } from '@/lib/status'
 
@@ -10,9 +9,8 @@ export type Filters = { status?: string; city?: string; dimension?: string; dama
 const STATUSES: BillboardStatus[] = ['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EXPIRED', 'MAINTENANCE']
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
-function normalize(v: string | null): string | undefined {
-  return v === 'all' || v === null ? undefined : v
-}
+const selectClass =
+  'h-9 rounded-md border border-slate-200 bg-white px-3 pr-8 text-sm text-slate-700 shadow-sm outline-none transition-colors hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer bg-[url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27none%27%20stroke%3D%27%2394a3b8%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M4%206l4%204%204-4%27/%3E%3C/svg%3E")] bg-[length:16px] bg-[right_8px_center] bg-no-repeat'
 
 export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (f: Filters) => void }) {
   const [clients, setClients] = useState<{ id: string; name: string }[]>([])
@@ -24,70 +22,60 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
   }, [])
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b bg-white px-4 py-3">
-      <Select
-        items={{ all: 'Toutes les villes', ...Object.fromEntries(cities.map((c) => [c.city, c.city])) }}
-        value={filters.city ?? 'all'}
-        onValueChange={(v: string | null) => onChange({ ...filters, city: normalize(v) })}
+    <div className="flex flex-wrap items-center gap-2 border-b bg-slate-50/80 px-4 py-2.5">
+      <select
+        className={selectClass}
+        value={filters.city ?? ''}
+        onChange={(e) => onChange({ ...filters, city: e.target.value || undefined })}
       >
-        <SelectTrigger className="w-44"><SelectValue placeholder="Ville" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Toutes les villes</SelectItem>
-          {cities.map((c) => <SelectItem key={c.city} value={c.city}>{c.city}</SelectItem>)}
-        </SelectContent>
-      </Select>
+        <option value="">Toutes les villes</option>
+        {cities.map((c) => (
+          <option key={c.city} value={c.city}>{c.city}</option>
+        ))}
+      </select>
 
-      <Select
-        items={{ all: 'Tous les statuts', ...Object.fromEntries(STATUSES.map((s) => [s, STATUS_LABELS[s]])) }}
-        value={filters.status ?? 'all'}
-        onValueChange={(v: string | null) => onChange({ ...filters, status: normalize(v) })}
+      <select
+        className={selectClass}
+        value={filters.status ?? ''}
+        onChange={(e) => onChange({ ...filters, status: e.target.value || undefined })}
       >
-        <SelectTrigger className="w-44"><SelectValue placeholder="Statut" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Tous les statuts</SelectItem>
-          {STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>)}
-        </SelectContent>
-      </Select>
+        <option value="">Tous les statuts</option>
+        {STATUSES.map((s) => (
+          <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+        ))}
+      </select>
 
-      <Select
-        items={{
-          all: 'Toutes dimensions',
-          ...Object.fromEntries(DIMENSIONS.map((d) => [d, d.replace('D', '').replace('X', 'x')])),
-        }}
-        value={filters.dimension ?? 'all'}
-        onValueChange={(v: string | null) => onChange({ ...filters, dimension: normalize(v) })}
+      <select
+        className={selectClass}
+        value={filters.dimension ?? ''}
+        onChange={(e) => onChange({ ...filters, dimension: e.target.value || undefined })}
       >
-        <SelectTrigger className="w-36"><SelectValue placeholder="Dimension" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Toutes dimensions</SelectItem>
-          {DIMENSIONS.map((d) => <SelectItem key={d} value={d}>{d.replace('D', '').replace('X', 'x')}</SelectItem>)}
-        </SelectContent>
-      </Select>
+        <option value="">Toutes dimensions</option>
+        {DIMENSIONS.map((d) => (
+          <option key={d} value={d}>{d.replace('D', '').replace('X', 'x')}</option>
+        ))}
+      </select>
 
-      <Select
-        items={{ all: 'Tous', true: 'Endommagé', false: 'Non endommagé' }}
-        value={filters.damaged ?? 'all'}
-        onValueChange={(v: string | null) => onChange({ ...filters, damaged: normalize(v) })}
+      <select
+        className={selectClass}
+        value={filters.damaged ?? ''}
+        onChange={(e) => onChange({ ...filters, damaged: e.target.value || undefined })}
       >
-        <SelectTrigger className="w-40"><SelectValue placeholder="Endommagé" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Tous</SelectItem>
-          <SelectItem value="true">Endommagé</SelectItem>
-          <SelectItem value="false">Non endommagé</SelectItem>
-        </SelectContent>
-      </Select>
+        <option value="">Tous (État)</option>
+        <option value="true">Endommagé</option>
+        <option value="false">Bon état</option>
+      </select>
 
-      <Select
-        items={{ all: 'Tous les clients', ...Object.fromEntries(clients.map((c) => [c.id, c.name])) }}
-        value={filters.clientId ?? 'all'}
-        onValueChange={(v: string | null) => onChange({ ...filters, clientId: normalize(v) })}
+      <select
+        className={selectClass}
+        value={filters.clientId ?? ''}
+        onChange={(e) => onChange({ ...filters, clientId: e.target.value || undefined })}
       >
-        <SelectTrigger className="w-48"><SelectValue placeholder="Client" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Tous les clients</SelectItem>
-          {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-        </SelectContent>
-      </Select>
+        <option value="">Tous les clients</option>
+        {clients.map((c) => (
+          <option key={c.id} value={c.id}>{c.name}</option>
+        ))}
+      </select>
     </div>
   )
 }
