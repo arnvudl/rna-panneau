@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer'
+import type { PdfPhoto } from '@/lib/pdf-photo'
 
 const styles = StyleSheet.create({
   page: { padding: 32, fontSize: 11, fontFamily: 'Helvetica' },
@@ -17,7 +18,7 @@ export type ParkFullBillboard = {
   dimension: string
   sides: number
   status: string
-  photoUrl: string | null
+  photo: PdfPhoto | null
   permitNumber: string | null
   taxPaymentRef: string | null
   occupancies: {
@@ -41,7 +42,7 @@ export function ParkFullPdf({
       {billboards.map((data, i) => (
         <Page key={i} size="A4" style={styles.page}>
           <Text style={styles.title}>{data.reference}</Text>
-          {data.photoUrl && <Image src={data.photoUrl} style={styles.photo} />}
+          {data.photo && <Image src={data.photo} style={styles.photo} />}
 
           <View style={styles.section}>
             <View style={styles.row}>

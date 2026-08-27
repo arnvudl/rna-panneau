@@ -20,6 +20,19 @@ export async function POST(req: NextRequest) {
   if ('error' in parsed) return parsed.error
   const body = parsed.data
 
+  const [billboard, client] = await Promise.all([
+    prisma.billboard.findUnique({ where: { id: body.billboardId }, select: { sides: true } }),
+    prisma.client.findUnique({ where: { id: body.clientId }, select: { id: true } }),
+  ])
+  if (!billboard) return NextResponse.json({ error: 'Panneau introuvable' }, { status: 404 })
+  if (!client) return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
+  if (billboard.sides === 1 && body.face !== 'BOTH') {
+    return NextResponse.json(
+      { error: 'Un panneau à une seule face ne peut être loué que en entier' },
+      { status: 400 }
+    )
+  }
+
   if (session.user.role === 'USER') {
     // Contract for the approvals API: CREATE_OCCUPANCY payload is always
     // shaped as { billboardId: string, clientId: string, face: 'FACE_1' |

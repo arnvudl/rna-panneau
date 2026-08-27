@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 type Notification = {
   id: string
@@ -16,6 +17,8 @@ type Notification = {
 
 export function NotificationBell() {
   const router = useRouter()
+  const { data: session, status: sessionStatus } = useSession()
+  const isAdmin = sessionStatus === 'authenticated' && session?.user?.role !== 'USER'
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
@@ -32,12 +35,19 @@ export function NotificationBell() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/notifications/check-expirations', { method: 'POST' })
-      .catch(() => {})
-      .finally(fetchNotifications)
+    // Wait for the session so the admin-only expiration check (403 for USER)
+    // is only fired for admins.
+    if (sessionStatus !== 'authenticated') return
+    if (isAdmin) {
+      fetch('/api/notifications/check-expirations', { method: 'POST' })
+        .catch(() => {})
+        .finally(fetchNotifications)
+    } else {
+      fetchNotifications()
+    }
     const interval = setInterval(fetchNotifications, 30000)
     return () => clearInterval(interval)
-  }, [fetchNotifications])
+  }, [fetchNotifications, isAdmin, sessionStatus])
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -82,7 +92,7 @@ export function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-md p-1.5 text-blue-100 transition-colors hover:bg-blue-800 hover:text-white"
+        className="relative rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (

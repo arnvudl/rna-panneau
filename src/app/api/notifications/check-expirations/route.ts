@@ -26,13 +26,23 @@ export async function POST() {
 
   const today = now.toISOString().slice(0, 10)
 
+  // Single batched dedup query instead of one findFirst per occupancy.
+  const dedupKeys = expiring.map((occ) => `EXPIRING_${occ.id}_${today}`)
+  const alreadyNotified = new Set(
+    dedupKeys.length > 0
+      ? (
+          await prisma.notification.findMany({
+            where: { type: { in: dedupKeys } },
+            select: { type: true },
+          })
+        ).map((n) => n.type)
+      : []
+  )
+
   let created = 0
   for (const occ of expiring) {
     const dedupKey = `EXPIRING_${occ.id}_${today}`
-    const exists = await prisma.notification.findFirst({
-      where: { type: dedupKey },
-    })
-    if (exists) continue
+    if (alreadyNotified.has(dedupKey)) continue
 
     const daysLeft = Math.ceil((occ.endDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     await notifyAdmins({
@@ -43,6 +53,13 @@ export async function POST() {
     })
     created++
   }
+
+  // Retention: notifications accumulate forever otherwise. Read ones older
+  // than 60 days are safe to drop; this piggybacks on the periodic check.
+  const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
+  await prisma.notification.deleteMany({
+    where: { read: true, createdAt: { lt: sixtyDaysAgo } },
+  })
 
   return NextResponse.json({ checked: expiring.length, created })
 }

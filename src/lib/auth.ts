@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { authConfig } from '@/lib/auth.config'
+import { isLoginBlocked, recordFailedLogin, recordSuccessfulLogin } from '@/lib/login-rate-limit'
 
 // bcrypt's cost scales with input length; capping here keeps an oversized
 // payload from tying up the server before it ever reaches bcrypt.compare.
@@ -25,12 +26,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null
         const { email, password } = parsed.data
 
+        if (isLoginBlocked(email)) return null
+
         const user = await prisma.user.findUnique({ where: { email } })
-        if (!user) return null
+        if (!user) {
+          recordFailedLogin(email)
+          return null
+        }
 
         const valid = await bcrypt.compare(password, user.passwordHash)
-        if (!valid) return null
+        if (!valid) {
+          recordFailedLogin(email)
+          return null
+        }
 
+        recordSuccessfulLogin(email)
         return { id: user.id, email: user.email, role: user.role }
       },
     }),

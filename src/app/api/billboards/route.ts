@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     // scale (3 users, <500 billboards) a clean error is enough — no retry loop.
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       return NextResponse.json(
-        { error: 'Reference collision, please retry the request' },
+        { error: 'Collision de référence, veuillez réessayer' },
         { status: 409 }
       )
     }

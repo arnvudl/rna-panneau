@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -82,6 +83,13 @@ export function OccupancyForm({
       if (!res.ok) {
         const body = await res.json().catch(() => null)
         throw new Error(typeof body?.error === 'string' ? body.error : `Request failed with status ${res.status}`)
+      }
+      if (res.status === 202) {
+        toast.info("Demande d'approbation envoyée", {
+          description: 'Un administrateur doit valider la création de ce contrat.',
+        })
+      } else {
+        toast.success('Contrat créé')
       }
       onOpenChange(false)
       router.refresh()

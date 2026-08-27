@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { deriveBillboardStatus } from '@/lib/status'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
+import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireSession()
@@ -65,6 +66,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     return createApprovalRequest(session, 'DELETE_BILLBOARD', { billboardId: params.id })
   }
 
-  await prisma.billboard.delete({ where: { id: params.id } })
+  const existing = await prisma.billboard.findUnique({ where: { id: params.id }, select: { id: true } })
+  if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const filenames = await prisma.$transaction((tx) => deleteBillboardCascade(tx, params.id))
+  await removePhotoFiles(filenames)
   return NextResponse.json({ status: 'deleted' })
 }

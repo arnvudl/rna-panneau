@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { OccupancyForm } from '@/components/billboard/OccupancyForm'
 import { isFaceAvailable } from '@/lib/face-occupancy'
@@ -31,6 +32,13 @@ function OccupancyCard({ occupancy }: { occupancy: OccupancyPanelOccupancy }) {
         body: JSON.stringify({ status: 'TERMINATED' }),
       })
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+      if (res.status === 202) {
+        toast.info("Demande d'approbation envoyée", {
+          description: 'Un administrateur doit valider la résiliation.',
+        })
+      } else {
+        toast.success('Contrat résilié')
+      }
       router.refresh()
     } catch {
       setError('Erreur lors de la résiliation du contrat')

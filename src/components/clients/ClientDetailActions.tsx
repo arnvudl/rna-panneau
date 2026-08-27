@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
 import { ClientForm, type EditableClient } from '@/components/clients/ClientForm'
@@ -21,7 +22,15 @@ export function ClientDetailActions({ client }: { client: EditableClient }) {
       const body = await res.json().catch(() => null)
       throw new Error(typeof body?.error === 'string' ? body.error : `Request failed with status ${res.status}`)
     }
-    router.push('/clients')
+    if (res.status === 202) {
+      toast.info("Demande d'approbation envoyée", {
+        description: 'Un administrateur doit valider la suppression du client.',
+      })
+      router.refresh()
+    } else {
+      toast.success('Client supprimé')
+      router.push('/clients')
+    }
   }
 
   return (

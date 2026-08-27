@@ -24,8 +24,14 @@ export function FilterBar({ filters, onChange, className }: { filters: Filters; 
   const [cities, setCities] = useState<{ city: string; prefix: string }[]>([])
 
   useEffect(() => {
-    fetch('/api/clients').then((r) => r.json()).then(setClients)
-    fetch('/api/city-prefixes').then((r) => r.json()).then(setCities)
+    fetch('/api/clients')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setClients(Array.isArray(data) ? data : []))
+      .catch(() => {})
+    fetch('/api/city-prefixes')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setCities(Array.isArray(data) ? data : []))
+      .catch(() => {})
   }, [])
 
   return (

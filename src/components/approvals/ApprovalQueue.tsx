@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { APPROVAL_LABELS } from '@/lib/approval-labels'
+import type { ApprovalType } from '@prisma/client'
 
 type Approval = {
   id: string
@@ -123,7 +125,7 @@ export function ApprovalQueue() {
           {approvals.map((a) => (
             <li key={a.id} className="flex items-center justify-between rounded-lg border p-3">
               <div>
-                <p className="font-medium">{a.type}</p>
+                <p className="font-medium">{APPROVAL_LABELS[a.type as ApprovalType] ?? a.type}</p>
                 <p className="text-sm text-slate-500">Demandé par {a.requestedBy.email}</p>
                 <PayloadSummary payload={a.payload} resolvedNames={a.resolvedNames} />
               </div>

@@ -6,6 +6,7 @@ import { buildBillboardWhere } from '../where'
 import { requireSession } from '@/lib/api-helpers'
 import { ParkSummaryPdf, type ParkSummaryRow } from '@/components/billboard/ParkSummaryPdf'
 import { ParkFullPdf, type ParkFullBillboard } from '@/components/billboard/ParkFullPdf'
+import { loadPdfPhoto } from '@/lib/pdf-photo'
 
 export async function GET(req: NextRequest) {
   const { error } = await requireSession()
@@ -34,7 +35,6 @@ export async function GET(req: NextRequest) {
   const filtered = statusFilter ? withStatus.filter((b) => b.status === statusFilter) : withStatus
 
   const generatedAt = new Date().toLocaleDateString('fr-FR')
-  const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
 
   let buffer: Buffer
 
@@ -53,13 +53,14 @@ export async function GET(req: NextRequest) {
     }))
     buffer = await renderToBuffer(ParkSummaryPdf({ rows, generatedAt }))
   } else {
-    const data: ParkFullBillboard[] = filtered.map((b) => ({
+    const data: ParkFullBillboard[] = await Promise.all(
+      filtered.map(async (b) => ({
       reference: b.reference,
       city: b.city,
       dimension: b.dimension,
       sides: b.sides,
       status: b.status,
-      photoUrl: b.photos[0] ? `${baseUrl}/api/uploads/${b.photos[0].filename}` : null,
+      photo: b.photos[0] ? await loadPdfPhoto(b.photos[0].filename) : null,
       permitNumber: b.permitNumber,
       taxPaymentRef: b.taxPaymentRef,
       occupancies: b.occupancies.map((o) => ({
@@ -73,7 +74,8 @@ export async function GET(req: NextRequest) {
         type: m.type,
         comment: m.comment,
       })),
-    }))
+      }))
+    )
     buffer = await renderToBuffer(ParkFullPdf({ billboards: data, generatedAt }))
   }
 

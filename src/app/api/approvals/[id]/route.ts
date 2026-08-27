@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest } from '@/lib/api-helpers'
 import { isFaceAvailable } from '@/lib/face-occupancy'
 import { createNotification } from '@/lib/notifications'
+import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 
@@ -21,15 +22,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!approval) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   try {
-    const updated = await prisma.$transaction(async (tx) => {
+    const { updated, filesToRemove } = await prisma.$transaction(async (tx) => {
+      let filesToRemove: string[] = []
       if (decision === 'APPROVED') {
-        await applyApproval(tx, approval.type, approval.payload)
+        filesToRemove = (await applyApproval(tx, approval.type, approval.payload)) ?? []
       }
-      return tx.approvalRequest.update({
+      const updated = await tx.approvalRequest.update({
         where: { id: params.id },
         data: { status: decision, reviewedById: session.user.id, reviewedAt: new Date() },
       })
+      return { updated, filesToRemove }
     })
+
+    // File cleanup only after the transaction committed — a rollback must
+    // never leave DB rows pointing at already-deleted files.
+    if (filesToRemove.length > 0) await removePhotoFiles(filesToRemove)
 
     const statusLabel = decision === 'APPROVED' ? 'approuvée' : 'rejetée'
     await createNotification({
@@ -37,7 +44,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       type: 'APPROVAL_RESULT',
       title: `Demande ${statusLabel}`,
       message: `Votre demande a été ${statusLabel} par ${session.user.email}`,
-      linkUrl: '/dashboard',
+      // No linkUrl: the requester is a USER, and /dashboard is admin-only.
     })
 
     return NextResponse.json(updated)
@@ -52,11 +59,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
+/**
+ * Applies an approved request inside the transaction. Returns the photo
+ * filenames whose files must be removed from disk after commit (if any).
+ */
 async function applyApproval(
   tx: Prisma.TransactionClient,
   type: ApprovalType,
   payload: Prisma.JsonValue
-) {
+): Promise<string[] | undefined> {
   const data = payload as Record<string, unknown>
   switch (type) {
     case 'CREATE_OCCUPANCY': {
@@ -96,8 +107,7 @@ async function applyApproval(
       })
       break
     case 'DELETE_BILLBOARD':
-      await tx.billboard.delete({ where: { id: data.billboardId as string } })
-      break
+      return deleteBillboardCascade(tx, data.billboardId as string)
     case 'EDIT_BILLBOARD': {
       const { billboardId, ...fields } = data
       await tx.billboard.update({
@@ -119,11 +129,8 @@ async function applyApproval(
         where: { id: data.photoId as string },
       })
       if (photo) {
-        const { unlink } = await import('fs/promises')
-        const pathMod = await import('path')
-        const uploadsDir = process.env.UPLOADS_DIR ?? './uploads'
-        await unlink(pathMod.join(uploadsDir, 'photos', photo.filename)).catch(() => {})
-        await tx.billboardPhoto.delete({ where: { id: data.photoId as string } })
+        await tx.billboardPhoto.delete({ where: { id: photo.id } })
+        return [photo.filename]
       }
       break
     }

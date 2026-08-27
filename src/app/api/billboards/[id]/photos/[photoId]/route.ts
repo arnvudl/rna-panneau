@@ -25,8 +25,9 @@ export async function DELETE(
     })
   }
 
-  const filePath = path.join(UPLOADS_DIR, 'photos', photo.filename)
-  await unlink(filePath).catch(() => {})
+  // DB row first, file second: if the DB delete fails we must not have
+  // already removed the file the row still points at.
   await prisma.billboardPhoto.delete({ where: { id: params.photoId } })
+  await unlink(path.join(UPLOADS_DIR, 'photos', photo.filename)).catch(() => {})
   return NextResponse.json({ status: 'deleted' })
 }

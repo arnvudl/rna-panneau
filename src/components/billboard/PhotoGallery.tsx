@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { ImageOff, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -51,9 +52,13 @@ export function PhotoGallery({
         method: 'DELETE',
       })
       if (res.status === 202) {
-        setError('Demande de suppression envoyée pour approbation')
+        toast.info("Demande d'approbation envoyée", {
+          description: 'Un administrateur doit valider la suppression de la photo.',
+        })
       } else if (!res.ok) {
         throw new Error(`Delete failed (${res.status})`)
+      } else {
+        toast.success('Photo supprimée')
       }
       router.refresh()
     } catch (err) {

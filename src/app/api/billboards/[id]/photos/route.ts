@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto'
 import path from 'path'
 import { prisma } from '@/lib/prisma'
 import { requireSession } from '@/lib/api-helpers'
+import { matchesImageSignature } from '@/lib/image-signature'
 
 const UPLOADS_DIR = process.env.UPLOADS_DIR ?? './uploads'
 const MAX_SIZE = 10 * 1024 * 1024
@@ -46,12 +47,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'File too large (max 10 MB)' }, { status: 400 })
   }
 
+  const buffer = Buffer.from(await file.arrayBuffer())
+  // The declared MIME type is client-controlled; verify the actual bytes so
+  // arbitrary content can't be stored under an image extension.
+  if (!matchesImageSignature(file.type, buffer)) {
+    return NextResponse.json({ error: 'File content does not match its type' }, { status: 400 })
+  }
+
   const ext = EXT_MAP[file.type] ?? '.jpg'
   const filename = `${randomUUID()}${ext}`
 
   const dir = path.join(UPLOADS_DIR, 'photos')
   await mkdir(dir, { recursive: true })
-  const buffer = Buffer.from(await file.arrayBuffer())
   await writeFile(path.join(dir, filename), buffer)
 
   const photo = await prisma.billboardPhoto.create({

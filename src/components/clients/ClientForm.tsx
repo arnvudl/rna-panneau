@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -43,6 +44,13 @@ export function ClientForm(props: ClientFormProps) {
         }),
       })
       if (res.status === 202 || res.ok) {
+        if (res.status === 202) {
+          toast.info("Demande d'approbation envoyée", {
+            description: 'Un administrateur doit valider cette modification.',
+          })
+        } else {
+          toast.success(mode === 'create' ? 'Client créé' : 'Client modifié')
+        }
         if (mode === 'create') {
           setName('')
           setPhone('')

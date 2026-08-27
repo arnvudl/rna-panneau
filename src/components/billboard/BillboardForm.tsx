@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -94,6 +95,13 @@ export function BillboardForm(props: BillboardFormProps) {
         body: JSON.stringify(body),
       })
       if (res.status === 202 || res.ok) {
+        if (res.status === 202) {
+          toast.info("Demande d'approbation envoyée", {
+            description: 'Un administrateur doit valider cette modification.',
+          })
+        } else {
+          toast.success(mode === 'create' ? 'Panneau créé' : 'Panneau modifié')
+        }
         if (mode === 'create') {
           setCity('')
           setDimension('D4X3')
@@ -107,9 +115,11 @@ export function BillboardForm(props: BillboardFormProps) {
         onSaved()
         return
       }
-      throw new Error(`Request failed with status ${res.status}`)
-    } catch {
-      setError(mode === 'create' ? 'Erreur lors de la création du panneau' : 'Erreur lors de la modification du panneau')
+      const errBody = await res.json().catch(() => null)
+      throw new Error(typeof errBody?.error === 'string' ? errBody.error : `Request failed with status ${res.status}`)
+    } catch (err) {
+      const fallback = mode === 'create' ? 'Erreur lors de la création du panneau' : 'Erreur lors de la modification du panneau'
+      setError(err instanceof Error && !err.message.startsWith('Request failed') ? err.message : fallback)
     } finally {
       setSubmitting(false)
     }

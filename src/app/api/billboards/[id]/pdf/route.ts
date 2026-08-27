@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { deriveBillboardStatus } from '@/lib/status'
 import { requireSession } from '@/lib/api-helpers'
 import { BillboardPdfDocument } from '@/components/billboard/BillboardPdfDocument'
+import { loadPdfPhoto } from '@/lib/pdf-photo'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireSession()
@@ -19,6 +20,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   })
   if (!billboard) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  const photo = billboard.photos[0] ? await loadPdfPhoto(billboard.photos[0].filename) : null
+
   const buffer = await renderToBuffer(
     BillboardPdfDocument({
       data: {
@@ -27,9 +30,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         dimension: billboard.dimension,
         sides: billboard.sides,
         status: deriveBillboardStatus(billboard),
-        photoUrl: billboard.photos[0]
-          ? `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/uploads/${billboard.photos[0].filename}`
-          : null,
+        photo,
         permitNumber: billboard.permitNumber,
         taxPaymentRef: billboard.taxPaymentRef,
         occupancies: billboard.occupancies.map((o) => ({

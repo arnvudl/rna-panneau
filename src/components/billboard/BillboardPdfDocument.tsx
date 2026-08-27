@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer'
+import type { PdfPhoto } from '@/lib/pdf-photo'
 
 const styles = StyleSheet.create({
   page: { padding: 32, fontSize: 11, fontFamily: 'Helvetica' },
@@ -15,7 +16,7 @@ export type BillboardPdfData = {
   dimension: string
   sides: number
   status: string
-  photoUrl: string | null
+  photo: PdfPhoto | null
   permitNumber: string | null
   taxPaymentRef: string | null
   occupancies: { clientName: string; face: string; contractRef: string | null; endDate: string | null }[]
@@ -27,7 +28,7 @@ export function BillboardPdfDocument({ data }: { data: BillboardPdfData }) {
     <Document>
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>{data.reference}</Text>
-        {data.photoUrl && <Image src={data.photoUrl} style={styles.photo} />}
+        {data.photo && <Image src={data.photo} style={styles.photo} />}
 
         <View style={styles.section}>
           <View style={styles.row}><Text style={styles.label}>Ville</Text><Text>{data.city}</Text></View>
