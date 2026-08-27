@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { ImageOff } from 'lucide-react'
+import { PhotoGallery } from '@/components/billboard/PhotoGallery'
 import { prisma } from '@/lib/prisma'
 import { deriveBillboardStatus } from '@/lib/status'
 import { STATUS_LABELS, STATUS_BADGE_VARIANTS } from '@/lib/status-labels'
@@ -18,6 +18,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
     include: {
       occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
+      photos: { orderBy: { createdAt: 'desc' } },
     },
   })
   if (!billboard) notFound()
@@ -64,21 +65,14 @@ export default async function BillboardPage({ params }: { params: { id: string }
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          {billboard.currentPhotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={billboard.currentPhotoUrl}
-              alt={billboard.reference}
-              className="aspect-video w-full rounded-xl border object-cover"
-            />
-          ) : (
-            <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-slate-50 text-slate-400">
-              <ImageOff className="h-10 w-10" />
-              <p className="text-sm font-medium">Aucune photo</p>
-            </div>
-          )}
-        </div>
+        <PhotoGallery
+          billboardId={billboard.id}
+          photos={billboard.photos.map((p) => ({
+            id: p.id,
+            filename: p.filename,
+            createdAt: p.createdAt.toISOString(),
+          }))}
+        />
 
         <Tabs defaultValue="contract">
           <TabsList>
