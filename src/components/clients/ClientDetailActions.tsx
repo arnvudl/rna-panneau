@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
+import { ClientForm, type EditableClient } from '@/components/clients/ClientForm'
 
-export function ClientDetailActions({ client }: { client: { id: string; name: string } }) {
-  const { status } = useSession()
+export function ClientDetailActions({ client }: { client: EditableClient }) {
+  const { data: session, status } = useSession()
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+
+  const canEdit = status === 'authenticated' && session?.user?.role !== 'USER'
 
   // Any authenticated role may trigger deletion — the API itself routes USER
   // requests to the approval queue instead of deleting directly.
@@ -25,17 +29,31 @@ export function ClientDetailActions({ client }: { client: { id: string; name: st
   }
 
   return (
-    <>
-      <Button variant="destructive" onClick={() => setOpen(true)}>
+    <div className="flex gap-2">
+      {canEdit && (
+        <>
+          <Button variant="outline" onClick={() => setEditOpen(true)}>
+            Modifier
+          </Button>
+          <ClientForm
+            mode="edit"
+            client={client}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            onSaved={() => router.refresh()}
+          />
+        </>
+      )}
+      <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
         Supprimer
       </Button>
       <ConfirmDeleteDialog
-        open={open}
-        onOpenChange={setOpen}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
         entityLabel="ce client"
         entityName={client.name}
         onConfirm={deleteClient}
       />
-    </>
+    </div>
   )
 }

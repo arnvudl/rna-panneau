@@ -17,7 +17,7 @@ const FACE_SELECT_LABELS: Record<Face, string> = {
   BOTH: 'Les deux faces',
 }
 
-export function ContractForm({
+export function OccupancyForm({
   open,
   onOpenChange,
   billboardId,
@@ -28,15 +28,15 @@ export function ContractForm({
   onOpenChange: (open: boolean) => void
   billboardId: string
   sides: number
-  /** Faces still free to contract on this billboard, e.g. ['FACE_2'] or ['BOTH']. */
+  /** Faces still free to occupy on this billboard, e.g. ['FACE_2'] or ['BOTH']. */
   availableFaces: Face[]
 }) {
   const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
   const [clientId, setClientId] = useState('')
   const [face, setFace] = useState<Face>(availableFaces[0] ?? 'BOTH')
-  const [amount, setAmount] = useState('')
-  const [durationMonths, setDurationMonths] = useState('6')
+  const [contractRef, setContractRef] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,40 +45,38 @@ export function ContractForm({
     if (res.ok) setClients(await res.json())
   }
 
-  // The dialog's `open` prop is set by the parent (ContractPanel), not by
+  // The dialog's `open` prop is set by the parent (OccupancyPanel), not by
   // user interaction with the Dialog itself, so Dialog's onOpenChange never
   // fires for that transition. Load the initial client list here instead.
-  // This also resets all fields: ContractForm stays mounted across contract
-  // creations (only `open` toggles), so without this, stale values (a
-  // previously selected client, amount, or now-unavailable face) would
-  // silently carry over into the next contract creation.
+  // This also resets all fields: OccupancyForm stays mounted across creations
+  // (only `open` toggles), so without this, stale values would silently
+  // carry over into the next occupancy creation.
   useEffect(() => {
     if (open) {
       loadClients('')
       setFace(availableFaces[0] ?? 'BOTH')
       setClientId('')
-      setAmount('')
-      setDurationMonths('6')
+      setContractRef('')
+      setEndDate('')
       setError(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const submit = async () => {
-    if (!clientId || !amount) return
+    if (!clientId) return
     setSubmitting(true)
     setError(null)
     try {
-      const res = await fetch('/api/contracts', {
+      const res = await fetch('/api/occupancies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           billboardId,
           clientId,
           face: sides === 2 ? face : 'BOTH',
-          startDate: new Date().toISOString(),
-          amount: Number(amount),
-          durationMonths: Number(durationMonths),
+          contractRef: contractRef.trim() || undefined,
+          endDate: endDate ? new Date(endDate).toISOString() : undefined,
         }),
       })
       if (!res.ok) {
@@ -132,14 +130,21 @@ export function ContractForm({
             </div>
           )}
           <div className="space-y-1">
-            <Label>Montant (MGA)</Label>
-            <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <Label>Référence du contrat (optionnel)</Label>
+            <Input
+              placeholder="ex: Contrat-2026-014.pdf"
+              value={contractRef}
+              onChange={(e) => setContractRef(e.target.value)}
+            />
+            <p className="text-xs text-slate-500">
+              Le contrat lui-même reste sur l&apos;ordinateur de l&apos;admin — cette référence sert juste à le retrouver.
+            </p>
           </div>
           <div className="space-y-1">
-            <Label>Durée (mois)</Label>
-            <Input type="number" value={durationMonths} onChange={(e) => setDurationMonths(e.target.value)} />
+            <Label>Date de fin (optionnel)</Label>
+            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
-          <Button onClick={submit} className="w-full" disabled={submitting || !clientId || !amount}>
+          <Button onClick={submit} className="w-full" disabled={submitting || !clientId}>
             {submitting ? 'Création…' : 'Créer le contrat'}
           </Button>
         </div>

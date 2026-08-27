@@ -21,13 +21,12 @@ enum Dimension {
   D12X3
 }
 
-enum ContractStatus {
+enum OccupancyStatus {
   ACTIVE
-  EXPIRED
   TERMINATED
 }
 
-enum ContractFace {
+enum OccupancyFace {
   FACE_1
   FACE_2
   BOTH
@@ -42,11 +41,10 @@ enum BillboardStatus {
 }
 
 enum ApprovalType {
-  CREATE_CONTRACT
-  EDIT_CONTRACT
+  CREATE_OCCUPANCY
+  EDIT_OCCUPANCY
   DELETE_BILLBOARD
   DELETE_CLIENT
-  EDIT_PRICE
 }
 
 enum ApprovalStatus {
@@ -78,11 +76,13 @@ model Billboard {
   damaged         Boolean   @default(false)
   currentPhotoUrl String?
   note            String?
+  permitNumber    String?
+  taxPaymentRef   String?
   statusOverride  BillboardStatus?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  contracts          Contract[]
+  occupancies        Occupancy[]
   maintenanceRecords MaintenanceRecord[]
 }
 
@@ -93,19 +93,19 @@ model Client {
   email     String?
   createdAt DateTime @default(now())
 
-  contracts Contract[]
+  occupancies Occupancy[]
 }
 
-model Contract {
-  id          String         @id @default(cuid())
+model Occupancy {
+  id          String          @id @default(cuid())
   billboardId String
   clientId    String
-  face        ContractFace   @default(BOTH)
-  startDate   DateTime
-  endDate     DateTime
-  amount      Float
-  status      ContractStatus @default(ACTIVE)
-  createdAt   DateTime       @default(now())
+  face        OccupancyFace   @default(BOTH)
+  contractRef String?
+  startDate   DateTime        @default(now())
+  endDate     DateTime?
+  status      OccupancyStatus @default(ACTIVE)
+  createdAt   DateTime        @default(now())
 
   billboard Billboard @relation(fields: [billboardId], references: [id])
   client    Client    @relation(fields: [clientId], references: [id])

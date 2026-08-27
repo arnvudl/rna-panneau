@@ -78,9 +78,9 @@ export default function CityPrefixesPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-6">
-      <h1 className="text-2xl font-semibold">Préfixes de référence par ville</h1>
+      <h1 className="text-2xl font-semibold">Préfixes d&apos;identifiant par ville</h1>
       <p className="text-sm text-slate-600">
-        Utilisé pour générer la référence des panneaux (ex: ANM 001 TNR). Une ville non listée ici
+        Utilisé pour générer l&apos;identifiant des panneaux (ex: TNR 001). Une ville non listée ici
         utilise automatiquement ses 3 premières lettres en majuscules.
       </p>
       {error && <p className="text-sm text-red-600">{error}</p>}

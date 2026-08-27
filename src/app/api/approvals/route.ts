@@ -22,16 +22,16 @@ async function attachResolvedNames<
 >(requests: T[]) {
   const billboardIds = new Set<string>()
   const clientIds = new Set<string>()
-  const contractIds = new Set<string>()
+  const occupancyIds = new Set<string>()
 
   for (const r of requests) {
     const data = (r.payload ?? {}) as Record<string, unknown>
     if (typeof data.billboardId === 'string') billboardIds.add(data.billboardId)
     if (typeof data.clientId === 'string') clientIds.add(data.clientId)
-    if (typeof data.contractId === 'string') contractIds.add(data.contractId)
+    if (typeof data.occupancyId === 'string') occupancyIds.add(data.occupancyId)
   }
 
-  const [billboards, clients, contracts] = await Promise.all([
+  const [billboards, clients, occupancies] = await Promise.all([
     billboardIds.size
       ? prisma.billboard.findMany({
           where: { id: { in: Array.from(billboardIds) } },
@@ -44,9 +44,9 @@ async function attachResolvedNames<
           select: { id: true, name: true },
         })
       : Promise.resolve([]),
-    contractIds.size
-      ? prisma.contract.findMany({
-          where: { id: { in: Array.from(contractIds) } },
+    occupancyIds.size
+      ? prisma.occupancy.findMany({
+          where: { id: { in: Array.from(occupancyIds) } },
           select: {
             id: true,
             billboard: { select: { reference: true } },
@@ -58,8 +58,8 @@ async function attachResolvedNames<
 
   const billboardMap = new Map(billboards.map((b) => [b.id, b.reference]))
   const clientMap = new Map(clients.map((c) => [c.id, c.name]))
-  const contractMap = new Map(
-    contracts.map((c) => [c.id, `${c.billboard.reference} — ${c.client.name}`])
+  const occupancyMap = new Map(
+    occupancies.map((o) => [o.id, `${o.billboard.reference} — ${o.client.name}`])
   )
 
   return requests.map((r) => {
@@ -73,9 +73,9 @@ async function attachResolvedNames<
       const name = clientMap.get(data.clientId)
       if (name) resolvedNames.clientId = name
     }
-    if (typeof data.contractId === 'string') {
-      const name = contractMap.get(data.contractId)
-      if (name) resolvedNames.contractId = name
+    if (typeof data.occupancyId === 'string') {
+      const name = occupancyMap.get(data.occupancyId)
+      if (name) resolvedNames.occupancyId = name
     }
     return { ...r, resolvedNames }
   })

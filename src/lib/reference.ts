@@ -13,5 +13,5 @@ export function generateReference({
   prefixes: { city: string; prefix: string }[]
 }): string {
   const padded = String(sequence).padStart(3, '0')
-  return `ANM ${padded} ${resolveCityPrefix(city, prefixes)}`
+  return `${resolveCityPrefix(city, prefixes)} ${padded}`
 }

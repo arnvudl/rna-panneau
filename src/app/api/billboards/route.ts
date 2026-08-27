@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const where = buildBillboardWhere(req.nextUrl.searchParams)
   const billboards = await prisma.billboard.findMany({
     where,
-    include: { contracts: { where: { status: 'ACTIVE' }, include: { client: true } } },
+    include: { occupancies: { where: { status: 'ACTIVE' }, include: { client: true } } },
     orderBy: { createdAt: 'desc' },
   })
 
@@ -32,6 +32,8 @@ const createSchema = z.object({
   dimension: z.enum(['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']),
   sides: z.union([z.literal(1), z.literal(2)]),
   note: z.string().trim().max(2000).optional(),
+  permitNumber: z.string().trim().max(100).optional(),
+  taxPaymentRef: z.string().trim().max(200).optional(),
 })
 
 export async function POST(req: NextRequest) {

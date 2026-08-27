@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { Prisma, type ApprovalType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest } from '@/lib/api-helpers'
-import { isFaceAvailable } from '@/lib/contract-occupancy'
+import { isFaceAvailable } from '@/lib/face-occupancy'
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 
@@ -48,62 +48,54 @@ async function applyApproval(
 ) {
   const data = payload as Record<string, unknown>
   switch (type) {
-    case 'CREATE_CONTRACT': {
+    case 'CREATE_OCCUPANCY': {
       // Plain Error (not a Prisma error) deliberately bypasses the
       // PrismaClientKnownRequestError branch below and surfaces as a 500,
       // leaving this approval PENDING (transaction rolls back) instead of a
       // clean 400 — accepted tradeoff for the rare stale-approval case where
-      // the requested face was taken by another contract after the request
+      // the requested face was taken by another occupancy after the request
       // was submitted but before admin review.
       const face = (data.face as 'FACE_1' | 'FACE_2' | 'BOTH') ?? 'BOTH'
-      const activeContracts = await tx.contract.findMany({
+      const activeOccupancies = await tx.occupancy.findMany({
         where: { billboardId: data.billboardId as string, status: 'ACTIVE' },
         select: { face: true },
       })
-      if (!isFaceAvailable(face, activeContracts)) {
+      if (!isFaceAvailable(face, activeOccupancies)) {
         throw new Error('Face already occupied')
       }
-      await tx.contract.create({
+      await tx.occupancy.create({
         data: {
           billboardId: data.billboardId as string,
           clientId: data.clientId as string,
           face,
-          startDate: new Date(data.startDate as string),
-          endDate: new Date(data.endDate as string),
-          amount: data.amount as number,
+          contractRef: data.contractRef as string | undefined,
+          endDate: data.endDate ? new Date(data.endDate as string) : undefined,
         },
       })
       break
     }
-    case 'EDIT_CONTRACT':
-      await tx.contract.update({
-        where: { id: data.contractId as string },
+    case 'EDIT_OCCUPANCY':
+      await tx.occupancy.update({
+        where: { id: data.occupancyId as string },
         data: {
-          status: data.status as 'ACTIVE' | 'EXPIRED' | 'TERMINATED' | undefined,
-          endDate: data.endDate ? new Date(data.endDate as string) : undefined,
+          status: data.status as 'ACTIVE' | 'TERMINATED' | undefined,
+          endDate: data.endDate === undefined ? undefined : data.endDate ? new Date(data.endDate as string) : null,
+          contractRef: data.contractRef as string | null | undefined,
         },
       })
       break
     case 'DELETE_BILLBOARD':
       await tx.billboard.delete({ where: { id: data.billboardId as string } })
       break
-    case 'EDIT_PRICE':
-      // Speculative/future-proofing: no producer of this ApprovalType exists yet
-      // anywhere in the codebase, but the case is implemented to match the enum.
-      await tx.contract.update({
-        where: { id: data.contractId as string },
-        data: { amount: data.amount as number },
-      })
-      break
     case 'DELETE_CLIENT': {
       // Plain Error (not a Prisma error) deliberately bypasses the
       // PrismaClientKnownRequestError branch below and surfaces as a 500,
       // leaving this approval PENDING (transaction rolls back) instead of a
       // clean 400 — accepted tradeoff for the rare stale-approval case where
-      // contracts were added after the request but before admin review.
-      const contractCount = await tx.contract.count({ where: { clientId: data.clientId as string } })
-      if (contractCount > 0) {
-        throw new Error('Client has associated contracts, cannot delete')
+      // occupancies were added after the request but before admin review.
+      const occupancyCount = await tx.occupancy.count({ where: { clientId: data.clientId as string } })
+      if (occupancyCount > 0) {
+        throw new Error('Client has associated occupancies, cannot delete')
       }
       await tx.client.delete({ where: { id: data.clientId as string } })
       break

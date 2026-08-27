@@ -13,7 +13,12 @@ const STATUS_PRIORITY: Array<'EXPIRED' | 'EXPIRING_SOON' | 'RENTED'> = [
   'RENTED',
 ]
 
-function faceStatus(endDate: Date): 'EXPIRED' | 'EXPIRING_SOON' | 'RENTED' {
+// `endDate` is informative only (no money/contract logic depends on it). A
+// face with no end date is treated as rented indefinitely — it can never
+// become EXPIRING_SOON or EXPIRED on its own; only a manual statusOverride or
+// terminating the occupancy changes that.
+function faceStatus(endDate: Date | null): 'EXPIRED' | 'EXPIRING_SOON' | 'RENTED' {
+  if (endDate === null) return 'RENTED'
   const daysUntilEnd = (endDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)
   if (daysUntilEnd < 0) return 'EXPIRED'
   if (daysUntilEnd <= EXPIRING_SOON_WINDOW_DAYS) return 'EXPIRING_SOON'
@@ -23,14 +28,14 @@ function faceStatus(endDate: Date): 'EXPIRED' | 'EXPIRING_SOON' | 'RENTED' {
 export function deriveBillboardStatus(billboard: {
   damaged: boolean
   statusOverride: BillboardStatus | null
-  contracts: { status: 'ACTIVE' | 'EXPIRED' | 'TERMINATED'; endDate: Date; face: 'FACE_1' | 'FACE_2' | 'BOTH' }[]
+  occupancies: { status: 'ACTIVE' | 'TERMINATED'; endDate: Date | null; face: 'FACE_1' | 'FACE_2' | 'BOTH' }[]
 }): BillboardStatus {
   if (billboard.statusOverride) return billboard.statusOverride
   if (billboard.damaged) return 'MAINTENANCE'
 
-  const activeContracts = billboard.contracts.filter((c) => c.status === 'ACTIVE')
-  if (activeContracts.length === 0) return 'AVAILABLE'
+  const activeOccupancies = billboard.occupancies.filter((o) => o.status === 'ACTIVE')
+  if (activeOccupancies.length === 0) return 'AVAILABLE'
 
-  const statuses = activeContracts.map((c) => faceStatus(c.endDate))
+  const statuses = activeOccupancies.map((o) => faceStatus(o.endDate))
   return STATUS_PRIORITY.find((s) => statuses.includes(s)) ?? 'AVAILABLE'
 }

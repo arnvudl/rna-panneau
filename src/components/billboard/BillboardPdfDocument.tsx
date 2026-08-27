@@ -16,7 +16,9 @@ export type BillboardPdfData = {
   sides: number
   status: string
   currentPhotoUrl: string | null
-  contracts: { clientName: string; startDate: string; endDate: string; amount: number }[]
+  permitNumber: string | null
+  taxPaymentRef: string | null
+  occupancies: { clientName: string; face: string; contractRef: string | null; endDate: string | null }[]
   maintenanceRecords: { date: string; type: string; comment: string | null }[]
 }
 
@@ -32,14 +34,16 @@ export function BillboardPdfDocument({ data }: { data: BillboardPdfData }) {
           <View style={styles.row}><Text style={styles.label}>Dimensions</Text><Text>{data.dimension}</Text></View>
           <View style={styles.row}><Text style={styles.label}>Faces</Text><Text>{data.sides}</Text></View>
           <View style={styles.row}><Text style={styles.label}>Statut</Text><Text>{data.status}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Autorisation</Text><Text>{data.permitNumber ?? '—'}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Taxe communale</Text><Text>{data.taxPaymentRef ?? 'Non payée'}</Text></View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.title}>Historique des contrats</Text>
-          {data.contracts.map((c, i) => (
+          {data.occupancies.map((o, i) => (
             <View key={i} style={styles.row}>
-              <Text>{c.clientName}</Text>
-              <Text>{c.startDate} → {c.endDate} ({c.amount} MGA)</Text>
+              <Text>{o.face} — {o.clientName}</Text>
+              <Text>{o.contractRef ?? 'Sans référence'}{o.endDate ? ` (jusqu'au ${o.endDate})` : ''}</Text>
             </View>
           ))}
         </View>

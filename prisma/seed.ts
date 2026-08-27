@@ -30,10 +30,10 @@ async function seedSampleData() {
   })
 
   const billboard = await prisma.billboard.upsert({
-    where: { reference: 'ANM 001 TNR' },
+    where: { reference: 'TNR 001' },
     update: {},
     create: {
-      reference: 'ANM 001 TNR',
+      reference: 'TNR 001',
       lat: -18.8792,
       lng: 47.5079,
       city: 'Antananarivo',
@@ -42,16 +42,15 @@ async function seedSampleData() {
     },
   })
 
-  await prisma.contract.upsert({
-    where: { id: 'seed-contract-1' },
+  await prisma.occupancy.upsert({
+    where: { id: 'seed-occupancy-1' },
     update: {},
     create: {
-      id: 'seed-contract-1',
+      id: 'seed-occupancy-1',
       billboardId: billboard.id,
       clientId: client.id,
-      startDate: new Date(),
+      contractRef: 'Contrat-Orange-2026.pdf',
       endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
-      amount: 1500000,
       status: 'ACTIVE',
     },
   })
@@ -81,9 +80,6 @@ async function seedCityPrefixes() {
     // WAI in the source data, reassigned. Confirm/rename via the admin UI.
     { city: 'Ambositra', prefix: 'AOT' },
     { city: 'Andapa', prefix: 'ZWA' },
-    // Matches the reference template's fixed "ANM" prefix (format: ANM
-    // {sequence} {city-prefix}), producing refs like "ANM 001 ANM". Real
-    // client data, not an error — confirm/rename via the admin UI if desired.
     { city: 'Antalaha', prefix: 'ANM' },
     { city: 'Antsohihy', prefix: 'WAI' },
     { city: 'Arivonimamo', prefix: 'FMMA' },

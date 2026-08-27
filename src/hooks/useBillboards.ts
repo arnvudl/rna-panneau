@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation'
 import type { BillboardRow } from '@/components/table/BillboardTable'
 import type { Filters } from '@/components/table/FilterBar'
 
-type ApiContract = {
+type ApiOccupancy = {
   status: string
   client?: { name?: string } | null
 }
@@ -18,15 +18,15 @@ type ApiBillboard = {
   lat: number
   lng: number
   note?: string | null
-  contracts?: ApiContract[]
+  occupancies?: ApiOccupancy[]
 }
 
 export type BillboardWithLatLng = BillboardRow & { lat: number; lng: number }
 
 function toRow(b: ApiBillboard): BillboardWithLatLng {
-  const activeClientNames = (b.contracts ?? [])
-    .filter((c) => c.status === 'ACTIVE')
-    .map((c) => c.client?.name)
+  const activeClientNames = (b.occupancies ?? [])
+    .filter((o) => o.status === 'ACTIVE')
+    .map((o) => o.client?.name)
     .filter((n): n is string => Boolean(n))
   return {
     id: b.id,

@@ -11,7 +11,7 @@ export function buildBillboardWhere(params: URLSearchParams): Prisma.BillboardWh
   if (damaged !== null) where.damaged = damaged === 'true'
 
   const clientId = params.get('clientId')
-  if (clientId) where.contracts = { some: { clientId, status: 'ACTIVE' } }
+  if (clientId) where.occupancies = { some: { clientId, status: 'ACTIVE' } }
 
   return where
 }
