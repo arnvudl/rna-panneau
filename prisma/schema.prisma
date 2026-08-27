@@ -45,6 +45,9 @@ enum ApprovalType {
   EDIT_OCCUPANCY
   DELETE_BILLBOARD
   DELETE_CLIENT
+  EDIT_BILLBOARD
+  EDIT_CLIENT
+  DELETE_PHOTO
 }
 
 enum ApprovalStatus {
@@ -74,7 +77,6 @@ model Billboard {
   dimension       Dimension
   sides           Int       @default(1)
   damaged         Boolean   @default(false)
-  currentPhotoUrl String?
   note            String?
   permitNumber    String?
   taxPaymentRef   String?
@@ -82,8 +84,20 @@ model Billboard {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  photos             BillboardPhoto[]
   occupancies        Occupancy[]
   maintenanceRecords MaintenanceRecord[]
+}
+
+model BillboardPhoto {
+  id          String   @id @default(cuid())
+  billboardId String
+  filename    String   @unique
+  createdAt   DateTime @default(now())
+
+  billboard Billboard @relation(fields: [billboardId], references: [id], onDelete: Cascade)
+
+  @@index([billboardId])
 }
 
 model Client {
