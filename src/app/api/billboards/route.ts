@@ -37,7 +37,7 @@ const createSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const { session, error } = await requireSession()
+  const { error } = await requireSession()
   if (error) return error
   const parsed = parseOrBadRequest(createSchema, await req.json())
   if ('error' in parsed) return parsed.error

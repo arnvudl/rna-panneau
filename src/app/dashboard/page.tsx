@@ -60,7 +60,7 @@ export default async function DashboardPage() {
 
         <Card className="overflow-hidden rounded-xl border-slate-200 bg-white p-0 shadow-sm">
           <CardHeader className="border-b bg-slate-50/50 p-6">
-            <CardTitle className="text-lg font-semibold text-slate-800">Demandes d'approbation en attente</CardTitle>
+            <CardTitle className="text-lg font-semibold text-slate-800">Demandes d&apos;approbation en attente</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <ApprovalQueue />

@@ -76,7 +76,7 @@ export default function LoginPage() {
               Gérez votre parc en toute simplicité.
             </h2>
             <p className="text-lg text-primary-foreground/80">
-              Plateforme centralisée pour suivre vos contrats, l'état de vos infrastructures et vos clients en temps réel.
+              Plateforme centralisée pour suivre vos contrats, l&apos;état de vos infrastructures et vos clients en temps réel.
             </p>
           </div>
         </div>

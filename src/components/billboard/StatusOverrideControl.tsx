@@ -17,7 +17,7 @@ export function StatusOverrideControl({
   statusOverride: BillboardStatus | null
 }) {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

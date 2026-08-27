@@ -28,6 +28,7 @@ export function BillboardPdfDocument({ data }: { data: BillboardPdfData }) {
     <Document>
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>{data.reference}</Text>
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf Image has no alt prop */}
         {data.photo && <Image src={data.photo} style={styles.photo} />}
 
         <View style={styles.section}>
