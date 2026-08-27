@@ -38,7 +38,7 @@ export function BillboardTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Référence</TableHead>
+          <TableHead>Identifiant</TableHead>
           <TableHead>Ville</TableHead>
           <TableHead>Dimension</TableHead>
           <TableHead>Statut</TableHead>
