@@ -52,6 +52,7 @@ services:
       - .:/app
       - app_node_modules:/app/node_modules
       - app_next:/app/.next
+      - app_uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -67,3 +68,4 @@ volumes:
   db_data:
   app_node_modules:
   app_next:
+  app_uploads:
