@@ -2,15 +2,18 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
 RUN npm ci --omit=dev
 
 # ── Stage 2: Build the Next.js app ───────────────────────────────
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
 RUN npm ci
 COPY . .
-RUN DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder" npx prisma generate
 RUN npm run build
 
 # ── Stage 3: Production runtime ──────────────────────────────────

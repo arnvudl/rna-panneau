@@ -4,3 +4,11 @@ node_modules
 npm-debug.log
 .env
 .env.local
+.env.*
+uploads
+tests
+docs
+coverage
+tsconfig.tsbuildinfo
+Dockerfile*
+docker-compose*.yml
