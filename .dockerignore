@@ -12,3 +12,5 @@ coverage
 tsconfig.tsbuildinfo
 Dockerfile*
 docker-compose*.yml
+backup*.sql
+*.dump
