@@ -41,6 +41,8 @@ COPY --from=builder /app/package.json ./migrator/package.json
 COPY --from=builder /app/prisma ./migrator/prisma
 COPY --from=builder /app/prisma.config.ts ./migrator/prisma.config.ts
 
+COPY scripts/docker-entrypoint.sh ./docker-entrypoint.sh
+
 RUN mkdir -p uploads && chown nextjs:nodejs uploads
 
 USER nextjs
@@ -49,4 +51,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["sh", "/app/docker-entrypoint.sh"]
