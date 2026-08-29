@@ -1,15 +1,10 @@
 import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
 
-const connectionString = process.env.DATABASE_URL
-if (!connectionString) {
-  throw new Error('DATABASE_URL is not set')
-}
-
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   datasource: {
-    url: connectionString,
+    url: process.env.DATABASE_URL ?? 'postgresql://placeholder:placeholder@localhost:5432/placeholder',
   },
   migrations: {
     seed: 'tsx prisma/seed.ts',
