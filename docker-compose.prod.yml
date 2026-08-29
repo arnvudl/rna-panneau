@@ -1,0 +1,46 @@
+# Production deployment — build and run with:
+#   docker compose -p rna-prod -f docker-compose.prod.yml up --build -d
+#
+# First run only, apply migrations + seed:
+#   docker compose -p rna-prod -f docker-compose.prod.yml exec app sh -c "npx prisma migrate deploy && npx prisma db seed"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rna
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rna_prod_password}
+      POSTGRES_DB: rna_panneaux
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rna -d rna_panneaux']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://rna:${POSTGRES_PASSWORD:-rna_prod_password}@db:5432/rna_panneaux
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    volumes:
+      - app_uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "npx prisma migrate deploy && node server.js"
+
+volumes:
+  db_data:
+  app_uploads:

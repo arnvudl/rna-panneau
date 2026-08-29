@@ -91,6 +91,7 @@ async function applyApproval(
           clientId: data.clientId as string,
           face,
           contractRef: data.contractRef as string | undefined,
+          startDate: data.startDate ? new Date(data.startDate as string) : undefined,
           endDate: data.endDate ? new Date(data.endDate as string) : undefined,
         },
       })

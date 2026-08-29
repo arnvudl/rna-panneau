@@ -4,9 +4,9 @@ import bcrypt from 'bcryptjs'
 
 async function main() {
   const users = [
-    { email: 'dev@rna.mg', password: process.env.SEED_DEV_PASSWORD ?? 'changeme-dev', role: 'DEV' as const },
-    { email: 'admin@rna.mg', password: process.env.SEED_ADMIN_PASSWORD ?? 'changeme-admin', role: 'ADMIN' as const },
-    { email: 'user@rna.mg', password: process.env.SEED_USER_PASSWORD ?? 'changeme-user', role: 'USER' as const },
+    { email: 'dev@rna.mg', password: 'xK9m2pLq', role: 'DEV' as const },
+    { email: 'admin@rna.mg', password: 'Rn4wJ7hB', role: 'ADMIN' as const },
+    { email: 'user@rna.mg', password: 'Tz6vF3cY', role: 'USER' as const },
   ]
 
   for (const u of users) {

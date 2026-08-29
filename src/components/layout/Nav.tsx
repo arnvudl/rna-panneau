@@ -23,7 +23,9 @@ export function Nav() {
   return (
     <nav className="flex h-14 items-center justify-between gap-6 border-b bg-white px-6 shadow-sm">
       <div className="flex h-full items-center gap-8">
-        <span className="text-lg font-bold tracking-tight text-primary">RNA</span>
+        <Link href="/dashboard">
+          <img src="/logo.png" alt="RNA" className="h-8 w-auto" />
+        </Link>
         <div className="flex h-full items-center gap-6">
           {LINKS.map((l) => {
             const active = pathname === l.href || (l.href !== '/map' && pathname?.startsWith(`${l.href}/`))
@@ -59,6 +61,16 @@ export function Nav() {
       </div>
       <div className="flex items-center gap-3">
         {status === 'authenticated' && <NotificationBell />}
+        {status === 'authenticated' && (
+          <Link
+            href="/account/password"
+            className={`text-sm font-medium transition-colors ${
+              pathname?.startsWith('/account') ? 'text-primary' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Mon compte
+          </Link>
+        )}
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
           className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"

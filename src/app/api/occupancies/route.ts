@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { isFaceAvailable } from '@/lib/face-occupancy'
-
-const createSchema = z.object({
-  billboardId: z.string(),
-  clientId: z.string(),
-  face: z.enum(['FACE_1', 'FACE_2', 'BOTH']).default('BOTH'),
-  contractRef: z.string().trim().max(200).optional(),
-  endDate: z.string().datetime().optional(),
-})
+import { createOccupancySchema } from '@/lib/occupancy-schema'
 
 export async function POST(req: NextRequest) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const parsed = parseOrBadRequest(createSchema, await req.json())
+  const parsed = parseOrBadRequest(createOccupancySchema, await req.json())
   if ('error' in parsed) return parsed.error
   const body = parsed.data
 
@@ -54,6 +46,7 @@ export async function POST(req: NextRequest) {
       clientId: body.clientId,
       face: body.face,
       contractRef: body.contractRef,
+      startDate: body.startDate ? new Date(body.startDate) : undefined,
       endDate: body.endDate ? new Date(body.endDate) : undefined,
     },
   })

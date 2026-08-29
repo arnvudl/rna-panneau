@@ -35,7 +35,7 @@ export default function LoginPage() {
       <div className="flex w-full flex-col justify-center px-8 sm:px-12 md:w-1/2 lg:w-1/3 xl:px-24">
         <div className="mx-auto w-full max-w-sm space-y-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-primary">RNA</h1>
+            <img src="/logo.png" alt="RNA" className="mx-auto h-14 w-auto" />
             <h2 className="mt-6 text-2xl font-semibold text-slate-900">Bienvenue</h2>
             <p className="mt-2 text-sm text-slate-500">
               Veuillez entrer vos identifiants pour accéder au dashboard.

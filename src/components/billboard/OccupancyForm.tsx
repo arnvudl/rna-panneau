@@ -37,6 +37,7 @@ export function OccupancyForm({
   const [clientId, setClientId] = useState('')
   const [face, setFace] = useState<Face>(availableFaces[0] ?? 'BOTH')
   const [contractRef, setContractRef] = useState('')
+  const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -58,6 +59,7 @@ export function OccupancyForm({
       setFace(availableFaces[0] ?? 'BOTH')
       setClientId('')
       setContractRef('')
+      setStartDate('')
       setEndDate('')
       setError(null)
     }
@@ -77,6 +79,7 @@ export function OccupancyForm({
           clientId,
           face: sides === 2 ? face : 'BOTH',
           contractRef: contractRef.trim() || undefined,
+          startDate: startDate ? new Date(startDate).toISOString() : undefined,
           endDate: endDate ? new Date(endDate).toISOString() : undefined,
         }),
       })
@@ -160,9 +163,15 @@ export function OccupancyForm({
               Le contrat lui-même reste sur l&apos;ordinateur de l&apos;admin — cette référence sert juste à le retrouver.
             </p>
           </div>
-          <div className="space-y-1">
-            <Label>Date de fin (optionnel)</Label>
-            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label>Date de début (optionnel)</Label>
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label>Date de fin (optionnel)</Label>
+              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </div>
           </div>
           <Button onClick={submit} className="w-full" disabled={submitting || !clientId}>
             {submitting ? 'Création…' : 'Créer le contrat'}
