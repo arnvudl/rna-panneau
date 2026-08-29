@@ -34,7 +34,12 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=deps /app/node_modules/dotenv ./node_modules/dotenv
+# Arbre de dependances de prod complet, isole dans /app/migrator, pour que le
+# CLI Prisma (migrate deploy) dispose de toutes ses deps a l'execution.
+COPY --from=deps /app/node_modules ./migrator/node_modules
+COPY --from=builder /app/package.json ./migrator/package.json
+COPY --from=builder /app/prisma ./migrator/prisma
+COPY --from=builder /app/prisma.config.ts ./migrator/prisma.config.ts
 
 RUN mkdir -p uploads && chown nextjs:nodejs uploads
 
