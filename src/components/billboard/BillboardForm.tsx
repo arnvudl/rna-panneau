@@ -10,9 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
+type Region = { id: string; name: string; code: string }
+type District = { id: string; name: string; regionId: string }
+
 export type EditableBillboard = {
   id: string
-  city: string
+  regionId: string
+  districtId: string
+  regionName: string
+  districtName: string
   dimension: string
   sides: number
   note?: string | null
@@ -42,7 +48,6 @@ export function BillboardForm(props: BillboardFormProps) {
   const { mode, open, onOpenChange, onSaved } = props
   const initial = mode === 'edit' ? props.billboard : null
 
-  const [city, setCity] = useState(initial?.city ?? '')
   const [dimension, setDimension] = useState(initial?.dimension ?? 'D4X3')
   const [sides, setSides] = useState<1 | 2>(initial?.sides === 2 ? 2 : 1)
   const [note, setNote] = useState(initial?.note ?? '')
@@ -57,9 +62,13 @@ export function BillboardForm(props: BillboardFormProps) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Only the create flow's lat/lng need to re-sync from a changing prop (a
-  // map right-click while the dialog is open); edit mode's initial value is
-  // fixed for the lifetime of one dialog open, no effect needed there.
+  // Manual fallback: only populated when automatic detection returns 422.
+  const [geoFallback, setGeoFallback] = useState(false)
+  const [regions, setRegions] = useState<Region[]>([])
+  const [districts, setDistricts] = useState<District[]>([])
+  const [manualRegionId, setManualRegionId] = useState('')
+  const [manualDistrictId, setManualDistrictId] = useState('')
+
   useEffect(() => {
     if (mode === 'create' && props.initialLatLng) {
       setLat(String(props.initialLatLng.lat))
@@ -68,8 +77,28 @@ export function BillboardForm(props: BillboardFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode === 'create' ? props.initialLatLng : null])
 
+  useEffect(() => {
+    if (!geoFallback) return
+    fetch('/api/regions')
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setRegions)
+      .catch(() => {})
+  }, [geoFallback])
+
+  useEffect(() => {
+    if (!manualRegionId) {
+      setDistricts([])
+      return
+    }
+    fetch(`/api/districts?regionId=${manualRegionId}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setDistricts)
+      .catch(() => {})
+  }, [manualRegionId])
+
   const submit = async () => {
     if (!lat.trim() || !lng.trim()) return
+    if (geoFallback && (!manualRegionId || !manualDistrictId)) return
     setSubmitting(true)
     setError(null)
     try {
@@ -78,11 +107,11 @@ export function BillboardForm(props: BillboardFormProps) {
       const shared = {
         lat: Number(lat),
         lng: Number(lng),
-        city: city.trim(),
         dimension,
         sides,
         permitNumber: permitNumber.trim() || (mode === 'edit' ? null : undefined),
         taxPaymentRef: taxPaymentRef.trim() || (mode === 'edit' ? null : undefined),
+        ...(geoFallback ? { regionId: manualRegionId, districtId: manualDistrictId } : {}),
       }
       const body =
         mode === 'create'
@@ -94,6 +123,16 @@ export function BillboardForm(props: BillboardFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
+
+      if (res.status === 422) {
+        const errBody = await res.json().catch(() => null)
+        if (errBody?.error === 'GEO_NOT_FOUND') {
+          setGeoFallback(true)
+          setError('Région/district introuvables automatiquement — sélectionnez-les ci-dessous.')
+          return
+        }
+      }
+
       if (res.status === 202 || res.ok) {
         if (res.status === 202) {
           toast.info("Demande d'approbation envoyée", {
@@ -103,13 +142,15 @@ export function BillboardForm(props: BillboardFormProps) {
           toast.success(mode === 'create' ? 'Panneau créé' : 'Panneau modifié')
         }
         if (mode === 'create') {
-          setCity('')
           setDimension('D4X3')
           setSides(1)
           setLat('')
           setLng('')
           setPermitNumber('')
           setTaxPaymentRef('')
+          setGeoFallback(false)
+          setManualRegionId('')
+          setManualDistrictId('')
         }
         onOpenChange(false)
         onSaved()
@@ -124,6 +165,9 @@ export function BillboardForm(props: BillboardFormProps) {
       setSubmitting(false)
     }
   }
+
+  const canSubmit =
+    !submitting && !!lat.trim() && !!lng.trim() && (!geoFallback || (!!manualRegionId && !!manualDistrictId))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,10 +187,47 @@ export function BillboardForm(props: BillboardFormProps) {
               <Input type="number" step="any" value={lng} onChange={(e) => setLng(e.target.value)} />
             </div>
           </div>
-          <div className="space-y-1">
-            <Label>Ville</Label>
-            <Input value={city} onChange={(e) => setCity(e.target.value)} />
-          </div>
+
+          {mode === 'edit' && !geoFallback && (
+            <p className="text-sm text-slate-500">
+              {props.billboard.regionName} — {props.billboard.districtName}
+            </p>
+          )}
+
+          {geoFallback && (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label>Région</Label>
+                <Select
+                  items={Object.fromEntries(regions.map((r) => [r.id, r.name]))}
+                  value={manualRegionId}
+                  onValueChange={(v: string | null) => {
+                    setManualRegionId(v ?? '')
+                    setManualDistrictId('')
+                  }}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {regions.map((r) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label>District</Label>
+                <Select
+                  items={Object.fromEntries(districts.map((d) => [d.id, d.name]))}
+                  value={manualDistrictId}
+                  onValueChange={(v: string | null) => setManualDistrictId(v ?? '')}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {districts.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1">
             <Label>Dimension</Label>
             <Select
@@ -196,11 +277,7 @@ export function BillboardForm(props: BillboardFormProps) {
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
-          <Button
-            onClick={submit}
-            className="w-full"
-            disabled={submitting || !city.trim() || !lat.trim() || !lng.trim()}
-          >
+          <Button onClick={submit} className="w-full" disabled={!canSubmit}>
             {submitting ? (mode === 'create' ? 'Création…' : 'Enregistrement…') : mode === 'create' ? 'Créer' : 'Enregistrer'}
           </Button>
         </div>

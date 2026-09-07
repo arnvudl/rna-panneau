@@ -11,7 +11,9 @@ type ApiOccupancy = {
 type ApiBillboard = {
   id: string
   reference: string
-  city: string
+  region: { name: string } | null
+  district: { name: string } | null
+  commune: { name: string } | null
   dimension: string
   status: string
   damaged: boolean
@@ -31,7 +33,9 @@ function toRow(b: ApiBillboard): BillboardWithLatLng {
   return {
     id: b.id,
     reference: b.reference,
-    city: b.city,
+    regionName: b.region?.name ?? '—',
+    districtName: b.district?.name ?? '—',
+    communeName: b.commune?.name ?? null,
     dimension: b.dimension,
     status: b.status,
     damaged: b.damaged,
