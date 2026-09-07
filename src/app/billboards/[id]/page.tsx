@@ -19,6 +19,8 @@ export default async function BillboardPage({ params }: { params: { id: string }
       occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
       photos: { orderBy: { createdAt: 'desc' } },
+      region: true,
+      district: true,
     },
   })
   if (!billboard) notFound()
@@ -35,7 +37,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
             <h1 className="text-3xl font-bold text-slate-900">{billboard.reference}</h1>
             <Badge variant={STATUS_BADGE_VARIANTS[status]}>{STATUS_LABELS[status]}</Badge>
           </div>
-          <p className="text-slate-600 font-medium">{billboard.city} — {billboard.dimension} — {billboard.sides} face(s)</p>
+          <p className="text-slate-600 font-medium">{billboard.region?.name ?? '—'} — {billboard.district?.name ?? '—'} — {billboard.dimension} — {billboard.sides} face(s)</p>
           <p className="text-sm text-slate-500 mt-1">
             Créé le {billboard.createdAt.toLocaleDateString('fr-FR')}
           </p>
@@ -45,7 +47,10 @@ export default async function BillboardPage({ params }: { params: { id: string }
             <BillboardDetailActions
               billboard={{
                 id: billboard.id,
-                city: billboard.city,
+                regionId: billboard.regionId ?? '',
+                districtId: billboard.districtId ?? '',
+                regionName: billboard.region?.name ?? '—',
+                districtName: billboard.district?.name ?? '—',
                 dimension: billboard.dimension,
                 sides: billboard.sides,
                 note: billboard.note,

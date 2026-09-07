@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', borderBottom: '0.5 solid #e2e8f0', paddingVertical: 3 },
   cell: { paddingHorizontal: 4 },
   colRef: { width: '12%' },
-  colCity: { width: '14%' },
+  colLocation: { width: '14%' },
   colDim: { width: '10%' },
   colSides: { width: '7%' },
   colStatus: { width: '12%' },
@@ -26,7 +26,8 @@ const styles = StyleSheet.create({
 
 export type ParkSummaryRow = {
   reference: string
-  city: string
+  regionName: string
+  districtName: string
   dimension: string
   sides: number
   status: string
@@ -55,8 +56,8 @@ export function ParkSummaryPdf({
             <View style={[styles.cell, styles.colRef]}>
               <Text style={styles.headerText}>Identifiant</Text>
             </View>
-            <View style={[styles.cell, styles.colCity]}>
-              <Text style={styles.headerText}>Ville</Text>
+            <View style={[styles.cell, styles.colLocation]}>
+              <Text style={styles.headerText}>Région / District</Text>
             </View>
             <View style={[styles.cell, styles.colDim]}>
               <Text style={styles.headerText}>Dimension</Text>
@@ -82,8 +83,8 @@ export function ParkSummaryPdf({
               <View style={[styles.cell, styles.colRef]}>
                 <Text>{r.reference}</Text>
               </View>
-              <View style={[styles.cell, styles.colCity]}>
-                <Text>{r.city}</Text>
+              <View style={[styles.cell, styles.colLocation]}>
+                <Text>{r.regionName} — {r.districtName}</Text>
               </View>
               <View style={[styles.cell, styles.colDim]}>
                 <Text>{r.dimension}</Text>

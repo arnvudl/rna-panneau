@@ -8,7 +8,9 @@ import type { BillboardStatus } from '@/lib/status'
 export type BillboardRow = {
   id: string
   reference: string
-  city: string
+  regionName: string
+  districtName: string
+  communeName?: string | null
   dimension: string
   status: string
   damaged: boolean
@@ -39,7 +41,9 @@ export function BillboardTable({
       <TableHeader>
         <TableRow>
           <TableHead>Identifiant</TableHead>
-          <TableHead>Ville</TableHead>
+          <TableHead>Région</TableHead>
+          <TableHead>District</TableHead>
+          <TableHead>Commune</TableHead>
           <TableHead>Dimension</TableHead>
           <TableHead>Statut</TableHead>
           <TableHead>Clients</TableHead>
@@ -56,7 +60,9 @@ export function BillboardTable({
             }`}
           >
             <TableCell className="font-semibold text-slate-700 pl-4">{r.reference}</TableCell>
-            <TableCell>{r.city}</TableCell>
+            <TableCell>{r.regionName}</TableCell>
+            <TableCell>{r.districtName}</TableCell>
+            <TableCell>{r.communeName ?? '—'}</TableCell>
             <TableCell>{r.dimension.replace('D', '').replace('X', 'x')}</TableCell>
             <TableCell>
               <Badge variant={STATUS_BADGE_VARIANTS[r.status as BillboardStatus] ?? 'outline'}>

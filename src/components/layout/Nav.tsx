@@ -46,7 +46,7 @@ export function Nav() {
           })}
           {isAdmin && (
             <Link
-              href="/settings/city-prefixes"
+              href="/settings/regions"
               className={`relative flex h-full items-center text-sm font-medium transition-colors ${
                 pathname?.startsWith('/settings') ? 'text-primary' : 'text-slate-500 hover:text-slate-900'
               }`}

@@ -16,6 +16,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
       photos: { orderBy: { createdAt: 'desc' }, take: 1 },
+      district: true,
+      region: true,
     },
   })
   if (!billboard) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -26,7 +28,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     BillboardPdfDocument({
       data: {
         reference: billboard.reference,
-        city: billboard.city,
+        regionName: billboard.region?.name ?? '—',
+        districtName: billboard.district?.name ?? '—',
         dimension: billboard.dimension,
         sides: billboard.sides,
         status: deriveBillboardStatus(billboard),

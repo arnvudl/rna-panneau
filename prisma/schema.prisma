@@ -69,12 +69,45 @@ model User {
   notifications      Notification[]
 }
 
+model Region {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  code       String      @unique
+  districts  District[]
+  billboards Billboard[]
+}
+
+model District {
+  id         String      @id @default(cuid())
+  name       String
+  regionId   String
+  region     Region      @relation(fields: [regionId], references: [id])
+  communes   Commune[]
+  billboards Billboard[]
+
+  @@unique([regionId, name])
+  @@index([regionId])
+}
+
+model Commune {
+  id         String      @id @default(cuid())
+  name       String
+  districtId String
+  district   District    @relation(fields: [districtId], references: [id])
+  billboards Billboard[]
+
+  @@unique([districtId, name])
+  @@index([districtId])
+}
+
 model Billboard {
   id              String    @id @default(cuid())
   reference       String    @unique
   lat             Float
   lng             Float
-  city            String
+  regionId        String
+  districtId      String
+  communeId       String?
   dimension       Dimension
   sides           Int       @default(1)
   damaged         Boolean   @default(false)
@@ -85,9 +118,16 @@ model Billboard {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  region             Region              @relation(fields: [regionId], references: [id])
+  district           District            @relation(fields: [districtId], references: [id])
+  commune            Commune?            @relation(fields: [communeId], references: [id])
   photos             BillboardPhoto[]
   occupancies        Occupancy[]
   maintenanceRecords MaintenanceRecord[]
+
+  @@index([regionId])
+  @@index([districtId])
+  @@index([communeId])
 }
 
 model BillboardPhoto {
@@ -177,8 +217,3 @@ model Notification {
   @@index([userId, createdAt])
 }
 
-model CityPrefix {
-  id     String @id @default(cuid())
-  city   String @unique
-  prefix String
-}

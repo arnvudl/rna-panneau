@@ -26,7 +26,7 @@ export function BillboardDrawer({
           <div className="space-y-4 p-4">
             <div>
               <p className="text-sm text-slate-600">
-                {billboard.city} — {billboard.dimension.replace('D', '').replace('X', 'x')}
+                {billboard.regionName} · {billboard.districtName} — {billboard.dimension.replace('D', '').replace('X', 'x')}
               </p>
               <div className="mt-2 flex items-center gap-2">
                 <Badge variant="outline">{billboard.status}</Badge>

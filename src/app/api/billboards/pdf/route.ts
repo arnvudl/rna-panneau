@@ -27,6 +27,8 @@ export async function GET(req: NextRequest) {
       occupancies: { where: { status: 'ACTIVE' }, include: { client: true } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
       photos: { orderBy: { createdAt: 'desc' }, take: 1 },
+      district: true,
+      region: true,
     },
     orderBy: { reference: 'asc' },
   })
@@ -41,7 +43,8 @@ export async function GET(req: NextRequest) {
   if (mode === 'summary') {
     const rows: ParkSummaryRow[] = filtered.map((b) => ({
       reference: b.reference,
-      city: b.city,
+      regionName: b.region?.name ?? '—',
+      districtName: b.district?.name ?? '—',
       dimension: b.dimension,
       sides: b.sides,
       status: b.status,
@@ -56,7 +59,8 @@ export async function GET(req: NextRequest) {
     const data: ParkFullBillboard[] = await Promise.all(
       filtered.map(async (b) => ({
       reference: b.reference,
-      city: b.city,
+      regionName: b.region?.name ?? '—',
+      districtName: b.district?.name ?? '—',
       dimension: b.dimension,
       sides: b.sides,
       status: b.status,
