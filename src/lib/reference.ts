@@ -1,17 +1,10 @@
-export function resolveCityPrefix(city: string, prefixes: { city: string; prefix: string }[]): string {
-  const match = prefixes.find((p) => p.city.toLowerCase() === city.toLowerCase())
-  return match ? match.prefix : city.slice(0, 3).toUpperCase()
-}
-
 export function generateReference({
   sequence,
-  city,
-  prefixes,
+  regionCode,
 }: {
   sequence: number
-  city: string
-  prefixes: { city: string; prefix: string }[]
+  regionCode: string
 }): string {
-  const padded = String(sequence).padStart(3, '0')
-  return `${resolveCityPrefix(city, prefixes)} ${padded}`
+  const padded = String(sequence).padStart(4, '0')
+  return `${regionCode}-${padded}`
 }
