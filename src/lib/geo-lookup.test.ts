@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { findDistrictNameAt, findCommuneNameAt } from './geo-lookup'
 
 describe('geo-lookup', () => {
-  it('finds the district containing Antananarivo city center', () => {
+  it('finds the district containing the center of Antananarivo', () => {
     const name = findDistrictNameAt(-18.8792, 47.5079)
     expect(name).toBeTruthy()
     expect(typeof name).toBe('string')
@@ -12,7 +12,7 @@ describe('geo-lookup', () => {
     expect(findDistrictNameAt(-10, 40)).toBeUndefined()
   })
 
-  it('finds a commune for Antananarivo city center', () => {
+  it('finds a commune for the center of Antananarivo', () => {
     const name = findCommuneNameAt(-18.8792, 47.5079)
     expect(name === undefined || typeof name === 'string').toBe(true)
   })

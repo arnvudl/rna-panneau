@@ -14,7 +14,8 @@ const styles = StyleSheet.create({
 
 export type ParkFullBillboard = {
   reference: string
-  city: string
+  regionName: string
+  districtName: string
   dimension: string
   sides: number
   status: string
@@ -47,8 +48,8 @@ export function ParkFullPdf({
 
           <View style={styles.section}>
             <View style={styles.row}>
-              <Text style={styles.label}>Ville</Text>
-              <Text>{data.city}</Text>
+              <Text style={styles.label}>Région / District</Text>
+              <Text>{data.regionName} — {data.districtName}</Text>
             </View>
             <View style={styles.row}>
               <Text style={styles.label}>Dimensions</Text>

@@ -38,17 +38,13 @@ export async function GET(req: NextRequest) {
 
   const generatedAt = new Date().toLocaleDateString('fr-FR')
 
-  // The PDF components still take a single free-text location string. Feed them
-  // the detected district (falling back to the region) until the component
-  // layer is migrated to region/district/commune.
-  const locationOf = (b: (typeof filtered)[number]) => b.district?.name ?? b.region?.name ?? ''
-
   let buffer: Buffer
 
   if (mode === 'summary') {
     const rows: ParkSummaryRow[] = filtered.map((b) => ({
       reference: b.reference,
-      city: locationOf(b),
+      regionName: b.region?.name ?? '—',
+      districtName: b.district?.name ?? '—',
       dimension: b.dimension,
       sides: b.sides,
       status: b.status,
@@ -63,7 +59,8 @@ export async function GET(req: NextRequest) {
     const data: ParkFullBillboard[] = await Promise.all(
       filtered.map(async (b) => ({
       reference: b.reference,
-      city: locationOf(b),
+      regionName: b.region?.name ?? '—',
+      districtName: b.district?.name ?? '—',
       dimension: b.dimension,
       sides: b.sides,
       status: b.status,

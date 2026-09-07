@@ -1,7 +1,6 @@
 // scripts/prepare-geo-data.ts
 import fs from 'fs'
 import path from 'path'
-// @ts-expect-error -- @turf/simplify has no bundled types matching this call shape
 import simplify from '@turf/simplify'
 
 const COMMIT = '9469f09592ced973a3448cf66b6100b741b64c0d'

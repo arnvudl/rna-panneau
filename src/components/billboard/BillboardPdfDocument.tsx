@@ -12,7 +12,8 @@ const styles = StyleSheet.create({
 
 export type BillboardPdfData = {
   reference: string
-  city: string
+  regionName: string
+  districtName: string
   dimension: string
   sides: number
   status: string
@@ -32,7 +33,8 @@ export function BillboardPdfDocument({ data }: { data: BillboardPdfData }) {
         {data.photo && <Image src={data.photo} style={styles.photo} />}
 
         <View style={styles.section}>
-          <View style={styles.row}><Text style={styles.label}>Ville</Text><Text>{data.city}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Région</Text><Text>{data.regionName}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>District</Text><Text>{data.districtName}</Text></View>
           <View style={styles.row}><Text style={styles.label}>Dimensions</Text><Text>{data.dimension}</Text></View>
           <View style={styles.row}><Text style={styles.label}>Faces</Text><Text>{data.sides}</Text></View>
           <View style={styles.row}><Text style={styles.label}>Statut</Text><Text>{data.status}</Text></View>

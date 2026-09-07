@@ -28,10 +28,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     BillboardPdfDocument({
       data: {
         reference: billboard.reference,
-        // The PDF components still take a single free-text location string.
-        // Feed them the detected district (falling back to the region) until
-        // the component layer is migrated to region/district/commune.
-        city: billboard.district?.name ?? billboard.region?.name ?? '',
+        regionName: billboard.region?.name ?? '—',
+        districtName: billboard.district?.name ?? '—',
         dimension: billboard.dimension,
         sides: billboard.sides,
         status: deriveBillboardStatus(billboard),

@@ -6,7 +6,9 @@ import type { BillboardStatus } from '@/lib/status'
 import { cn } from '@/lib/utils'
 
 export type Filters = {
-  city?: string
+  regionId?: string
+  districtId?: string
+  communeId?: string
   status?: string
   dimension?: string
   damaged?: string
@@ -21,29 +23,51 @@ const selectClass =
 
 export function FilterBar({ filters, onChange, className }: { filters: Filters; onChange: (f: Filters) => void; className?: string }) {
   const [clients, setClients] = useState<{ id: string; name: string }[]>([])
-  const [cities, setCities] = useState<{ city: string; prefix: string }[]>([])
+  const [regions, setRegions] = useState<{ id: string; name: string; code: string }[]>([])
+  const [districts, setDistricts] = useState<{ id: string; name: string; regionId: string }[]>([])
 
   useEffect(() => {
     fetch('/api/clients')
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => setClients(Array.isArray(data) ? data : []))
       .catch(() => {})
-    fetch('/api/city-prefixes')
+    fetch('/api/regions')
       .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setCities(Array.isArray(data) ? data : []))
+      .then((data) => setRegions(Array.isArray(data) ? data : []))
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    const url = filters.regionId ? `/api/districts?regionId=${filters.regionId}` : '/api/districts'
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setDistricts(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [filters.regionId])
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2 border-b bg-slate-50/50 px-4 py-3 sm:px-6 sm:py-4", className)}>
       <select
         className={selectClass}
-        value={filters.city ?? ''}
-        onChange={(e) => onChange({ ...filters, city: e.target.value || undefined })}
+        value={filters.regionId ?? ''}
+        onChange={(e) =>
+          onChange({ ...filters, regionId: e.target.value || undefined, districtId: undefined })
+        }
       >
-        <option value="">Toutes les villes</option>
-        {cities.map((c) => (
-          <option key={c.city} value={c.city}>{c.city}</option>
+        <option value="">Toutes les régions</option>
+        {regions.map((r) => (
+          <option key={r.id} value={r.id}>{r.name}</option>
+        ))}
+      </select>
+
+      <select
+        className={selectClass}
+        value={filters.districtId ?? ''}
+        onChange={(e) => onChange({ ...filters, districtId: e.target.value || undefined })}
+      >
+        <option value="">Tous les districts</option>
+        {districts.map((d) => (
+          <option key={d.id} value={d.id}>{d.name}</option>
         ))}
       </select>
 
