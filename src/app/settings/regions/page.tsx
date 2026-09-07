@@ -1,5 +1,10 @@
 import { prisma } from '@/lib/prisma'
 
+// This page reads the database and must not be statically prerendered at
+// build time — Railway (and any environment where DATABASE_URL is only
+// injected at runtime, not during the Docker build) would fail the build.
+export const dynamic = 'force-dynamic'
+
 export default async function RegionsPage() {
   const regions = await prisma.region.findMany({ orderBy: { name: 'asc' } })
 
