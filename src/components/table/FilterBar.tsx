@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { STATUS_LABELS } from '@/lib/status-labels'
 import type { BillboardStatus } from '@/lib/status'
 import { cn } from '@/lib/utils'
@@ -44,6 +45,8 @@ export function FilterBar({ filters, onChange, className }: { filters: Filters; 
       .then((data) => setDistricts(Array.isArray(data) ? data : []))
       .catch(() => {})
   }, [filters.regionId])
+
+  const hasActiveFilters = Object.values(filters).some((v) => v !== undefined)
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2 border-b bg-slate-50/50 px-4 py-3 sm:px-6 sm:py-4", className)}>
@@ -113,6 +116,18 @@ export function FilterBar({ filters, onChange, className }: { filters: Filters; 
           <option key={c.id} value={c.id}>{c.name}</option>
         ))}
       </select>
+
+      {hasActiveFilters && (
+        <button
+          type="button"
+          onClick={() => onChange({})}
+          title="Supprimer tous les filtres"
+          aria-label="Supprimer tous les filtres"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      )}
     </div>
   )
 }

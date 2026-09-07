@@ -11,12 +11,14 @@ export function ConfirmDeleteDialog({
   onOpenChange,
   entityLabel,
   entityName,
+  confirmLabel = 'Nom',
   onConfirm,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   entityLabel: string
   entityName: string
+  confirmLabel?: string
   onConfirm: () => Promise<void>
 }) {
   const [typed, setTyped] = useState('')
@@ -50,7 +52,7 @@ export function ConfirmDeleteDialog({
             Cette action est irréversible. Pour confirmer, tapez exactement <strong>{entityName}</strong> ci-dessous.
           </p>
           <div className="space-y-1">
-            <Label>Nom</Label>
+            <Label>{confirmLabel}</Label>
             <Input value={typed} onChange={(e) => setTyped(e.target.value)} />
           </div>
           <Button

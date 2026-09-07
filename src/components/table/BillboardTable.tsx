@@ -50,7 +50,7 @@ export function BillboardTable({
       <TableHeader>
         <TableRow>
           {selectable && (
-            <TableHead className="w-8">
+            <TableHead className="w-10 px-4 text-center">
               <input
                 type="checkbox"
                 checked={allSelected}
@@ -79,7 +79,7 @@ export function BillboardTable({
             }`}
           >
             {selectable && (
-              <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+              <TableCell className="w-10 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   checked={selectedIds!.has(r.id)}

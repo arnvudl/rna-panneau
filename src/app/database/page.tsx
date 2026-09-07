@@ -10,6 +10,7 @@ import { BillboardForm } from '@/components/billboard/BillboardForm'
 import { ExportParkPdfButton } from '@/components/billboard/ExportParkPdfButton'
 import { StatusLegend } from '@/components/map/StatusLegend'
 import { Button } from '@/components/ui/button'
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
 import { useBillboards } from '@/hooks/useBillboards'
 import { getPermission } from '@/lib/permissions'
 
@@ -21,6 +22,7 @@ export default function DatabasePage() {
   const [formOpen, setFormOpen] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   const canDelete = getPermission(session?.user?.role ?? 'USER', 'delete_billboard') !== 'forbidden'
 
@@ -83,7 +85,7 @@ export default function DatabasePage() {
         </div>
         <div className="flex items-center gap-4">
           {canDelete && selectedIds.size > 0 && (
-            <Button variant="destructive" size="sm" disabled={deleting} onClick={deleteSelected}>
+            <Button variant="destructive" size="sm" disabled={deleting} onClick={() => setDeleteConfirmOpen(true)}>
               {deleting ? 'Suppression…' : `Supprimer la sélection (${selectedIds.size})`}
             </Button>
           )}
@@ -114,6 +116,14 @@ export default function DatabasePage() {
       </div>
 
       <BillboardForm mode="create" open={formOpen} onOpenChange={setFormOpen} initialLatLng={null} onSaved={reload} />
+      <ConfirmDeleteDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        entityLabel={`ces ${selectedIds.size} panneau${selectedIds.size > 1 ? 'x' : ''}`}
+        entityName={String(selectedIds.size)}
+        confirmLabel="Nombre de panneaux à supprimer"
+        onConfirm={deleteSelected}
+      />
       <StatusLegend />
     </div>
   )
