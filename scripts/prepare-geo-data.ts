@@ -33,7 +33,10 @@ async function main() {
 
   const adm3 = await download('ADM3')
   console.log(`ADM3: ${adm3.features.length} communes`)
-  const adm3Simplified = simplify(adm3, { tolerance: 0.005, highQuality: false })
+  // Communes are small enough that 0.005 shrinks them below the coordinates
+  // they are supposed to contain: sampling 10 Malagasy city centres, that
+  // tolerance located only 7, while 0.001 locates all 10 for 3.7 MB more.
+  const adm3Simplified = simplify(adm3, { tolerance: 0.001, highQuality: false })
   fs.writeFileSync(path.join(OUT_DIR, 'mdg-adm3-simplified.geojson'), JSON.stringify(adm3Simplified))
 
   report('mdg-adm1.geojson')
