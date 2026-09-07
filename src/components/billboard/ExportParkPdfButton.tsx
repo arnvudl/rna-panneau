@@ -5,12 +5,21 @@ import { FileText, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Filters } from '@/components/table/FilterBar'
 
-function buildQuery(mode: string, filters: Filters) {
-  const params = new URLSearchParams({ mode })
+function buildQuery(params: Record<string, string>, filters: Filters) {
+  const search = new URLSearchParams(params)
   for (const [k, v] of Object.entries(filters)) {
-    if (v !== undefined) params.set(k, v)
+    if (v !== undefined) search.set(k, v)
   }
-  return params.toString()
+  return search.toString()
+}
+
+function downloadFile(url: string) {
+  const link = document.createElement('a')
+  link.href = url
+  link.rel = 'noopener'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
 }
 
 export function ExportParkPdfButton({ filters }: { filters: Filters }) {
@@ -20,7 +29,7 @@ export function ExportParkPdfButton({ filters }: { filters: Filters }) {
     <div className="relative">
       <Button variant="outline" size="sm" onClick={() => setOpen((o) => !o)}>
         <FileText className="mr-1 h-4 w-4" />
-        Export PDF
+        Exporter
         <ChevronDown className="ml-1 h-3 w-3" />
       </Button>
       {open && (
@@ -30,20 +39,30 @@ export function ExportParkPdfButton({ filters }: { filters: Filters }) {
             <button
               className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
               onClick={() => {
-                window.open(`/api/billboards/pdf?${buildQuery('summary', filters)}`, '_blank')
+                window.open(`/api/billboards/pdf?${buildQuery({ mode: 'summary' }, filters)}`, '_blank')
                 setOpen(false)
               }}
             >
-              Récapitulatif (tableau)
+              PDF — Récapitulatif (tableau)
             </button>
             <button
               className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
               onClick={() => {
-                window.open(`/api/billboards/pdf?${buildQuery('full', filters)}`, '_blank')
+                window.open(`/api/billboards/pdf?${buildQuery({ mode: 'full' }, filters)}`, '_blank')
                 setOpen(false)
               }}
             >
-              Complet (1 page/panneau)
+              PDF — Complet (1 page/panneau)
+            </button>
+            <div className="my-1 border-t" />
+            <button
+              className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
+              onClick={() => {
+                downloadFile(`/api/billboards/xlsx?${buildQuery({}, filters)}`)
+                setOpen(false)
+              }}
+            >
+              Excel (.xlsx)
             </button>
           </div>
         </>

@@ -5,6 +5,7 @@ import { deriveBillboardStatus } from '@/lib/status'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
 import { resolveGeoForCoordinates } from '@/lib/billboard-geo'
+import { getPermission } from '@/lib/permissions'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireSession()
@@ -15,6 +16,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     include: {
       occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
+      photos: { orderBy: { createdAt: 'desc' } },
       region: true,
       district: true,
       commune: true,
@@ -49,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const parsed = parseOrBadRequest(patchSchema, await req.json())
   if ('error' in parsed) return parsed.error
 
-  if (session.user.role === 'USER') {
+  if (getPermission(session.user.role, 'edit_billboard') === 'requires_approval') {
     return createApprovalRequest(session, 'EDIT_BILLBOARD', {
       billboardId: params.id,
       ...parsed.data,
@@ -90,7 +92,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   const { session, error } = await requireSession()
   if (error) return error
 
-  if (session.user.role === 'USER') {
+  if (getPermission(session.user.role, 'delete_billboard') === 'requires_approval') {
     // Contract for the approvals API: DELETE_BILLBOARD payload is always
     // shaped as { billboardId: string } — the id of the billboard to remove
     // once the request is approved.

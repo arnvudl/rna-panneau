@@ -7,12 +7,14 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ClientForm } from '@/components/clients/ClientForm'
 import { formatContactInfo } from '@/lib/client-format'
+import { getPermission } from '@/lib/permissions'
 
 type Client = { id: string; name: string; phone: string | null; email: string | null }
 
 export default function ClientsPage() {
   const { data: session, status } = useSession()
-  const canCreate = status === 'authenticated' && session?.user?.role !== 'USER'
+  const canCreate =
+    status === 'authenticated' && getPermission(session?.user?.role ?? 'USER', 'create_client') !== 'forbidden'
 
   const [query, setQuery] = useState('')
   const [clients, setClients] = useState<Client[]>([])
@@ -48,7 +50,7 @@ export default function ClientsPage() {
 
   return (
     <div className="flex h-[calc(100vh-56px)] flex-col gap-6 bg-slate-50 p-6">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 overflow-hidden">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Clients</h1>
           {canCreate && (
@@ -58,8 +60,8 @@ export default function ClientsPage() {
           )}
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="mb-6">
+        <div className="flex flex-1 flex-col overflow-hidden rounded-xl border bg-white p-6 shadow-sm">
+          <div className="mb-6 shrink-0">
             <Input
               placeholder="Rechercher un client..."
               value={query}
@@ -67,13 +69,13 @@ export default function ClientsPage() {
               className="max-w-md bg-slate-50"
             />
           </div>
-          
-          {error && <p className="mb-4 text-sm font-medium text-red-600">{error}</p>}
-          
+
+          {error && <p className="mb-4 shrink-0 text-sm font-medium text-red-600">{error}</p>}
+
           {loading ? (
             <div className="py-8 text-center text-sm font-medium text-slate-500">Chargement…</div>
           ) : (
-            <ul className="divide-y divide-slate-100 rounded-lg border">
+            <ul className="flex-1 overflow-y-auto divide-y divide-slate-100 rounded-lg border">
               {clients.map((c) => (
                 <li key={c.id}>
                   <Link href={`/clients/${c.id}`} className="group flex flex-col p-4 transition-colors hover:bg-slate-50">
@@ -89,7 +91,7 @@ export default function ClientsPage() {
           )}
         </div>
       </div>
-      
+
       {canCreate && <ClientForm mode="create" open={formOpen} onOpenChange={setFormOpen} onSaved={reload} />}
     </div>
   )

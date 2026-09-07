@@ -3,6 +3,7 @@ import { unlink } from 'fs/promises'
 import path from 'path'
 import { prisma } from '@/lib/prisma'
 import { requireSession, createApprovalRequest } from '@/lib/api-helpers'
+import { getPermission } from '@/lib/permissions'
 
 const UPLOADS_DIR = process.env.UPLOADS_DIR ?? './uploads'
 
@@ -18,7 +19,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  if (session.user.role === 'USER') {
+  if (getPermission(session.user.role, 'delete_photo') === 'requires_approval') {
     return createApprovalRequest(session, 'DELETE_PHOTO', {
       photoId: params.photoId,
       billboardId: params.id,

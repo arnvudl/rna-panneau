@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { Prisma, type ApprovalType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest } from '@/lib/api-helpers'
+import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
 import { createNotification } from '@/lib/notifications'
 import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
@@ -13,7 +14,9 @@ const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireSession()
   if (error) return error
-  if (session.user.role === 'USER') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (getPermission(session.user.role, 'view_approvals') === 'forbidden') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const parsed = parseOrBadRequest(patchSchema, await req.json())
   if ('error' in parsed) return parsed.error

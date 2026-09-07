@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
+import { getPermission } from '@/lib/permissions'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireSession()
@@ -28,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const parsed = parseOrBadRequest(patchSchema, await req.json())
   if ('error' in parsed) return parsed.error
 
-  if (session.user.role === 'USER') {
+  if (getPermission(session.user.role, 'edit_client') === 'requires_approval') {
     return createApprovalRequest(session, 'EDIT_CLIENT', {
       clientId: params.id,
       ...parsed.data,
@@ -43,7 +44,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   const { session, error } = await requireSession()
   if (error) return error
 
-  if (session.user.role === 'USER') {
+  if (getPermission(session.user.role, 'delete_client') === 'requires_approval') {
     return createApprovalRequest(session, 'DELETE_CLIENT', { clientId: params.id })
   }
 

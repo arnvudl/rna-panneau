@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { NotificationBell } from '@/components/layout/NotificationBell'
+import { getPermission } from '@/lib/permissions'
 
 const LINKS = [
   { href: '/dashboard', label: 'Tableau de bord' },
@@ -18,7 +19,8 @@ export function Nav() {
   const { data: session, status } = useSession()
   if (pathname === '/login') return null
 
-  const isAdmin = status === 'authenticated' && session?.user?.role !== 'USER'
+  const canViewSettings =
+    status === 'authenticated' && getPermission(session?.user?.role ?? 'USER', 'view_settings') !== 'forbidden'
 
   return (
     <nav className="flex h-14 items-center justify-between gap-6 border-b bg-white px-6 shadow-sm">
@@ -44,7 +46,7 @@ export function Nav() {
               </Link>
             )
           })}
-          {isAdmin && (
+          {canViewSettings && (
             <Link
               href="/settings/regions"
               className={`relative flex h-full items-center text-sm font-medium transition-colors ${

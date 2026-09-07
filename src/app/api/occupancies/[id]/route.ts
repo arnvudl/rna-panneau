@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
+import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
 
 const patchSchema = z.object({
@@ -19,7 +20,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const body = parsed.data
   const data = { ...body, endDate: body.endDate === undefined ? undefined : body.endDate ? new Date(body.endDate) : null }
 
-  if (session.user.role === 'USER') {
+  if (getPermission(session.user.role, 'edit_occupancy') === 'requires_approval') {
     // Contract for the approvals API: EDIT_OCCUPANCY payload is always shaped
     // as { occupancyId: string, status?: 'ACTIVE'|'TERMINATED', endDate?:
     // string (ISO) | null, contractRef?: string | null } — only the fields

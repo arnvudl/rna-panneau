@@ -12,6 +12,23 @@ type Approval = {
   createdAt: string
   payload: Record<string, unknown>
   resolvedNames?: Record<string, string>
+  before?: Record<string, unknown> | null
+}
+
+// Fields that just identify the target entity, not a proposed change —
+// never worth showing in a diff.
+const ID_FIELDS = new Set(['billboardId', 'clientId', 'occupancyId', 'photoId'])
+
+function formatFieldValue(value: unknown): string {
+  if (value === null || value === undefined) return '—'
+  if (typeof value === 'boolean') return value ? 'Oui' : 'Non'
+  if (typeof value === 'object') return JSON.stringify(value)
+  // ISO date strings (payload) and Date objects serialized to ISO by the API
+  // (before) both match this pattern — render them the same way.
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
+    return new Date(value).toLocaleDateString('fr-FR')
+  }
+  return String(value)
 }
 
 const PAYLOAD_LABELS: Record<string, string> = {
@@ -44,17 +61,39 @@ const PAYLOAD_LABELS: Record<string, string> = {
 function PayloadSummary({
   payload,
   resolvedNames,
+  before,
 }: {
   payload: Record<string, unknown>
   resolvedNames?: Record<string, string>
+  before?: Record<string, unknown> | null
 }) {
   const entries = Object.entries(payload ?? {})
   if (entries.length === 0) return null
+
+  if (before) {
+    const changed = entries.filter(([key, value]) => {
+      if (ID_FIELDS.has(key)) return false
+      return formatFieldValue(before[key]) !== formatFieldValue(value)
+    })
+    if (changed.length === 0) return null
+    return (
+      <ul className="mt-1 space-y-0.5 text-xs text-slate-500">
+        {changed.map(([key, value]) => (
+          <li key={key}>
+            <span className="font-medium">{PAYLOAD_LABELS[key] ?? key}:</span>{' '}
+            <span className="line-through">{formatFieldValue(before[key])}</span>{' '}
+            → <span className="font-medium text-slate-700">{formatFieldValue(value)}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
   return (
     <ul className="mt-1 space-y-0.5 text-xs text-slate-500">
       {entries.map(([key, value]) => {
         const resolved = resolvedNames?.[key]
-        const display = resolved ?? (typeof value === 'object' ? JSON.stringify(value) : String(value))
+        const display = resolved ?? formatFieldValue(value)
         return (
           <li key={key}>
             <span className="font-medium">{PAYLOAD_LABELS[key] ?? key}:</span> {display}
@@ -129,7 +168,7 @@ export function ApprovalQueue() {
               <div>
                 <p className="font-medium">{APPROVAL_LABELS[a.type as ApprovalType] ?? a.type}</p>
                 <p className="text-sm text-slate-500">Demandé par {a.requestedBy.email}</p>
-                <PayloadSummary payload={a.payload} resolvedNames={a.resolvedNames} />
+                <PayloadSummary payload={a.payload} resolvedNames={a.resolvedNames} before={a.before} />
               </div>
               <div className="flex gap-2">
                 <Button

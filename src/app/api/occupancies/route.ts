@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
+import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
 import { createOccupancySchema } from '@/lib/occupancy-schema'
 
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  if (session.user.role === 'USER') {
+  if (getPermission(session.user.role, 'create_occupancy') === 'requires_approval') {
     // Contract for the approvals API: CREATE_OCCUPANCY payload is always
     // shaped as { billboardId: string, clientId: string, face: 'FACE_1' |
     // 'FACE_2' | 'BOTH', contractRef?: string, endDate?: string (ISO) }.
