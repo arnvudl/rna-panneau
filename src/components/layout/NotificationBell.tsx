@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { getPermission } from '@/lib/permissions'
 
 type Notification = {
   id: string
@@ -18,7 +19,9 @@ type Notification = {
 export function NotificationBell() {
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
-  const isAdmin = sessionStatus === 'authenticated' && session?.user?.role !== 'USER'
+  const canManageNotifications =
+    sessionStatus === 'authenticated' &&
+    getPermission(session?.user?.role ?? 'USER', 'manage_notifications') !== 'forbidden'
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
@@ -38,7 +41,7 @@ export function NotificationBell() {
     // Wait for the session so the admin-only expiration check (403 for USER)
     // is only fired for admins.
     if (sessionStatus !== 'authenticated') return
-    if (isAdmin) {
+    if (canManageNotifications) {
       fetch('/api/notifications/check-expirations', { method: 'POST' })
         .catch(() => {})
         .finally(fetchNotifications)
@@ -47,7 +50,7 @@ export function NotificationBell() {
     }
     const interval = setInterval(fetchNotifications, 30000)
     return () => clearInterval(interval)
-  }, [fetchNotifications, isAdmin, sessionStatus])
+  }, [fetchNotifications, canManageNotifications, sessionStatus])
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

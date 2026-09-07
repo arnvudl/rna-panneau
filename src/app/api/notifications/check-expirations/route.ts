@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireSession } from '@/lib/api-helpers'
 import { notifyAdmins } from '@/lib/notifications'
+import { getPermission } from '@/lib/permissions'
 
 export async function POST() {
   const { session, error } = await requireSession()
   if (error) return error
-  if (session.user.role === 'USER') {
+  if (getPermission(session.user.role, 'manage_notifications') === 'forbidden') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

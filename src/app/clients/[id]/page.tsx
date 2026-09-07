@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { formatContactInfo } from '@/lib/client-format'
 import { ClientDetailActions } from '@/components/clients/ClientDetailActions'
+import { ContractPhotoLink } from '@/components/clients/ContractPhotoLink'
 
 export default async function ClientPage({ params }: { params: { id: string } }) {
   const client = await prisma.client.findUnique({
@@ -22,9 +23,12 @@ export default async function ClientPage({ params }: { params: { id: string } })
       <ul className="space-y-2">
         {client.occupancies.map((o) => (
           <li key={o.id} className="rounded-lg border p-3">
-            <Link href={`/billboards/${o.billboardId}`} className="font-medium text-blue-700">
-              {o.billboard.reference}
-            </Link>
+            <div className="flex items-center justify-between">
+              <Link href={`/billboards/${o.billboardId}`} className="font-medium text-blue-700">
+                {o.billboard.reference}
+              </Link>
+              <ContractPhotoLink billboardId={o.billboardId} billboardReference={o.billboard.reference} />
+            </div>
             <p className="text-sm text-slate-600">
               {o.contractRef ? `Contrat : ${o.contractRef}` : 'Sans référence'}
               {o.endDate ? ` — jusqu'au ${new Date(o.endDate).toLocaleDateString('fr-FR')}` : ' — durée indéterminée'}

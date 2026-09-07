@@ -25,7 +25,14 @@ export default function DatabasePage() {
       )}
       
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Base de données</h1>
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Base de données</h1>
+          {!loading && (
+            <span className="text-sm font-medium text-slate-500">
+              {billboards.length} panneau{billboards.length !== 1 ? 'x' : ''}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-4">
           <ExportParkPdfButton filters={filters} />
           <Button onClick={() => setFormOpen(true)} className="shadow-sm">
