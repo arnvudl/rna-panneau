@@ -15,6 +15,7 @@ type District = { id: string; name: string; regionId: string }
 
 export type EditableBillboard = {
   id: string
+  reference: string
   regionId: string
   districtId: string
   regionName: string

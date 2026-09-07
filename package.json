@@ -24,6 +24,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
     "lucide-react": "^1.33.0",
     "maplibre-gl": "^6.4.1",
     "next": "14.2.35",

@@ -22,11 +22,20 @@ export function BillboardTable({
   rows,
   onSelect,
   selectedId,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
 }: {
   rows: BillboardRow[]
   onSelect: (id: string) => void
   selectedId?: string | null
+  selectedIds?: Set<string>
+  onToggleSelect?: (id: string) => void
+  onToggleSelectAll?: (checked: boolean) => void
 }) {
+  const selectable = !!selectedIds && !!onToggleSelect
+  const allSelected = selectable && rows.length > 0 && rows.every((r) => selectedIds!.has(r.id))
+
   if (rows.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-1 p-8 text-center text-slate-500">
@@ -40,6 +49,16 @@ export function BillboardTable({
     <Table>
       <TableHeader>
         <TableRow>
+          {selectable && (
+            <TableHead className="w-8">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={(e) => onToggleSelectAll?.(e.target.checked)}
+                aria-label="Tout sélectionner"
+              />
+            </TableHead>
+          )}
           <TableHead>Identifiant</TableHead>
           <TableHead>Région</TableHead>
           <TableHead>District</TableHead>
@@ -59,6 +78,16 @@ export function BillboardTable({
               selectedId === r.id ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'
             }`}
           >
+            {selectable && (
+              <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds!.has(r.id)}
+                  onChange={() => onToggleSelect!(r.id)}
+                  aria-label={`Sélectionner ${r.reference}`}
+                />
+              </TableCell>
+            )}
             <TableCell className="font-semibold text-slate-700 pl-4">{r.reference}</TableCell>
             <TableCell>{r.regionName}</TableCell>
             <TableCell>{r.districtName}</TableCell>

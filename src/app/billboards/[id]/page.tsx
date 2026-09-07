@@ -47,6 +47,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
             <BillboardDetailActions
               billboard={{
                 id: billboard.id,
+                reference: billboard.reference,
                 regionId: billboard.regionId ?? '',
                 districtId: billboard.districtId ?? '',
                 regionName: billboard.region?.name ?? '—',
