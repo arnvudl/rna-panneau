@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { deriveBillboardStatus } from '@/lib/status'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
+import { resolveGeoForCoordinates } from '@/lib/billboard-geo'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireSession()
@@ -14,6 +15,9 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     include: {
       occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
+      region: true,
+      district: true,
+      commune: true,
     },
   })
   if (!billboard) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -23,7 +27,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 const patchSchema = z.object({
   damaged: z.boolean().optional(),
-  city: z.string().trim().min(1).optional(),
+  regionId: z.string().optional(),
+  districtId: z.string().optional(),
   dimension: z.enum(['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']).optional(),
   sides: z.union([z.literal(1), z.literal(2)]).optional(),
   note: z.string().trim().max(2000).nullable().optional(),
@@ -51,7 +56,33 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     })
   }
 
-  const billboard = await prisma.billboard.update({ where: { id: params.id }, data: parsed.data })
+  const data = parsed.data
+  const updateData: Record<string, unknown> = { ...data }
+
+  const coordsChanged = data.lat !== undefined || data.lng !== undefined
+  if (coordsChanged && !(data.regionId && data.districtId)) {
+    const existing = await prisma.billboard.findUnique({ where: { id: params.id } })
+    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    const lat = data.lat ?? existing.lat
+    const lng = data.lng ?? existing.lng
+    const resolved = await resolveGeoForCoordinates(lat, lng)
+    if (!resolved) {
+      return NextResponse.json(
+        {
+          error: 'GEO_NOT_FOUND',
+          message:
+            "Impossible de déterminer la région/district à ces coordonnées. Sélectionnez-les manuellement.",
+        },
+        { status: 422 }
+      )
+    }
+    updateData.regionId = resolved.regionId
+    updateData.districtId = resolved.districtId
+    updateData.communeId = resolved.communeId
+  }
+
+  const billboard = await prisma.billboard.update({ where: { id: params.id }, data: updateData })
   return NextResponse.json(billboard)
 }
 

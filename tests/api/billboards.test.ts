@@ -6,9 +6,17 @@ describe('buildBillboardWhere', () => {
     expect(buildBillboardWhere(new URLSearchParams())).toEqual({})
   })
 
-  it('filters by city and damaged', () => {
-    const params = new URLSearchParams({ city: 'Toamasina', damaged: 'true' })
-    expect(buildBillboardWhere(params)).toEqual({ city: 'Toamasina', damaged: true })
+  it('filters by region and damaged', () => {
+    const params = new URLSearchParams({ regionId: 'region-1', damaged: 'true' })
+    expect(buildBillboardWhere(params)).toEqual({ regionId: 'region-1', damaged: true })
+  })
+
+  it('filters by district and commune', () => {
+    const params = new URLSearchParams({ districtId: 'district-1', communeId: 'commune-1' })
+    expect(buildBillboardWhere(params)).toEqual({
+      districtId: 'district-1',
+      communeId: 'commune-1',
+    })
   })
 
   it('filters by dimension', () => {

@@ -6,6 +6,7 @@ import { requireSession, parseOrBadRequest } from '@/lib/api-helpers'
 import { isFaceAvailable } from '@/lib/face-occupancy'
 import { createNotification } from '@/lib/notifications'
 import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
+import { resolveGeoForCoordinates } from '@/lib/billboard-geo'
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 
@@ -111,9 +112,28 @@ async function applyApproval(
       return deleteBillboardCascade(tx, data.billboardId as string)
     case 'EDIT_BILLBOARD': {
       const { billboardId, ...fields } = data
+      const updateFields = { ...fields } as Record<string, unknown>
+
+      const coordsChanged = 'lat' in updateFields || 'lng' in updateFields
+      if (coordsChanged && !(updateFields.regionId && updateFields.districtId)) {
+        const existing = await tx.billboard.findUnique({ where: { id: billboardId as string } })
+        if (existing) {
+          const lat = (updateFields.lat as number | undefined) ?? existing.lat
+          const lng = (updateFields.lng as number | undefined) ?? existing.lng
+          const resolved = await resolveGeoForCoordinates(lat, lng)
+          if (resolved) {
+            updateFields.regionId = resolved.regionId
+            updateFields.districtId = resolved.districtId
+            updateFields.communeId = resolved.communeId
+          }
+          // If resolution fails here, leave the existing region/district/commune
+          // untouched rather than blocking the approval — rare, fixable by hand.
+        }
+      }
+
       await tx.billboard.update({
         where: { id: billboardId as string },
-        data: fields as Record<string, unknown>,
+        data: updateFields,
       })
       break
     }
