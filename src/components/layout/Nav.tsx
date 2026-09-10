@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/map/full', label: 'Carte interactive' },
   { href: '/database', label: 'Inventaire' },
   { href: '/clients', label: 'Clients' },
+  { href: '/contrats', label: 'Contrats' },
 ]
 
 export function Nav() {
