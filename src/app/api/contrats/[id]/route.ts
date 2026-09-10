@@ -43,14 +43,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     numero: body.numero,
   } as const
 
-  if (getPermission(session.user.role, 'edit_occupancy') === 'requires_approval') {
-    // Contract for the approvals API: EDIT_OCCUPANCY payload is always shaped
-    // as { contratId: string, status?: one of PATCH_STATUS_VALUES, endDate?:
-    // string (ISO) | null, numero?: string | null } — only the fields the
-    // caller actually sent are included alongside contratId.
-    return createApprovalRequest(session, 'EDIT_OCCUPANCY', { contratId: params.id, ...body })
-  }
-
   const existing = await prisma.contrat.findUnique({
     where: { id: params.id },
     include: { faces: { select: { face: true } } },
@@ -62,6 +54,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       { error: `Transition invalide : ${existing.statut} -> ${nextStatut}` },
       { status: 400 }
     )
+  }
+
+  if (getPermission(session.user.role, 'edit_occupancy') === 'requires_approval') {
+    // Contract for the approvals API: EDIT_OCCUPANCY payload is always shaped
+    // as { contratId: string, status?: one of PATCH_STATUS_VALUES, endDate?:
+    // string (ISO) | null, numero?: string | null } — only the fields the
+    // caller actually sent are included alongside contratId.
+    // Reached only once the transition above has already been confirmed
+    // legal per the state machine — approval gates *who* may make this
+    // specific (legal) change, not whether the change is legal at all.
+    return createApprovalRequest(session, 'EDIT_OCCUPANCY', { contratId: params.id, ...body })
   }
 
   // Re-activating a signed contrat could double-book a face that was

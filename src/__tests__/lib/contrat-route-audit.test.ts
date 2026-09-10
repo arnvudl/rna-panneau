@@ -105,6 +105,24 @@ describe('PATCH /api/contrats/[id] audit logging', () => {
     expect(logAudit).not.toHaveBeenCalled()
   })
 
+  it('rejects an illegal transition with 400 before creating an approval request, even when the role requires approval', async () => {
+    getPermission.mockReturnValue('requires_approval')
+    parseOrBadRequest.mockReturnValue({ data: { status: 'ACTIVE' } })
+    contratFindUnique.mockResolvedValue({
+      id: 'contrat-1',
+      statut: 'ENDED',
+      billboardId: 'bb-1',
+      faces: [{ face: 'BOTH' }],
+    })
+
+    const res = await PATCH(makeRequest({ status: 'ACTIVE' }), { params: { id: 'contrat-1' } })
+
+    expect(res.status).toBe(400)
+    expect(createApprovalRequest).not.toHaveBeenCalled()
+    expect(contratUpdate).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
+  })
+
   it('does not log an audit row when statut is unchanged', async () => {
     parseOrBadRequest.mockReturnValue({ data: { numero: 'NEW-REF' } })
     contratFindUnique.mockResolvedValue({
