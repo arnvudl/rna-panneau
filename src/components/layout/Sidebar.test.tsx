@@ -85,4 +85,14 @@ describe('Sidebar', () => {
 
     expect(container.querySelector('a[href="/settings/regions"]')).toBeNull()
   })
+
+  it('includes a working link to /account/password in the Mon Compte dropdown', () => {
+    localStorage.setItem('rna-sidebar-collapsed', 'false')
+    render(<Sidebar />)
+
+    fireEvent.click(screen.getByText('Mon Compte'))
+
+    const link = screen.getByRole('menuitem', { name: 'Mon compte' })
+    expect(link.closest('a')).toHaveAttribute('href', '/account/password')
+  })
 })

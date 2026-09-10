@@ -20,6 +20,7 @@ import { getPermission } from '@/lib/permissions'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -213,14 +214,18 @@ export function Sidebar() {
                   </DropdownMenuTrigger>
                 )}
                 <DropdownMenuContent side="right" align="end">
-                  <DropdownMenuLabel className="flex flex-col gap-0.5 py-1.5">
-                    <span className="truncate text-sm font-medium text-slate-900">
-                      {session?.user?.email ?? 'Compte'}
-                    </span>
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {session?.user?.role ?? ''}
-                    </span>
-                  </DropdownMenuLabel>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="flex flex-col gap-0.5 py-1.5">
+                      <span className="truncate text-sm font-medium text-slate-900">
+                        {session?.user?.email ?? 'Compte'}
+                      </span>
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {session?.user?.role ?? ''}
+                      </span>
+                    </DropdownMenuLabel>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem render={<Link href="/account/password">Mon compte</Link>} />
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
                     Se déconnecter
