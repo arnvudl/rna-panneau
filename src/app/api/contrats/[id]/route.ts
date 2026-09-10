@@ -6,6 +6,7 @@ import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/
 import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
 import { LEGACY_STATUS_TO_CONTRAT_STATUS } from '@/lib/contrat-schema'
+import { logAudit } from '@/lib/services/auditService'
 
 // numero (Contrat.numero) is required + unique in the schema, unlike the old
 // optional contractRef — it cannot be cleared to null, only replaced.
@@ -62,6 +63,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       data,
       include: { faces: true },
     })
+
+    // Only a real statut transition (sign/activate/end) is a "meaningful
+    // business event" worth auditing — plain field edits (numero, endDate
+    // alone) are not.
+    if (data.statut !== undefined && data.statut !== existing.statut) {
+      await logAudit({
+        userId: session.user.id,
+        action: 'update',
+        entityType: 'Contrat',
+        entityId: contrat.id,
+        oldValues: { statut: existing.statut },
+        newValues: { statut: data.statut },
+      })
+    }
+
     return NextResponse.json(contrat)
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {

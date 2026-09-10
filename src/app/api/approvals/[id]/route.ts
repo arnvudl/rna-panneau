@@ -10,6 +10,7 @@ import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete
 import { resolveGeoForCoordinates } from '@/lib/billboard-geo'
 import { generateContratNumero } from '@/lib/reference'
 import { LEGACY_STATUS_TO_CONTRAT_STATUS } from '@/lib/contrat-schema'
+import { logAudit } from '@/lib/services/auditService'
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 
@@ -31,7 +32,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const { updated, filesToRemove } = await prisma.$transaction(async (tx) => {
       let filesToRemove: string[] = []
       if (decision === 'APPROVED') {
-        filesToRemove = (await applyApproval(tx, approval.type, approval.payload)) ?? []
+        filesToRemove =
+          (await applyApproval(tx, approval.type, approval.payload, session.user.id)) ?? []
       }
       const updated = await tx.approvalRequest.update({
         where: { id: params.id },
@@ -72,7 +74,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 async function applyApproval(
   tx: Prisma.TransactionClient,
   type: ApprovalType,
-  payload: Prisma.JsonValue
+  payload: Prisma.JsonValue,
+  userId: string
 ): Promise<string[] | undefined> {
   const data = payload as Record<string, unknown>
   switch (type) {
@@ -96,7 +99,7 @@ async function applyApproval(
       // where an approved occupancy was live as soon as it was applied.
       // The schema splits what was one Occupancy row into two related rows
       // (Contrat header + ContratFace), created together atomically here.
-      await tx.contrat.create({
+      const created = await tx.contrat.create({
         data: {
           billboardId: data.billboardId as string,
           clientId: data.clientId as string,
@@ -109,16 +112,28 @@ async function applyApproval(
           faces: { create: { face } },
         },
       })
+      await logAudit(
+        {
+          userId,
+          action: 'create',
+          entityType: 'Contrat',
+          entityId: created.id,
+          newValues: { statut: created.statut },
+        },
+        tx
+      )
       break
     }
-    case 'EDIT_OCCUPANCY':
-      await tx.contrat.update({
+    case 'EDIT_OCCUPANCY': {
+      const existing = await tx.contrat.findUnique({ where: { id: data.contratId as string } })
+      const nextStatut =
+        data.status === undefined
+          ? undefined
+          : LEGACY_STATUS_TO_CONTRAT_STATUS[data.status as 'ACTIVE' | 'TERMINATED']
+      const updated = await tx.contrat.update({
         where: { id: data.contratId as string },
         data: {
-          statut:
-            data.status === undefined
-              ? undefined
-              : LEGACY_STATUS_TO_CONTRAT_STATUS[data.status as 'ACTIVE' | 'TERMINATED'],
+          statut: nextStatut,
           dateFin: data.endDate === undefined ? undefined : data.endDate ? new Date(data.endDate as string) : null,
           // numero is required+unique on Contrat — an explicit null (clear
           // request, valid under the old optional contractRef) is dropped
@@ -126,7 +141,23 @@ async function applyApproval(
           numero: (data.numero as string | undefined) || undefined,
         },
       })
+      // Only audit an actual statut transition — matches the same rule
+      // applied to the direct PATCH /api/contrats/[id] path.
+      if (existing && nextStatut !== undefined && nextStatut !== existing.statut) {
+        await logAudit(
+          {
+            userId,
+            action: 'update',
+            entityType: 'Contrat',
+            entityId: updated.id,
+            oldValues: { statut: existing.statut },
+            newValues: { statut: updated.statut },
+          },
+          tx
+        )
+      }
       break
+    }
     case 'DELETE_BILLBOARD':
       return deleteBillboardCascade(tx, data.billboardId as string)
     case 'EDIT_BILLBOARD': {
