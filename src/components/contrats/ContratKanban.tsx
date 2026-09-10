@@ -119,6 +119,10 @@ export function ContratKanban() {
 
   const activeContrat = activeId ? contrats.find((c) => c.id === activeId) ?? null : null
 
+  const handleDeleted = useCallback((id: string) => {
+    setContrats((prev) => prev.filter((c) => c.id !== id))
+  }, [])
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(String(event.active.id))
   }
@@ -185,6 +189,7 @@ export function ContratKanban() {
               pendingIds={pendingIds}
               pendingApprovalIds={pendingApprovalIds}
               disabled={activeContrat ? !isValidContratTransition(activeContrat.statut, status) : false}
+              onDeleted={handleDeleted}
             />
           ))}
         </div>

@@ -1,9 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
+import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { CONTRAT_STATUS_STYLES, FACE_LABELS } from '@/lib/status-labels'
 import type { ContratStatusValue } from '@/lib/contrat-schema'
@@ -26,19 +31,65 @@ function formatDate(value: string | null): string | null {
   return date.toLocaleDateString('fr-FR')
 }
 
+/**
+ * Applies the server response for a hard-delete DELETE to toast/state
+ * behavior. Exported (and kept pure) so the 200/400/404/network-error
+ * handling can be unit-tested without mounting the card, mirroring
+ * ContratKanban's handlePatchResponse / ContratCreateForm's
+ * handleCreateResponse.
+ */
+export async function handleDeleteResponse(
+  res: Response
+): Promise<{ deleted: boolean; toast: { type: 'success' | 'error'; message: string } }> {
+  if (res.ok) {
+    return { deleted: true, toast: { type: 'success', message: 'Contrat supprimé' } }
+  }
+  if (res.status === 400 || res.status === 404) {
+    const body = await res.json().catch(() => null)
+    return {
+      deleted: false,
+      toast: { type: 'error', message: typeof body?.error === 'string' ? body.error : 'Suppression refusée' },
+    }
+  }
+  return { deleted: false, toast: { type: 'error', message: 'Erreur lors de la suppression du contrat' } }
+}
+
 export function ContratCard({
   contrat,
   pending,
   pendingApproval = false,
+  onDeleted,
 }: {
   contrat: KanbanContrat
   pending: boolean
   pendingApproval?: boolean
+  /** Called after a real (2xx) hard delete, so the caller can drop it from local state. */
+  onDeleted?: (id: string) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: contrat.id,
     disabled: pending,
   })
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/contrats/${contrat.id}`, { method: 'DELETE' })
+      const result = await handleDeleteResponse(res)
+      if (result.toast.type === 'success') toast.success(result.toast.message)
+      else toast.error(result.toast.message)
+      if (result.deleted) {
+        setConfirmOpen(false)
+        onDeleted?.(contrat.id)
+      }
+    } catch {
+      toast.error('Erreur réseau lors de la suppression du contrat')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -77,7 +128,53 @@ export function ContratCard({
         </div>
         {pending && <Badge variant="outline">Mise à jour…</Badge>}
         {pendingApproval && <Badge variant="expiring">En attente d&apos;approbation</Badge>}
+        {contrat.statut === 'DRAFT' && (
+          <div className="flex justify-end pt-0.5">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="text-destructive hover:text-destructive"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setConfirmOpen(true)
+                      }}
+                    >
+                      Supprimer
+                    </Button>
+                  }
+                />
+                <TooltipContent>
+                  Seuls les contrats en brouillon peuvent être supprimés définitivement
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
       </CardContent>
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression ?</DialogTitle>
+            <DialogDescription>
+              Le contrat {contrat.numero} sera supprimé définitivement. Cette action est
+              irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={deleting}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Suppression…' : 'Confirmer la suppression'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

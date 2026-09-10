@@ -117,3 +117,47 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     throw err
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  const { session, error } = await requireSession()
+  if (error) return error
+
+  const existing = await prisma.contrat.findUnique({
+    where: { id: params.id },
+    include: { faces: true },
+  })
+  if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  // Hard delete is intentionally scoped to DRAFT only: anything SIGNED+ has
+  // real business history worth keeping even once cancelled. No
+  // approval-gate check here — this is a direct action per the design
+  // decision; visibility comes from the audit log below, not from gating
+  // the action itself.
+  if (existing.statut !== 'DRAFT') {
+    return NextResponse.json(
+      { error: 'Seuls les contrats en brouillon peuvent être supprimés définitivement' },
+      { status: 400 }
+    )
+  }
+
+  // JSON.parse(JSON.stringify(...)) turns Date fields into ISO strings so the
+  // snapshot is valid Prisma.InputJsonValue (Date instances are not).
+  const snapshot = JSON.parse(JSON.stringify(existing)) as Record<string, unknown>
+
+  await prisma.$transaction(async (tx) => {
+    await logAudit(
+      {
+        userId: session.user.id,
+        action: 'delete',
+        entityType: 'Contrat',
+        entityId: existing.id,
+        oldValues: snapshot,
+      },
+      tx
+    )
+
+    await tx.contrat.delete({ where: { id: params.id } })
+  })
+
+  return NextResponse.json({ status: 'deleted' })
+}

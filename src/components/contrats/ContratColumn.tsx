@@ -14,6 +14,7 @@ export function ContratColumn({
   pendingIds,
   pendingApprovalIds,
   disabled,
+  onDeleted,
 }: {
   status: ContratStatusValue
   label: string
@@ -21,6 +22,7 @@ export function ContratColumn({
   pendingIds: Set<string>
   pendingApprovalIds: Set<string>
   disabled: boolean
+  onDeleted?: (id: string) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status, disabled })
   const styles = CONTRAT_STATUS_STYLES[status]
@@ -49,6 +51,7 @@ export function ContratColumn({
             contrat={contrat}
             pending={pendingIds.has(contrat.id)}
             pendingApproval={pendingApprovalIds.has(contrat.id)}
+            onDeleted={onDeleted}
           />
         ))}
         {contrats.length === 0 && <p className="px-1 text-xs text-muted-foreground">Aucun contrat</p>}
