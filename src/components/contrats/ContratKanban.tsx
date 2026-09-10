@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DndContext, DragOverlay, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import { ContratColumn } from '@/components/contrats/ContratColumn'
 import { ContratCard, type KanbanContrat } from '@/components/contrats/ContratCard'
+import { ContratCreateForm } from '@/components/contrats/ContratCreateForm'
 import { CONTRAT_STATUS_VALUES, isValidContratTransition, type ContratStatusValue } from '@/lib/contrat-schema'
 import { CONTRAT_STATUS_LABELS } from '@/lib/status-labels'
 
@@ -78,11 +80,11 @@ export function ContratKanban() {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
   const [pendingApprovalIds, setPendingApprovalIds] = useState<Set<string>>(new Set())
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
 
-  useEffect(() => {
-    const controller = new AbortController()
-    setLoading(true)
-    fetch('/api/contrats', { signal: controller.signal })
+  const fetchContrats = useCallback((signal?: AbortSignal, options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoading(true)
+    return fetch('/api/contrats', { signal })
       .then((r) => {
         if (!r.ok) throw new Error(`Request failed with status ${r.status}`)
         return r.json()
@@ -96,10 +98,15 @@ export function ContratKanban() {
         setError('Erreur de chargement des contrats')
       })
       .finally(() => {
-        if (!controller.signal.aborted) setLoading(false)
+        if (!options?.silent && !signal?.aborted) setLoading(false)
       })
-    return () => controller.abort()
   }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchContrats(controller.signal)
+    return () => controller.abort()
+  }, [fetchContrats])
 
   const columns = useMemo(() => {
     const grouped = new Map<ContratStatusValue, KanbanContrat[]>()
@@ -163,23 +170,29 @@ export function ContratKanban() {
   if (error) return <p className="p-6 text-sm text-red-600">{error}</p>
 
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-6 pt-2">
-        {CONTRAT_STATUS_VALUES.map((status) => (
-          <ContratColumn
-            key={status}
-            status={status}
-            label={CONTRAT_STATUS_LABELS[status]}
-            contrats={columns.get(status) ?? []}
-            pendingIds={pendingIds}
-            pendingApprovalIds={pendingApprovalIds}
-            disabled={activeContrat ? !isValidContratTransition(activeContrat.statut, status) : false}
-          />
-        ))}
+    <>
+      <div className="flex shrink-0 justify-end px-6 pb-2">
+        <Button onClick={() => setCreateOpen(true)}>+ Nouveau contrat</Button>
       </div>
-      <DragOverlay>
-        {activeContrat ? <ContratCard contrat={activeContrat} pending={false} /> : null}
-      </DragOverlay>
-    </DndContext>
+      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-6 pt-2">
+          {CONTRAT_STATUS_VALUES.map((status) => (
+            <ContratColumn
+              key={status}
+              status={status}
+              label={CONTRAT_STATUS_LABELS[status]}
+              contrats={columns.get(status) ?? []}
+              pendingIds={pendingIds}
+              pendingApprovalIds={pendingApprovalIds}
+              disabled={activeContrat ? !isValidContratTransition(activeContrat.statut, status) : false}
+            />
+          ))}
+        </div>
+        <DragOverlay>
+          {activeContrat ? <ContratCard contrat={activeContrat} pending={false} /> : null}
+        </DragOverlay>
+      </DndContext>
+      <ContratCreateForm open={createOpen} onOpenChange={setCreateOpen} onCreated={() => fetchContrats(undefined, { silent: true })} />
+    </>
   )
 }
