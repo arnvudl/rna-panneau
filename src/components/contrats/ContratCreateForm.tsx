@@ -136,7 +136,7 @@ export function ContratCreateForm({
   }, [availableFaces, face])
 
   const sides = selectedBillboard?.sides ?? 1
-  const canSubmit = Boolean(clientId && billboardId && (availableFaces.length > 0 || sides !== 2))
+  const canSubmit = Boolean(clientId && selectedBillboard && availableFaces.length > 0)
 
   const submit = async () => {
     if (!clientId || !billboardId) return
@@ -236,25 +236,24 @@ export function ContratCreateForm({
               </Select>
             </div>
           </div>
-          {selectedBillboard && sides === 2 && (
+          {selectedBillboard && availableFaces.length === 0 && (
+            <p className="text-sm text-red-600">Aucune face disponible sur ce panneau.</p>
+          )}
+          {selectedBillboard && sides === 2 && availableFaces.length > 0 && (
             <div className="space-y-1">
               <Label>Face</Label>
-              {availableFaces.length === 0 ? (
-                <p className="text-sm text-red-600">Aucune face disponible sur ce panneau.</p>
-              ) : (
-                <Select
-                  items={Object.fromEntries(availableFaces.map((f) => [f, FACE_SELECT_LABELS[f]]))}
-                  value={face}
-                  onValueChange={(v: string | null) => v && setFace(v as Face)}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {availableFaces.includes('FACE_1') && <SelectItem value="FACE_1">Face 1</SelectItem>}
-                    {availableFaces.includes('FACE_2') && <SelectItem value="FACE_2">Face 2</SelectItem>}
-                    {availableFaces.includes('BOTH') && <SelectItem value="BOTH">Les deux faces</SelectItem>}
-                  </SelectContent>
-                </Select>
-              )}
+              <Select
+                items={Object.fromEntries(availableFaces.map((f) => [f, FACE_SELECT_LABELS[f]]))}
+                value={face}
+                onValueChange={(v: string | null) => v && setFace(v as Face)}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {availableFaces.includes('FACE_1') && <SelectItem value="FACE_1">Face 1</SelectItem>}
+                  {availableFaces.includes('FACE_2') && <SelectItem value="FACE_2">Face 2</SelectItem>}
+                  {availableFaces.includes('BOTH') && <SelectItem value="BOTH">Les deux faces</SelectItem>}
+                </SelectContent>
+              </Select>
             </div>
           )}
           <div className="space-y-1">
