@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { createContratSchema } from './contrat-schema'
+import {
+  createContratSchema,
+  isValidContratTransition,
+  resolveContratStatus,
+  CONTRAT_STATUS_TRANSITIONS,
+  CONTRAT_STATUS_VALUES,
+  LEGACY_STATUS_TO_CONTRAT_STATUS,
+  type ContratStatusValue,
+} from './contrat-schema'
 
 const valid = {
   billboardId: 'clx1234',
@@ -193,6 +201,75 @@ describe('createContratSchema', () => {
       if (result.success) {
         expect((result.data as Record<string, unknown>).hackField).toBeUndefined()
       }
+    })
+  })
+})
+
+describe('isValidContratTransition', () => {
+  describe('legal transitions', () => {
+    const legalPairs: Array<[ContratStatusValue, ContratStatusValue]> = [
+      ['DRAFT', 'SIGNED'],
+      ['DRAFT', 'CANCELLED'],
+      ['SIGNED', 'ACTIVE'],
+      ['SIGNED', 'CANCELLED'],
+      ['ACTIVE', 'ENDED'],
+      ['ACTIVE', 'CANCELLED'],
+    ]
+
+    it.each(legalPairs)('allows %s -> %s', (from, to) => {
+      expect(isValidContratTransition(from, to)).toBe(true)
+    })
+  })
+
+  describe('illegal transitions', () => {
+    const illegalPairs: Array<[ContratStatusValue, ContratStatusValue]> = [
+      ['DRAFT', 'ACTIVE'],
+      ['DRAFT', 'ENDED'],
+      ['SIGNED', 'ENDED'],
+      ['SIGNED', 'DRAFT'],
+      ['ACTIVE', 'DRAFT'],
+      ['ACTIVE', 'SIGNED'],
+      ['ENDED', 'DRAFT'],
+      ['ENDED', 'SIGNED'],
+      ['ENDED', 'ACTIVE'],
+      ['ENDED', 'CANCELLED'],
+      ['CANCELLED', 'DRAFT'],
+      ['CANCELLED', 'SIGNED'],
+      ['CANCELLED', 'ACTIVE'],
+      ['CANCELLED', 'ENDED'],
+    ]
+
+    it.each(illegalPairs)('rejects %s -> %s', (from, to) => {
+      expect(isValidContratTransition(from, to)).toBe(false)
+    })
+  })
+
+  describe('same-state transitions (no-ops)', () => {
+    it.each(CONTRAT_STATUS_VALUES)('treats %s -> %s as valid', (status) => {
+      expect(isValidContratTransition(status, status)).toBe(true)
+    })
+  })
+
+  it('CONTRAT_STATUS_TRANSITIONS has no outgoing transitions for terminal states', () => {
+    expect(CONTRAT_STATUS_TRANSITIONS.ENDED).toEqual([])
+    expect(CONTRAT_STATUS_TRANSITIONS.CANCELLED).toEqual([])
+  })
+})
+
+describe('resolveContratStatus', () => {
+  it('maps legacy ACTIVE to native ACTIVE', () => {
+    expect(LEGACY_STATUS_TO_CONTRAT_STATUS.ACTIVE).toBe('ACTIVE')
+    expect(resolveContratStatus('ACTIVE')).toBe('ACTIVE')
+  })
+
+  it('maps legacy TERMINATED to native ENDED', () => {
+    expect(LEGACY_STATUS_TO_CONTRAT_STATUS.TERMINATED).toBe('ENDED')
+    expect(resolveContratStatus('TERMINATED')).toBe('ENDED')
+  })
+
+  describe('native status values pass through unchanged', () => {
+    it.each(CONTRAT_STATUS_VALUES)('resolves %s to itself', (status) => {
+      expect(resolveContratStatus(status)).toBe(status)
     })
   })
 })
