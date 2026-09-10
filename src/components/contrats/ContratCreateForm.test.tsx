@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { ContratCreateForm, handleCreateResponse } from './ContratCreateForm'
 
 vi.mock('sonner', () => ({
@@ -101,6 +101,57 @@ describe('ContratCreateForm', () => {
       expect(screen.getByText('Référence du contrat (optionnel)')).toBeInTheDocument()
       expect(screen.getByText('Date de début (optionnel)')).toBeInTheDocument()
       expect(screen.getByText('Date de fin (optionnel)')).toBeInTheDocument()
+    })
+  })
+
+  // Regression test for the bug caught in self-review: canSubmit must gate on
+  // availableFaces.length > 0 even for a single-sided billboard whose one
+  // face ('BOTH') is already fully occupied by an ACTIVE contrat. Previously
+  // this case could slip through and leave the submit button enabled.
+  it('keeps submit disabled and shows "Aucune face disponible" for a single-sided billboard whose only face is already booked', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/api/billboards')) {
+        return new Response(
+          JSON.stringify([
+            {
+              id: 'b3',
+              reference: 'PAN-003',
+              sides: 1,
+              contrats: [{ faces: [{ face: 'BOTH' }] }],
+            },
+          ]),
+          { status: 200 }
+        )
+      }
+      if (url.includes('/api/clients')) {
+        return new Response(JSON.stringify([{ id: 'cl1', name: 'Client A' }]), { status: 200 })
+      }
+      return new Response(JSON.stringify({}), { status: 200 })
+    })
+
+    render(<ContratCreateForm open onOpenChange={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Sélectionnez un panneau dans la liste')).toBeInTheDocument()
+    })
+
+    // Open the billboard picker and select the fully-booked billboard.
+    fireEvent.click(screen.getByText('Sélectionnez un panneau dans la liste'))
+    const option = await screen.findByRole('option', { name: 'PAN-003' })
+    fireEvent.click(option)
+
+    // Select the client too, so the only remaining gate is face availability.
+    await waitFor(() => {
+      expect(screen.getByText('Sélectionnez un client dans la liste')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByText('Sélectionnez un client dans la liste'))
+    const clientOption = await screen.findByRole('option', { name: 'Client A' })
+    fireEvent.click(clientOption)
+
+    await waitFor(() => {
+      expect(screen.getByText('Aucune face disponible sur ce panneau.')).toBeInTheDocument()
+      expect(screen.getByText('Créer le contrat')).toBeDisabled()
     })
   })
 })
