@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { handlePatchResponse, nextPendingApprovalIds } from './ContratKanban'
+import { handlePatchResponse, nextPendingApprovalIds, buildContratQuery } from './ContratKanban'
 import type { KanbanContrat } from './ContratCard'
+import type { ContratFilters } from './ContratFilterBar'
 
 const baseContrat: KanbanContrat = {
   id: 'c1',
@@ -86,5 +87,39 @@ describe('nextPendingApprovalIds', () => {
     expect(Array.from(nextPendingApprovalIds(prev, 'c1', { nextStatut: null }, 202)).sort()).toEqual(['c1', 'other'])
     const prevWithBoth = new Set(['c1', 'other'])
     expect(Array.from(nextPendingApprovalIds(prevWithBoth, 'c1', { nextStatut: 'SIGNED' }, 200))).toEqual(['other'])
+  })
+})
+
+describe('buildContratQuery', () => {
+  it('returns an empty string when no filters are set', () => {
+    expect(buildContratQuery({})).toBe('')
+  })
+
+  it('includes only the filters that are set', () => {
+    const filters: ContratFilters = { clientId: 'cl1' }
+    expect(buildContratQuery(filters)).toBe('clientId=cl1')
+  })
+
+  it('includes region/district/commune filters alongside client/billboard', () => {
+    const filters: ContratFilters = {
+      clientId: 'cl1',
+      billboardId: 'b1',
+      regionId: 'r1',
+      districtId: 'd1',
+      communeId: 'co1',
+    }
+    const params = new URLSearchParams(buildContratQuery(filters))
+    expect(params.get('clientId')).toBe('cl1')
+    expect(params.get('billboardId')).toBe('b1')
+    expect(params.get('regionId')).toBe('r1')
+    expect(params.get('districtId')).toBe('d1')
+    expect(params.get('communeId')).toBe('co1')
+  })
+
+  it('omits undefined filter values entirely rather than emitting an empty param', () => {
+    const filters: ContratFilters = { regionId: 'r1', districtId: undefined }
+    const params = new URLSearchParams(buildContratQuery(filters))
+    expect(params.has('districtId')).toBe(false)
+    expect(params.get('regionId')).toBe('r1')
   })
 })

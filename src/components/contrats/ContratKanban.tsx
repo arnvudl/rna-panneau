@@ -7,8 +7,24 @@ import { Button } from '@/components/ui/button'
 import { ContratColumn } from '@/components/contrats/ContratColumn'
 import { ContratCard, type KanbanContrat } from '@/components/contrats/ContratCard'
 import { ContratCreateForm } from '@/components/contrats/ContratCreateForm'
+import { ContratFilterBar, filterContratsBySearch, type ContratFilters } from '@/components/contrats/ContratFilterBar'
 import { CONTRAT_STATUS_VALUES, isValidContratTransition, type ContratStatusValue } from '@/lib/contrat-schema'
 import { CONTRAT_STATUS_LABELS } from '@/lib/status-labels'
+
+/**
+ * Builds the `/api/contrats` query string from the currently active dropdown
+ * filters. Exported (and kept pure) so the refetch-triggering behavior is
+ * unit-testable without mounting the full drag-and-drop board.
+ */
+export function buildContratQuery(filters: ContratFilters): string {
+  const params = new URLSearchParams()
+  if (filters.clientId) params.set('clientId', filters.clientId)
+  if (filters.billboardId) params.set('billboardId', filters.billboardId)
+  if (filters.regionId) params.set('regionId', filters.regionId)
+  if (filters.districtId) params.set('districtId', filters.districtId)
+  if (filters.communeId) params.set('communeId', filters.communeId)
+  return params.toString()
+}
 
 /**
  * Applies the server response for a status-change PATCH to local state.
@@ -81,10 +97,13 @@ export function ContratKanban() {
   const [pendingApprovalIds, setPendingApprovalIds] = useState<Set<string>>(new Set())
   const [activeId, setActiveId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const [filters, setFilters] = useState<ContratFilters>({})
+  const [search, setSearch] = useState('')
 
   const fetchContrats = useCallback((signal?: AbortSignal, options?: { silent?: boolean }) => {
     if (!options?.silent) setLoading(true)
-    return fetch('/api/contrats', { signal })
+    const qs = buildContratQuery(filters)
+    return fetch(`/api/contrats${qs ? `?${qs}` : ''}`, { signal })
       .then((r) => {
         if (!r.ok) throw new Error(`Request failed with status ${r.status}`)
         return r.json()
@@ -100,22 +119,27 @@ export function ContratKanban() {
       .finally(() => {
         if (!options?.silent && !signal?.aborted) setLoading(false)
       })
-  }, [])
+  }, [filters])
 
+  // Refetches whenever a dropdown filter changes (fetchContrats' identity
+  // changes with `filters`), and once on mount. Free-text search is applied
+  // client-side below instead, over whatever the last fetch returned.
   useEffect(() => {
     const controller = new AbortController()
     fetchContrats(controller.signal)
     return () => controller.abort()
   }, [fetchContrats])
 
+  const visibleContrats = useMemo(() => filterContratsBySearch(contrats, search), [contrats, search])
+
   const columns = useMemo(() => {
     const grouped = new Map<ContratStatusValue, KanbanContrat[]>()
     for (const status of CONTRAT_STATUS_VALUES) grouped.set(status, [])
-    for (const contrat of contrats) {
+    for (const contrat of visibleContrats) {
       grouped.get(contrat.statut)?.push(contrat)
     }
     return grouped
-  }, [contrats])
+  }, [visibleContrats])
 
   const activeContrat = activeId ? contrats.find((c) => c.id === activeId) ?? null : null
 
@@ -175,7 +199,8 @@ export function ContratKanban() {
 
   return (
     <>
-      <div className="flex shrink-0 justify-end px-6 pb-2">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-6 pb-2">
+        <ContratFilterBar search={search} onSearchChange={setSearch} filters={filters} onFiltersChange={setFilters} />
         <Button onClick={() => setCreateOpen(true)}>+ Nouveau contrat</Button>
       </div>
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
