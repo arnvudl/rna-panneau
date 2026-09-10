@@ -9,7 +9,7 @@ import { createNotification } from '@/lib/notifications'
 import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
 import { resolveGeoForCoordinates } from '@/lib/billboard-geo'
 import { generateContratNumero } from '@/lib/reference'
-import { LEGACY_STATUS_TO_CONTRAT_STATUS } from '@/lib/contrat-schema'
+import { resolveContratStatus, isValidContratTransition, type PatchStatusValue } from '@/lib/contrat-schema'
 import { logAudit } from '@/lib/services/auditService'
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
@@ -125,11 +125,37 @@ async function applyApproval(
       break
     }
     case 'EDIT_OCCUPANCY': {
-      const existing = await tx.contrat.findUnique({ where: { id: data.contratId as string } })
+      const existing = await tx.contrat.findUnique({
+        where: { id: data.contratId as string },
+        include: { faces: { select: { face: true } } },
+      })
       const nextStatut =
         data.status === undefined
           ? undefined
-          : LEGACY_STATUS_TO_CONTRAT_STATUS[data.status as 'ACTIVE' | 'TERMINATED']
+          : resolveContratStatus(data.status as PatchStatusValue)
+      // Plain Error (not a Prisma error) deliberately bypasses the
+      // PrismaClientKnownRequestError branch below and surfaces as a 500,
+      // leaving this approval PENDING (transaction rolls back) instead of a
+      // clean 400 — matches the tradeoff already accepted for the other
+      // stale-approval cases in this handler (approval reviewed too long
+      // after it was requested, state has since moved on).
+      if (existing && nextStatut !== undefined && !isValidContratTransition(existing.statut, nextStatut)) {
+        throw new Error(`Invalid contrat status transition: ${existing.statut} -> ${nextStatut}`)
+      }
+      // Re-activating a contrat could double-book a face that was rented to
+      // someone else in the meantime — re-check availability, mirroring the
+      // direct PATCH /api/contrats/[id] path.
+      if (existing && nextStatut === 'ACTIVE' && existing.statut !== 'ACTIVE') {
+        const face = existing.faces[0]?.face ?? 'BOTH'
+        const activeContrats = await tx.contrat.findMany({
+          where: { billboardId: existing.billboardId, statut: 'ACTIVE', id: { not: existing.id } },
+          include: { faces: { select: { face: true } } },
+        })
+        const activeFaces = activeContrats.flatMap((c) => c.faces)
+        if (!isFaceAvailable(face, activeFaces)) {
+          throw new Error('Face already occupied')
+        }
+      }
       const updated = await tx.contrat.update({
         where: { id: data.contratId as string },
         data: {

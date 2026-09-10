@@ -65,7 +65,7 @@ describe('PATCH /api/contrats/[id] audit logging', () => {
     parseOrBadRequest.mockReturnValue({ data: { status: 'ACTIVE' } })
     contratFindUnique.mockResolvedValue({
       id: 'contrat-1',
-      statut: 'ENDED',
+      statut: 'SIGNED',
       billboardId: 'bb-1',
       faces: [{ face: 'BOTH' }],
     })
@@ -82,11 +82,27 @@ describe('PATCH /api/contrats/[id] audit logging', () => {
         action: 'update',
         entityType: 'Contrat',
         entityId: 'contrat-1',
-        oldValues: { statut: 'ENDED' },
+        oldValues: { statut: 'SIGNED' },
         newValues: { statut: 'ACTIVE' },
       },
       expect.anything()
     )
+  })
+
+  it('rejects ENDED -> ACTIVE as an illegal transition with 400', async () => {
+    parseOrBadRequest.mockReturnValue({ data: { status: 'ACTIVE' } })
+    contratFindUnique.mockResolvedValue({
+      id: 'contrat-1',
+      statut: 'ENDED',
+      billboardId: 'bb-1',
+      faces: [{ face: 'BOTH' }],
+    })
+
+    const res = await PATCH(makeRequest({ status: 'ACTIVE' }), { params: { id: 'contrat-1' } })
+
+    expect(res.status).toBe(400)
+    expect(contratUpdate).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it('does not log an audit row when statut is unchanged', async () => {

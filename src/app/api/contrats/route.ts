@@ -4,8 +4,29 @@ import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
-import { createContratSchema } from '@/lib/contrat-schema'
+import { createContratSchema, CONTRAT_STATUS_VALUES } from '@/lib/contrat-schema'
 import { generateContratNumero } from '@/lib/reference'
+
+export async function GET(req: NextRequest) {
+  const { error } = await requireSession()
+  if (error) return error
+
+  const params = req.nextUrl.searchParams
+  const billboardId = params.get('billboardId') ?? undefined
+  const clientId = params.get('clientId') ?? undefined
+  const statutParam = params.get('statut')
+  const statut = statutParam && (CONTRAT_STATUS_VALUES as readonly string[]).includes(statutParam)
+    ? (statutParam as (typeof CONTRAT_STATUS_VALUES)[number])
+    : undefined
+
+  const contrats = await prisma.contrat.findMany({
+    where: { billboardId, clientId, statut },
+    include: { client: true, faces: true, billboard: true },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return NextResponse.json(contrats)
+}
 
 export async function POST(req: NextRequest) {
   const { session, error } = await requireSession()

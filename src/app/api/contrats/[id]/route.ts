@@ -5,16 +5,29 @@ import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
-import { LEGACY_STATUS_TO_CONTRAT_STATUS } from '@/lib/contrat-schema'
+import { PATCH_STATUS_VALUES, resolveContratStatus, isValidContratTransition } from '@/lib/contrat-schema'
 import { logAudit } from '@/lib/services/auditService'
 
 // numero (Contrat.numero) is required + unique in the schema, unlike the old
 // optional contractRef — it cannot be cleared to null, only replaced.
 const patchSchema = z.object({
-  status: z.enum(['ACTIVE', 'TERMINATED']).optional(),
+  status: z.enum(PATCH_STATUS_VALUES).optional(),
   endDate: z.string().datetime().nullable().optional(),
   numero: z.string().trim().min(1).max(200).optional(),
 })
+
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const { error } = await requireSession()
+  if (error) return error
+
+  const contrat = await prisma.contrat.findUnique({
+    where: { id: params.id },
+    include: { client: true, faces: true, billboard: true },
+  })
+  if (!contrat) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  return NextResponse.json(contrat)
+}
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireSession()
@@ -23,15 +36,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const parsed = parseOrBadRequest(patchSchema, await req.json())
   if ('error' in parsed) return parsed.error
   const body = parsed.data
+  const nextStatut = body.status === undefined ? undefined : resolveContratStatus(body.status)
   const data = {
-    statut: body.status === undefined ? undefined : LEGACY_STATUS_TO_CONTRAT_STATUS[body.status],
+    statut: nextStatut,
     dateFin: body.endDate === undefined ? undefined : body.endDate ? new Date(body.endDate) : null,
     numero: body.numero,
   } as const
 
   if (getPermission(session.user.role, 'edit_occupancy') === 'requires_approval') {
     // Contract for the approvals API: EDIT_OCCUPANCY payload is always shaped
-    // as { contratId: string, status?: 'ACTIVE'|'TERMINATED', endDate?:
+    // as { contratId: string, status?: one of PATCH_STATUS_VALUES, endDate?:
     // string (ISO) | null, numero?: string | null } — only the fields the
     // caller actually sent are included alongside contratId.
     return createApprovalRequest(session, 'EDIT_OCCUPANCY', { contratId: params.id, ...body })
@@ -43,10 +57,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   })
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  // Re-activating an ended contrat could double-book a face that was
+  if (nextStatut !== undefined && !isValidContratTransition(existing.statut, nextStatut)) {
+    return NextResponse.json(
+      { error: `Transition invalide : ${existing.statut} -> ${nextStatut}` },
+      { status: 400 }
+    )
+  }
+
+  // Re-activating a signed contrat could double-book a face that was
   // rented to someone else in the meantime — re-check availability.
   const face = existing.faces[0]?.face ?? 'BOTH'
-  if (body.status === 'ACTIVE' && existing.statut !== 'ACTIVE') {
+  if (nextStatut === 'ACTIVE' && existing.statut !== 'ACTIVE') {
     const activeContrats = await prisma.contrat.findMany({
       where: { billboardId: existing.billboardId, statut: 'ACTIVE', id: { not: existing.id } },
       include: { faces: { select: { face: true } } },
