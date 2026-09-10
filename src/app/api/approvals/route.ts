@@ -26,18 +26,18 @@ async function attachResolvedNames<
 >(requests: T[]) {
   const billboardIds = new Set<string>()
   const clientIds = new Set<string>()
-  const occupancyIds = new Set<string>()
+  const contratIds = new Set<string>()
   const photoIds = new Set<string>()
 
   for (const r of requests) {
     const data = (r.payload ?? {}) as Record<string, unknown>
     if (typeof data.billboardId === 'string') billboardIds.add(data.billboardId)
     if (typeof data.clientId === 'string') clientIds.add(data.clientId)
-    if (typeof data.occupancyId === 'string') occupancyIds.add(data.occupancyId)
+    if (typeof data.contratId === 'string') contratIds.add(data.contratId)
     if (typeof data.photoId === 'string') photoIds.add(data.photoId)
   }
 
-  const [billboards, clients, occupancies, photos] = await Promise.all([
+  const [billboards, clients, contrats, photos] = await Promise.all([
     billboardIds.size
       ? prisma.billboard.findMany({
           where: { id: { in: Array.from(billboardIds) } },
@@ -50,9 +50,9 @@ async function attachResolvedNames<
           select: { id: true, name: true },
         })
       : Promise.resolve([]),
-    occupancyIds.size
-      ? prisma.occupancy.findMany({
-          where: { id: { in: Array.from(occupancyIds) } },
+    contratIds.size
+      ? prisma.contrat.findMany({
+          where: { id: { in: Array.from(contratIds) } },
           select: {
             id: true,
             billboard: { select: { reference: true } },
@@ -74,8 +74,8 @@ async function attachResolvedNames<
 
   const billboardMap = new Map(billboards.map((b) => [b.id, b.reference]))
   const clientMap = new Map(clients.map((c) => [c.id, c.name]))
-  const occupancyMap = new Map(
-    occupancies.map((o) => [o.id, `${o.billboard.reference} — ${o.client.name}`])
+  const contratMap = new Map(
+    contrats.map((o) => [o.id, `${o.billboard.reference} — ${o.client.name}`])
   )
 
   return requests.map((r) => {
@@ -89,9 +89,9 @@ async function attachResolvedNames<
       const name = clientMap.get(data.clientId)
       if (name) resolvedNames.clientId = name
     }
-    if (typeof data.occupancyId === 'string') {
-      const name = occupancyMap.get(data.occupancyId)
-      if (name) resolvedNames.occupancyId = name
+    if (typeof data.contratId === 'string') {
+      const name = contratMap.get(data.contratId)
+      if (name) resolvedNames.contratId = name
     }
     if (typeof data.photoId === 'string') {
       const name = photoMap.get(data.photoId)
@@ -118,8 +118,8 @@ async function attachBeforeState<
 
       if (r.type === 'EDIT_BILLBOARD' && typeof data.billboardId === 'string') {
         before = await prisma.billboard.findUnique({ where: { id: data.billboardId } })
-      } else if (r.type === 'EDIT_OCCUPANCY' && typeof data.occupancyId === 'string') {
-        before = await prisma.occupancy.findUnique({ where: { id: data.occupancyId } })
+      } else if (r.type === 'EDIT_OCCUPANCY' && typeof data.contratId === 'string') {
+        before = await prisma.contrat.findUnique({ where: { id: data.contratId } })
       } else if (r.type === 'EDIT_CLIENT' && typeof data.clientId === 'string') {
         before = await prisma.client.findUnique({ where: { id: data.clientId } })
       }

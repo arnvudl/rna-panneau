@@ -20,7 +20,7 @@ export type BillboardPdfData = {
   photo: PdfPhoto | null
   permitNumber: string | null
   taxPaymentRef: string | null
-  occupancies: { clientName: string; face: string; contractRef: string | null; endDate: string | null }[]
+  occupancies: { clientName: string; face: string; numero: string | null; endDate: string | null }[]
   maintenanceRecords: { date: string; type: string; comment: string | null }[]
 }
 
@@ -47,7 +47,7 @@ export function BillboardPdfDocument({ data }: { data: BillboardPdfData }) {
           {data.occupancies.map((o, i) => (
             <View key={i} style={styles.row}>
               <Text>{o.face} — {o.clientName}</Text>
-              <Text>{o.contractRef ?? 'Sans référence'}{o.endDate ? ` (jusqu'au ${o.endDate})` : ''}</Text>
+              <Text>{o.numero ?? 'Sans référence'}{o.endDate ? ` (jusqu'au ${o.endDate})` : ''}</Text>
             </View>
           ))}
         </View>

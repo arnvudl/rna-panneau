@@ -3,7 +3,7 @@ import { FACE_LABELS } from '@/lib/status-labels'
 export type HistoryTimelineOccupancy = {
   id: string
   client: { name: string }
-  contractRef: string | null
+  numero: string | null
   endDate: Date | null
   face: 'FACE_1' | 'FACE_2' | 'BOTH'
 }
@@ -18,7 +18,7 @@ export function HistoryTimeline({ occupancies }: { occupancies: HistoryTimelineO
           <p className="text-xs font-semibold uppercase text-slate-400">{FACE_LABELS[o.face]}</p>
           <p className="font-medium">{o.client.name}</p>
           <p className="text-sm text-slate-600">
-            {o.contractRef ? `Contrat : ${o.contractRef}` : 'Sans référence'}
+            {o.numero ? `Contrat : ${o.numero}` : 'Sans référence'}
             {o.endDate ? ` — jusqu'au ${o.endDate.toLocaleDateString('fr-FR')}` : ' — durée indéterminée'}
           </p>
         </li>

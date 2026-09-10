@@ -24,9 +24,9 @@ describe('buildBillboardWhere', () => {
     expect(buildBillboardWhere(params)).toEqual({ dimension: 'D4X3' })
   })
 
-  it('filters by clientId via an active-occupancy relation', () => {
+  it('filters by clientId via an active-contrat relation', () => {
     const params = new URLSearchParams({ clientId: 'client-1' })
     const where = buildBillboardWhere(params)
-    expect(where.occupancies).toEqual({ some: { clientId: 'client-1', status: 'ACTIVE' } })
+    expect(where.contrats).toEqual({ some: { clientId: 'client-1', statut: 'ACTIVE' } })
   })
 })

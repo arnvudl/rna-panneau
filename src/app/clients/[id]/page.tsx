@@ -8,7 +8,7 @@ import { ContractPhotoLink } from '@/components/clients/ContractPhotoLink'
 export default async function ClientPage({ params }: { params: { id: string } }) {
   const client = await prisma.client.findUnique({
     where: { id: params.id },
-    include: { occupancies: { include: { billboard: true }, orderBy: { startDate: 'desc' } } },
+    include: { contrats: { include: { billboard: true }, orderBy: { dateDebut: 'desc' } } },
   })
   if (!client) notFound()
 
@@ -21,7 +21,7 @@ export default async function ClientPage({ params }: { params: { id: string } })
       <p className="text-slate-600">{formatContactInfo(client.phone, client.email)}</p>
       <h2 className="text-lg font-medium">Historique des contrats</h2>
       <ul className="space-y-2">
-        {client.occupancies.map((o) => (
+        {client.contrats.map((o) => (
           <li key={o.id} className="rounded-lg border p-3">
             <div className="flex items-center justify-between">
               <Link href={`/billboards/${o.billboardId}`} className="font-medium text-blue-700">
@@ -30,12 +30,12 @@ export default async function ClientPage({ params }: { params: { id: string } })
               <ContractPhotoLink billboardId={o.billboardId} billboardReference={o.billboard.reference} />
             </div>
             <p className="text-sm text-slate-600">
-              {o.contractRef ? `Contrat : ${o.contractRef}` : 'Sans référence'}
-              {o.endDate ? ` — jusqu'au ${new Date(o.endDate).toLocaleDateString('fr-FR')}` : ' — durée indéterminée'}
+              {o.numero ? `Contrat : ${o.numero}` : 'Sans référence'}
+              {o.dateFin ? ` — jusqu'au ${new Date(o.dateFin).toLocaleDateString('fr-FR')}` : ' — durée indéterminée'}
             </p>
           </li>
         ))}
-        {client.occupancies.length === 0 && (
+        {client.contrats.length === 0 && (
           <li className="text-sm text-slate-500">Aucun contrat</li>
         )}
       </ul>

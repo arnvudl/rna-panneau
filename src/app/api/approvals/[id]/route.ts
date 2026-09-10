@@ -8,6 +8,11 @@ import { isFaceAvailable } from '@/lib/face-occupancy'
 import { createNotification } from '@/lib/notifications'
 import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
 import { resolveGeoForCoordinates } from '@/lib/billboard-geo'
+import { generateContratNumero } from '@/lib/reference'
+
+// Old occupancy status values map onto the richer ContratStatus enum:
+// ACTIVE -> ACTIVE, TERMINATED -> ENDED.
+const STATUS_MAP = { ACTIVE: 'ACTIVE', TERMINATED: 'ENDED' } as const
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 
@@ -79,35 +84,46 @@ async function applyApproval(
       // PrismaClientKnownRequestError branch below and surfaces as a 500,
       // leaving this approval PENDING (transaction rolls back) instead of a
       // clean 400 — accepted tradeoff for the rare stale-approval case where
-      // the requested face was taken by another occupancy after the request
+      // the requested face was taken by another contrat after the request
       // was submitted but before admin review.
       const face = (data.face as 'FACE_1' | 'FACE_2' | 'BOTH') ?? 'BOTH'
-      const activeOccupancies = await tx.occupancy.findMany({
-        where: { billboardId: data.billboardId as string, status: 'ACTIVE' },
-        select: { face: true },
+      const activeContrats = await tx.contrat.findMany({
+        where: { billboardId: data.billboardId as string, statut: 'ACTIVE' },
+        include: { faces: { select: { face: true } } },
       })
-      if (!isFaceAvailable(face, activeOccupancies)) {
+      const activeFaces = activeContrats.flatMap((c) => c.faces)
+      if (!isFaceAvailable(face, activeFaces)) {
         throw new Error('Face already occupied')
       }
-      await tx.occupancy.create({
+      // An approved creation is immediately live — matches old behavior
+      // where an approved occupancy was live as soon as it was applied.
+      // The schema splits what was one Occupancy row into two related rows
+      // (Contrat header + ContratFace), created together atomically here.
+      await tx.contrat.create({
         data: {
           billboardId: data.billboardId as string,
           clientId: data.clientId as string,
-          face,
-          contractRef: data.contractRef as string | undefined,
-          startDate: data.startDate ? new Date(data.startDate as string) : undefined,
-          endDate: data.endDate ? new Date(data.endDate as string) : undefined,
+          numero: (data.numero as string | undefined) ?? generateContratNumero(),
+          type: 'contrat',
+          typeReconduction: 'tacite',
+          statut: 'ACTIVE',
+          dateDebut: data.startDate ? new Date(data.startDate as string) : undefined,
+          dateFin: data.endDate ? new Date(data.endDate as string) : undefined,
+          faces: { create: { face } },
         },
       })
       break
     }
     case 'EDIT_OCCUPANCY':
-      await tx.occupancy.update({
-        where: { id: data.occupancyId as string },
+      await tx.contrat.update({
+        where: { id: data.contratId as string },
         data: {
-          status: data.status as 'ACTIVE' | 'TERMINATED' | undefined,
-          endDate: data.endDate === undefined ? undefined : data.endDate ? new Date(data.endDate as string) : null,
-          contractRef: data.contractRef as string | null | undefined,
+          statut:
+            data.status === undefined
+              ? undefined
+              : STATUS_MAP[data.status as 'ACTIVE' | 'TERMINATED'],
+          dateFin: data.endDate === undefined ? undefined : data.endDate ? new Date(data.endDate as string) : null,
+          numero: (data.numero as string | undefined) || undefined,
         },
       })
       break
@@ -163,10 +179,10 @@ async function applyApproval(
       // PrismaClientKnownRequestError branch below and surfaces as a 500,
       // leaving this approval PENDING (transaction rolls back) instead of a
       // clean 400 — accepted tradeoff for the rare stale-approval case where
-      // occupancies were added after the request but before admin review.
-      const occupancyCount = await tx.occupancy.count({ where: { clientId: data.clientId as string } })
+      // contrats were added after the request but before admin review.
+      const occupancyCount = await tx.contrat.count({ where: { clientId: data.clientId as string } })
       if (occupancyCount > 0) {
-        throw new Error('Client has associated occupancies, cannot delete')
+        throw new Error('Client has associated contrats, cannot delete')
       }
       await tx.client.delete({ where: { id: data.clientId as string } })
       break

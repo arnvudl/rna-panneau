@@ -4,7 +4,7 @@ import type { BillboardRow } from '@/components/table/BillboardTable'
 import type { Filters } from '@/components/table/FilterBar'
 
 type ApiOccupancy = {
-  status: string
+  statut: string
   client?: { name?: string } | null
 }
 
@@ -20,14 +20,14 @@ type ApiBillboard = {
   lat: number
   lng: number
   note?: string | null
-  occupancies?: ApiOccupancy[]
+  contrats?: ApiOccupancy[]
 }
 
 export type BillboardWithLatLng = BillboardRow & { lat: number; lng: number }
 
 function toRow(b: ApiBillboard): BillboardWithLatLng {
-  const activeClientNames = (b.occupancies ?? [])
-    .filter((o) => o.status === 'ACTIVE')
+  const activeClientNames = (b.contrats ?? [])
+    .filter((o) => o.statut === 'ACTIVE')
     .map((o) => o.client?.name)
     .filter((n): n is string => Boolean(n))
   return {

@@ -8,7 +8,7 @@ import { CheckCircle2, KeyRound, Clock3 } from 'lucide-react'
 export default async function DashboardPage() {
   await requireRole(['DEV', 'ADMIN'])
 
-  const billboards = await prisma.billboard.findMany({ include: { occupancies: true } })
+  const billboards = await prisma.billboard.findMany({ include: { contrats: { include: { faces: true } } } })
   const withStatus = billboards.map((b) => ({ ...b, status: deriveBillboardStatus(b) }))
 
   const available = withStatus.filter((b) => b.status === 'AVAILABLE').length

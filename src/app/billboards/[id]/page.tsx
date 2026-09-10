@@ -16,7 +16,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
   const billboard = await prisma.billboard.findUnique({
     where: { id: params.id },
     include: {
-      occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
+      contrats: { include: { client: true, faces: true }, orderBy: { dateDebut: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
       photos: { orderBy: { createdAt: 'desc' } },
       region: true,
@@ -26,7 +26,15 @@ export default async function BillboardPage({ params }: { params: { id: string }
   if (!billboard) notFound()
 
   const status = deriveBillboardStatus(billboard)
-  const activeOccupancies = billboard.occupancies.filter((o) => o.status === 'ACTIVE')
+  const occupancies = billboard.contrats.map((c) => ({
+    id: c.id,
+    client: c.client,
+    numero: c.numero,
+    endDate: c.dateFin,
+    status: c.statut,
+    face: c.faces[0]?.face ?? ('BOTH' as const),
+  }))
+  const activeOccupancies = occupancies.filter((o) => o.status === 'ACTIVE')
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
@@ -127,7 +135,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
                   <OccupancyPanel occupancies={activeOccupancies} billboardId={billboard.id} sides={billboard.sides} />
                 </TabsContent>
                 <TabsContent value="history" className="mt-0">
-                  <HistoryTimeline occupancies={billboard.occupancies} />
+                  <HistoryTimeline occupancies={occupancies} />
                 </TabsContent>
                 <TabsContent value="maintenance" className="mt-0">
                   <MaintenancePanel billboardId={billboard.id} records={billboard.maintenanceRecords} />

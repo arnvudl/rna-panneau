@@ -5,10 +5,11 @@ import type { Prisma } from '@prisma/client'
 const UPLOADS_DIR = process.env.UPLOADS_DIR ?? './uploads'
 
 /**
- * Deletes a billboard and its dependent rows (occupancies, maintenance
- * records; photos cascade at the DB level). Occupancy and MaintenanceRecord
- * have no onDelete cascade in the schema, so a bare `billboard.delete` fails
- * with a FK violation as soon as the billboard has any history.
+ * Deletes a billboard and its dependent rows (contrats, maintenance
+ * records; photos and ContratFace rows cascade at the DB level). Contrat and
+ * MaintenanceRecord have no onDelete cascade in the schema, so a bare
+ * `billboard.delete` fails with a FK violation as soon as the billboard has
+ * any history.
  *
  * Returns the photo filenames so the caller can remove the files from disk
  * AFTER the transaction commits — never before, or a rollback would leave
@@ -22,7 +23,7 @@ export async function deleteBillboardCascade(
     where: { billboardId },
     select: { filename: true },
   })
-  await tx.occupancy.deleteMany({ where: { billboardId } })
+  await tx.contrat.deleteMany({ where: { billboardId } })
   await tx.maintenanceRecord.deleteMany({ where: { billboardId } })
   await tx.billboard.delete({ where: { id: billboardId } })
   return photos.map((p) => p.filename)

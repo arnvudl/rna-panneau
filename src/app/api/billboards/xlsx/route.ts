@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const billboards = await prisma.billboard.findMany({
     where,
     include: {
-      occupancies: { where: { status: 'ACTIVE' }, include: { client: true } },
+      contrats: { where: { statut: 'ACTIVE' }, include: { client: true, faces: true } },
       region: true,
       district: true,
       commune: true,
@@ -48,8 +48,8 @@ export async function GET(req: NextRequest) {
   sheet.getRow(1).font = { bold: true }
 
   for (const b of filtered) {
-    const endDates = b.occupancies
-      .map((o) => o.endDate)
+    const endDates = b.contrats
+      .map((o) => o.dateFin)
       .filter((d): d is Date => d !== null)
       .sort((a, c) => a.getTime() - c.getTime())
 
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
       dimension: b.dimension.replace('D', '').replace('X', 'x'),
       sides: b.sides,
       status: STATUS_LABELS[b.status as BillboardStatus] ?? b.status,
-      clients: b.occupancies.map((o) => o.client.name).join(', '),
+      clients: b.contrats.map((o) => o.client.name).join(', '),
       endDate: endDates[0] ? endDates[0].toLocaleDateString('fr-FR') : '',
       damaged: b.damaged ? 'Oui' : 'Non',
       note: b.note ?? '',

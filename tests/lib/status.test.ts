@@ -1,48 +1,48 @@
 import { describe, it, expect } from 'vitest'
 import { deriveBillboardStatus } from '@/lib/status'
 
-const activeOccupancy = (daysUntilEnd: number | null) => ({
-  status: 'ACTIVE' as const,
-  endDate: daysUntilEnd === null ? null : new Date(Date.now() + daysUntilEnd * 24 * 60 * 60 * 1000),
-  face: 'FACE_1' as const,
+const activeContrat = (daysUntilEnd: number | null) => ({
+  statut: 'ACTIVE' as const,
+  dateFin: daysUntilEnd === null ? null : new Date(Date.now() + daysUntilEnd * 24 * 60 * 60 * 1000),
+  faces: [{ face: 'FACE_1' as const }],
 })
 
 describe('deriveBillboardStatus', () => {
   it('returns MAINTENANCE when the billboard is flagged damaged', () => {
-    expect(deriveBillboardStatus({ damaged: true, statusOverride: null, occupancies: [] })).toBe('MAINTENANCE')
+    expect(deriveBillboardStatus({ damaged: true, statusOverride: null, contrats: [] })).toBe('MAINTENANCE')
   })
 
-  it('returns AVAILABLE when there is no active occupancy', () => {
-    expect(deriveBillboardStatus({ damaged: false, statusOverride: null, occupancies: [] })).toBe('AVAILABLE')
+  it('returns AVAILABLE when there is no active contrat', () => {
+    expect(deriveBillboardStatus({ damaged: false, statusOverride: null, contrats: [] })).toBe('AVAILABLE')
   })
 
-  it('returns RENTED when the active occupancy ends in more than 30 days', () => {
+  it('returns RENTED when the active contrat ends in more than 30 days', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, statusOverride: null, occupancies: [activeOccupancy(60)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contrats: [activeContrat(60)] })
     ).toBe('RENTED')
   })
 
-  it('returns EXPIRING_SOON when the active occupancy ends within 30 days', () => {
+  it('returns EXPIRING_SOON when the active contrat ends within 30 days', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, statusOverride: null, occupancies: [activeOccupancy(10)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contrats: [activeContrat(10)] })
     ).toBe('EXPIRING_SOON')
   })
 
   it('returns EXPIRING_SOON at the exact 30-day boundary', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, statusOverride: null, occupancies: [activeOccupancy(30)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contrats: [activeContrat(30)] })
     ).toBe('EXPIRING_SOON')
   })
 
-  it('returns EXPIRED when the active occupancy end date is in the past', () => {
+  it('returns EXPIRED when the active contrat end date is in the past', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, statusOverride: null, occupancies: [activeOccupancy(-5)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contrats: [activeContrat(-5)] })
     ).toBe('EXPIRED')
   })
 
-  it('returns RENTED indefinitely when the active occupancy has no end date', () => {
+  it('returns RENTED indefinitely when the active contrat has no end date', () => {
     expect(
-      deriveBillboardStatus({ damaged: false, statusOverride: null, occupancies: [activeOccupancy(null)] })
+      deriveBillboardStatus({ damaged: false, statusOverride: null, contrats: [activeContrat(null)] })
     ).toBe('RENTED')
   })
 
@@ -53,28 +53,28 @@ describe('deriveBillboardStatus', () => {
     const status = deriveBillboardStatus({
       damaged: false,
       statusOverride: null,
-      occupancies: [
-        { status: 'ACTIVE', endDate: soon, face: 'FACE_1' },
-        { status: 'ACTIVE', endDate: later, face: 'FACE_2' },
+      contrats: [
+        { statut: 'ACTIVE', dateFin: soon, faces: [{ face: 'FACE_1' }] },
+        { statut: 'ACTIVE', dateFin: later, faces: [{ face: 'FACE_2' }] },
       ],
     })
     expect(status).toBe('EXPIRING_SOON')
   })
 
-  it('is AVAILABLE only when no face has an active occupancy', () => {
+  it('is AVAILABLE only when no face has an active contrat', () => {
     const status = deriveBillboardStatus({
       damaged: false,
       statusOverride: null,
-      occupancies: [{ status: 'TERMINATED', endDate: new Date(), face: 'FACE_1' }],
+      contrats: [{ statut: 'ENDED', dateFin: new Date(), faces: [{ face: 'FACE_1' }] }],
     })
     expect(status).toBe('AVAILABLE')
   })
 
-  it('returns the override verbatim when set, ignoring occupancies', () => {
+  it('returns the override verbatim when set, ignoring contrats', () => {
     const status = deriveBillboardStatus({
       damaged: false,
       statusOverride: 'RENTED',
-      occupancies: [],
+      contrats: [],
     })
     expect(status).toBe('RENTED')
   })
@@ -83,7 +83,7 @@ describe('deriveBillboardStatus', () => {
     const status = deriveBillboardStatus({
       damaged: true,
       statusOverride: 'AVAILABLE',
-      occupancies: [],
+      contrats: [],
     })
     expect(status).toBe('AVAILABLE')
   })
@@ -92,7 +92,7 @@ describe('deriveBillboardStatus', () => {
     const status = deriveBillboardStatus({
       damaged: true,
       statusOverride: null,
-      occupancies: [],
+      contrats: [],
     })
     expect(status).toBe('MAINTENANCE')
   })

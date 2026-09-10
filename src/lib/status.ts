@@ -13,13 +13,13 @@ const STATUS_PRIORITY: Array<'EXPIRED' | 'EXPIRING_SOON' | 'RENTED'> = [
   'RENTED',
 ]
 
-// `endDate` is informative only (no money/contract logic depends on it). A
+// `dateFin` is informative only (no money/contract logic depends on it). A
 // face with no end date is treated as rented indefinitely — it can never
 // become EXPIRING_SOON or EXPIRED on its own; only a manual statusOverride or
-// terminating the occupancy changes that.
-function faceStatus(endDate: Date | null): 'EXPIRED' | 'EXPIRING_SOON' | 'RENTED' {
-  if (endDate === null) return 'RENTED'
-  const daysUntilEnd = (endDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)
+// ending the contrat changes that.
+function faceStatus(dateFin: Date | null): 'EXPIRED' | 'EXPIRING_SOON' | 'RENTED' {
+  if (dateFin === null) return 'RENTED'
+  const daysUntilEnd = (dateFin.getTime() - Date.now()) / (24 * 60 * 60 * 1000)
   if (daysUntilEnd < 0) return 'EXPIRED'
   if (daysUntilEnd <= EXPIRING_SOON_WINDOW_DAYS) return 'EXPIRING_SOON'
   return 'RENTED'
@@ -28,14 +28,18 @@ function faceStatus(endDate: Date | null): 'EXPIRED' | 'EXPIRING_SOON' | 'RENTED
 export function deriveBillboardStatus(billboard: {
   damaged: boolean
   statusOverride: BillboardStatus | null
-  occupancies: { status: 'ACTIVE' | 'TERMINATED'; endDate: Date | null; face: 'FACE_1' | 'FACE_2' | 'BOTH' }[]
+  contrats: {
+    statut: 'DRAFT' | 'SIGNED' | 'ACTIVE' | 'ENDED' | 'CANCELLED'
+    dateFin: Date | null
+    faces: { face: 'FACE_1' | 'FACE_2' | 'BOTH' }[]
+  }[]
 }): BillboardStatus {
   if (billboard.statusOverride) return billboard.statusOverride
   if (billboard.damaged) return 'MAINTENANCE'
 
-  const activeOccupancies = billboard.occupancies.filter((o) => o.status === 'ACTIVE')
-  if (activeOccupancies.length === 0) return 'AVAILABLE'
+  const activeContrats = billboard.contrats.filter((c) => c.statut === 'ACTIVE')
+  if (activeContrats.length === 0) return 'AVAILABLE'
 
-  const statuses = activeOccupancies.map((o) => faceStatus(o.endDate))
+  const statuses = activeContrats.map((c) => faceStatus(c.dateFin))
   return STATUS_PRIORITY.find((s) => statuses.includes(s)) ?? 'AVAILABLE'
 }

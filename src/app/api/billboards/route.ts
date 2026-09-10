@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const billboards = await prisma.billboard.findMany({
     where,
     include: {
-      occupancies: { where: { status: 'ACTIVE' }, include: { client: true } },
+      contrats: { where: { statut: 'ACTIVE' }, include: { client: true, faces: true } },
       region: true,
       district: true,
       commune: true,

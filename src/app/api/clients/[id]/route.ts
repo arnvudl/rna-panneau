@@ -10,7 +10,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   const client = await prisma.client.findUnique({
     where: { id: params.id },
-    include: { occupancies: { include: { billboard: true }, orderBy: { startDate: 'desc' } } },
+    include: { contrats: { include: { billboard: true }, orderBy: { dateDebut: 'desc' } } },
   })
   if (!client) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(client)
@@ -48,7 +48,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     return createApprovalRequest(session, 'DELETE_CLIENT', { clientId: params.id })
   }
 
-  const occupancyCount = await prisma.occupancy.count({ where: { clientId: params.id } })
+  const occupancyCount = await prisma.contrat.count({ where: { clientId: params.id } })
   if (occupancyCount > 0) {
     return NextResponse.json(
       { error: 'Ce client a des contrats associés (actifs ou passés) et ne peut pas être supprimé.' },

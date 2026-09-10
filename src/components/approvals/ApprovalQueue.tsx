@@ -17,7 +17,7 @@ type Approval = {
 
 // Fields that just identify the target entity, not a proposed change —
 // never worth showing in a diff.
-const ID_FIELDS = new Set(['billboardId', 'clientId', 'occupancyId', 'photoId'])
+const ID_FIELDS = new Set(['billboardId', 'clientId', 'contratId', 'photoId'])
 
 function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined) return '—'
@@ -34,10 +34,10 @@ function formatFieldValue(value: unknown): string {
 const PAYLOAD_LABELS: Record<string, string> = {
   billboardId: 'Panneau',
   clientId: 'Client',
-  occupancyId: 'Contrat',
+  contratId: 'Contrat',
   photoId: 'Photo',
   face: 'Face',
-  contractRef: 'Référence du contrat',
+  numero: 'Référence du contrat',
   startDate: 'Début',
   endDate: 'Fin',
   status: 'Statut',

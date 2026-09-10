@@ -36,7 +36,7 @@ export function OccupancyForm({
   const [clients, setClients] = useState<Client[]>([])
   const [clientId, setClientId] = useState('')
   const [face, setFace] = useState<Face>(availableFaces[0] ?? 'BOTH')
-  const [contractRef, setContractRef] = useState('')
+  const [numero, setNumero] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -58,7 +58,7 @@ export function OccupancyForm({
       loadClients('')
       setFace(availableFaces[0] ?? 'BOTH')
       setClientId('')
-      setContractRef('')
+      setNumero('')
       setStartDate('')
       setEndDate('')
       setError(null)
@@ -71,14 +71,14 @@ export function OccupancyForm({
     setSubmitting(true)
     setError(null)
     try {
-      const res = await fetch('/api/occupancies', {
+      const res = await fetch('/api/contrats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           billboardId,
           clientId,
           face: sides === 2 ? face : 'BOTH',
-          contractRef: contractRef.trim() || undefined,
+          numero: numero.trim() || undefined,
           startDate: startDate ? new Date(startDate).toISOString() : undefined,
           endDate: endDate ? new Date(endDate).toISOString() : undefined,
         }),
@@ -156,8 +156,8 @@ export function OccupancyForm({
             <Label>Référence du contrat (optionnel)</Label>
             <Input
               placeholder="ex: Contrat-2026-014.pdf"
-              value={contractRef}
-              onChange={(e) => setContractRef(e.target.value)}
+              value={numero}
+              onChange={(e) => setNumero(e.target.value)}
             />
             <p className="text-xs text-slate-500">
               Le contrat lui-même reste sur l&apos;ordinateur de l&apos;admin — cette référence sert juste à le retrouver.

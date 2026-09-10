@@ -14,10 +14,10 @@ export async function POST() {
   const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
   const now = new Date()
 
-  const expiring = await prisma.occupancy.findMany({
+  const expiring = await prisma.contrat.findMany({
     where: {
-      status: 'ACTIVE',
-      endDate: { lte: thirtyDaysFromNow, gte: now },
+      statut: 'ACTIVE',
+      dateFin: { lte: thirtyDaysFromNow, gte: now },
     },
     include: {
       billboard: { select: { reference: true, id: true } },
@@ -45,7 +45,7 @@ export async function POST() {
     const dedupKey = `EXPIRING_${occ.id}_${today}`
     if (alreadyNotified.has(dedupKey)) continue
 
-    const daysLeft = Math.ceil((occ.endDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    const daysLeft = Math.ceil((occ.dateFin!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     await notifyAdmins({
       type: dedupKey,
       title: 'Contrat expire bientôt',

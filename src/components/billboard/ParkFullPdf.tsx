@@ -25,7 +25,7 @@ export type ParkFullBillboard = {
   occupancies: {
     clientName: string
     face: string
-    contractRef: string | null
+    numero: string | null
     endDate: string | null
   }[]
   maintenanceRecords: { date: string; type: string; comment: string | null }[]
@@ -82,7 +82,7 @@ export function ParkFullPdf({
                     {o.face} — {o.clientName}
                   </Text>
                   <Text>
-                    {o.contractRef ?? 'Sans référence'}
+                    {o.numero ?? 'Sans référence'}
                     {o.endDate ? ` (jusqu'au ${o.endDate})` : ''}
                   </Text>
                 </View>

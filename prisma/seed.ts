@@ -50,16 +50,19 @@ async function seedSampleData() {
     },
   })
 
-  await prisma.occupancy.upsert({
+  await prisma.contrat.upsert({
     where: { id: 'seed-occupancy-1' },
     update: {},
     create: {
       id: 'seed-occupancy-1',
       billboardId: billboard.id,
       clientId: client.id,
-      contractRef: 'Contrat-Orange-2026.pdf',
-      endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
-      status: 'ACTIVE',
+      numero: 'Contrat-Orange-2026.pdf',
+      type: 'contrat',
+      typeReconduction: 'tacite',
+      dateFin: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+      statut: 'ACTIVE',
+      faces: { create: { face: 'BOTH' } },
     },
   })
 }

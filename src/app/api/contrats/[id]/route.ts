@@ -1,0 +1,67 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { prisma } from '@/lib/prisma'
+import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
+import { getPermission } from '@/lib/permissions'
+import { isFaceAvailable } from '@/lib/face-occupancy'
+
+// numero (Contrat.numero) is required + unique in the schema, unlike the old
+// optional contractRef — it cannot be cleared to null, only replaced.
+const patchSchema = z.object({
+  status: z.enum(['ACTIVE', 'TERMINATED']).optional(),
+  endDate: z.string().datetime().nullable().optional(),
+  numero: z.string().trim().min(1).max(200).optional(),
+})
+
+// Old occupancy status values map onto the richer ContratStatus enum:
+// ACTIVE -> ACTIVE, TERMINATED -> ENDED.
+const STATUS_MAP = { ACTIVE: 'ACTIVE', TERMINATED: 'ENDED' } as const
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const { session, error } = await requireSession()
+  if (error) return error
+
+  const parsed = parseOrBadRequest(patchSchema, await req.json())
+  if ('error' in parsed) return parsed.error
+  const body = parsed.data
+  const data = {
+    statut: body.status === undefined ? undefined : STATUS_MAP[body.status],
+    dateFin: body.endDate === undefined ? undefined : body.endDate ? new Date(body.endDate) : null,
+    numero: body.numero,
+  } as const
+
+  if (getPermission(session.user.role, 'edit_occupancy') === 'requires_approval') {
+    // Contract for the approvals API: EDIT_OCCUPANCY payload is always shaped
+    // as { contratId: string, status?: 'ACTIVE'|'TERMINATED', endDate?:
+    // string (ISO) | null, numero?: string | null } — only the fields the
+    // caller actually sent are included alongside contratId.
+    return createApprovalRequest(session, 'EDIT_OCCUPANCY', { contratId: params.id, ...body })
+  }
+
+  const existing = await prisma.contrat.findUnique({
+    where: { id: params.id },
+    include: { faces: { select: { face: true } } },
+  })
+  if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  // Re-activating an ended contrat could double-book a face that was
+  // rented to someone else in the meantime — re-check availability.
+  const face = existing.faces[0]?.face ?? 'BOTH'
+  if (body.status === 'ACTIVE' && existing.statut !== 'ACTIVE') {
+    const activeContrats = await prisma.contrat.findMany({
+      where: { billboardId: existing.billboardId, statut: 'ACTIVE', id: { not: existing.id } },
+      include: { faces: { select: { face: true } } },
+    })
+    const activeFaces = activeContrats.flatMap((c) => c.faces)
+    if (!isFaceAvailable(face, activeFaces)) {
+      return NextResponse.json({ error: 'Cette face du panneau est déjà occupée' }, { status: 409 })
+    }
+  }
+
+  const contrat = await prisma.contrat.update({
+    where: { id: params.id },
+    data,
+    include: { faces: true },
+  })
+  return NextResponse.json(contrat)
+}

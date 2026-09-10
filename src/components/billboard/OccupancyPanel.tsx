@@ -11,7 +11,7 @@ import { FACE_LABELS } from '@/lib/status-labels'
 export type OccupancyPanelOccupancy = {
   id: string
   client: { name: string }
-  contractRef: string | null
+  numero: string | null
   endDate: Date | null
   status: string
   face: 'FACE_1' | 'FACE_2' | 'BOTH'
@@ -26,7 +26,7 @@ function OccupancyCard({ occupancy }: { occupancy: OccupancyPanelOccupancy }) {
     setTerminating(true)
     setError(null)
     try {
-      const res = await fetch(`/api/occupancies/${occupancy.id}`, {
+      const res = await fetch(`/api/contrats/${occupancy.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'TERMINATED' }),
@@ -52,7 +52,7 @@ function OccupancyCard({ occupancy }: { occupancy: OccupancyPanelOccupancy }) {
       {error && <p className="text-sm text-red-600">{error}</p>}
       <p className="text-xs font-semibold uppercase text-slate-400">{FACE_LABELS[occupancy.face]}</p>
       <p className="font-medium">{occupancy.client.name}</p>
-      {occupancy.contractRef && <p className="text-sm text-slate-600">Contrat : {occupancy.contractRef}</p>}
+      {occupancy.numero && <p className="text-sm text-slate-600">Contrat : {occupancy.numero}</p>}
       <p className="text-sm text-slate-600">
         {occupancy.endDate ? `Jusqu'au ${occupancy.endDate.toLocaleDateString('fr-FR')}` : 'Durée indéterminée'}
       </p>

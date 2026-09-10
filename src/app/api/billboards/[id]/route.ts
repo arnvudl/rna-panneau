@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const billboard = await prisma.billboard.findUnique({
     where: { id: params.id },
     include: {
-      occupancies: { include: { client: true }, orderBy: { startDate: 'desc' } },
+      contrats: { include: { client: true, faces: true }, orderBy: { dateDebut: 'desc' } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
       photos: { orderBy: { createdAt: 'desc' } },
       region: true,

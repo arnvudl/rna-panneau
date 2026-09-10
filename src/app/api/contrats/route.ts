@@ -3,13 +3,14 @@ import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
-import { createOccupancySchema } from '@/lib/occupancy-schema'
+import { createContratSchema } from '@/lib/contrat-schema'
+import { generateContratNumero } from '@/lib/reference'
 
 export async function POST(req: NextRequest) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const parsed = parseOrBadRequest(createOccupancySchema, await req.json())
+  const parsed = parseOrBadRequest(createContratSchema, await req.json())
   if ('error' in parsed) return parsed.error
   const body = parsed.data
 
@@ -29,27 +30,32 @@ export async function POST(req: NextRequest) {
   if (getPermission(session.user.role, 'create_occupancy') === 'requires_approval') {
     // Contract for the approvals API: CREATE_OCCUPANCY payload is always
     // shaped as { billboardId: string, clientId: string, face: 'FACE_1' |
-    // 'FACE_2' | 'BOTH', contractRef?: string, endDate?: string (ISO) }.
+    // 'FACE_2' | 'BOTH', numero?: string, endDate?: string (ISO) }.
     return createApprovalRequest(session, 'CREATE_OCCUPANCY', body)
   }
 
-  const activeOccupancies = await prisma.occupancy.findMany({
-    where: { billboardId: body.billboardId, status: 'ACTIVE' },
-    select: { face: true },
+  const activeContrats = await prisma.contrat.findMany({
+    where: { billboardId: body.billboardId, statut: 'ACTIVE' },
+    include: { faces: { select: { face: true } } },
   })
-  if (!isFaceAvailable(body.face, activeOccupancies)) {
+  const activeFaces = activeContrats.flatMap((c) => c.faces)
+  if (!isFaceAvailable(body.face, activeFaces)) {
     return NextResponse.json({ error: 'Cette face du panneau est déjà occupée' }, { status: 409 })
   }
 
-  const occupancy = await prisma.occupancy.create({
+  const contrat = await prisma.contrat.create({
     data: {
       billboardId: body.billboardId,
       clientId: body.clientId,
-      face: body.face,
-      contractRef: body.contractRef,
-      startDate: body.startDate ? new Date(body.startDate) : undefined,
-      endDate: body.endDate ? new Date(body.endDate) : undefined,
+      numero: body.numero ?? generateContratNumero(),
+      type: 'contrat',
+      typeReconduction: 'tacite',
+      statut: 'ACTIVE',
+      dateDebut: body.startDate ? new Date(body.startDate) : undefined,
+      dateFin: body.endDate ? new Date(body.endDate) : undefined,
+      faces: { create: { face: body.face } },
     },
+    include: { faces: true },
   })
-  return NextResponse.json(occupancy, { status: 201 })
+  return NextResponse.json(contrat, { status: 201 })
 }

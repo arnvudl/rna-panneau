@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   const billboards = await prisma.billboard.findMany({
     where,
     include: {
-      occupancies: { where: { status: 'ACTIVE' }, include: { client: true } },
+      contrats: { where: { statut: 'ACTIVE' }, include: { client: true, faces: true } },
       maintenanceRecords: { orderBy: { date: 'desc' } },
       photos: { orderBy: { createdAt: 'desc' }, take: 1 },
       district: true,
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
       dimension: b.dimension,
       sides: b.sides,
       status: b.status,
-      activeClients: b.occupancies
+      activeClients: b.contrats
         .map((o) => o.client.name)
         .join(', '),
       permitNumber: b.permitNumber,
@@ -67,11 +67,11 @@ export async function GET(req: NextRequest) {
       photo: b.photos[0] ? await loadPdfPhoto(b.photos[0].filename) : null,
       permitNumber: b.permitNumber,
       taxPaymentRef: b.taxPaymentRef,
-      occupancies: b.occupancies.map((o) => ({
+      occupancies: b.contrats.map((o) => ({
         clientName: o.client.name,
-        face: o.face,
-        contractRef: o.contractRef,
-        endDate: o.endDate ? o.endDate.toLocaleDateString('fr-FR') : null,
+        face: o.faces[0]?.face ?? 'BOTH',
+        numero: o.numero,
+        endDate: o.dateFin ? o.dateFin.toLocaleDateString('fr-FR') : null,
       })),
       maintenanceRecords: b.maintenanceRecords.map((m) => ({
         date: m.date.toLocaleDateString('fr-FR'),
