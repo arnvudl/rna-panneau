@@ -119,22 +119,22 @@ model Commune {
 }
 
 model Billboard {
-  id              String    @id @default(cuid())
-  reference       String    @unique
-  lat             Float
-  lng             Float
-  regionId        String
-  districtId      String
-  communeId       String?
-  dimension       Dimension
-  sides           Int       @default(1)
-  damaged         Boolean   @default(false)
-  note            String?
-  permitNumber    String?
-  taxPaymentRef   String?
-  statusOverride  BillboardStatus?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String           @id @default(cuid())
+  reference      String           @unique
+  lat            Float
+  lng            Float
+  regionId       String
+  districtId     String
+  communeId      String?
+  dimension      Dimension
+  sides          Int              @default(1)
+  damaged        Boolean          @default(false)
+  note           String?
+  permitNumber   String?
+  taxPaymentRef  String?
+  statusOverride BillboardStatus?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   region             Region              @relation(fields: [regionId], references: [id])
   district           District            @relation(fields: [districtId], references: [id])
@@ -182,23 +182,23 @@ model Client {
 }
 
 model Contrat {
-  id                String        @id @default(cuid())
-  numero            String        @unique
-  type              String
-  clientId          String
-  billboardId       String
-  dateDebut         DateTime      @default(now())
-  dateFin           DateTime?
-  typeReconduction  String
-  statut            ContratStatus @default(DRAFT)
-  pdfUrl            String?
-  dateBAT           DateTime?
-  batValidated      Boolean       @default(false)
-  batValidatedDate  DateTime?
-  submittedAt       DateTime?
-  submittedBy       String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  numero           String        @unique
+  type             String
+  clientId         String
+  billboardId      String
+  dateDebut        DateTime      @default(now())
+  dateFin          DateTime?
+  typeReconduction String
+  statut           ContratStatus @default(DRAFT)
+  pdfUrl           String?
+  dateBAT          DateTime?
+  batValidated     Boolean       @default(false)
+  batValidatedDate DateTime?
+  submittedAt      DateTime?
+  submittedBy      String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   client    Client        @relation(fields: [clientId], references: [id])
   billboard Billboard     @relation(fields: [billboardId], references: [id])
@@ -209,17 +209,17 @@ model Contrat {
 }
 
 model ContratFace {
-  id                 String          @id @default(cuid())
-  contratId          String
-  face               ContratFaceSide @default(BOTH)
-  tarifMensuel       Float?
-  tarifSemestriel    Float?
-  tarifAnnuel        Float?
+  id                  String          @id @default(cuid())
+  contratId           String
+  face                ContratFaceSide @default(BOTH)
+  tarifMensuel        Float?
+  tarifSemestriel     Float?
+  tarifAnnuel         Float?
   dateImpressionDebut DateTime?
-  dateImpressionFin  DateTime?
-  typeImpression     String?
-  jourAlerte         Int             @default(7)
-  createdAt          DateTime        @default(now())
+  dateImpressionFin   DateTime?
+  typeImpression      String?
+  jourAlerte          Int             @default(7)
+  createdAt           DateTime        @default(now())
 
   contrat Contrat @relation(fields: [contratId], references: [id], onDelete: Cascade)
 
@@ -227,27 +227,27 @@ model ContratFace {
 }
 
 model Invoice {
-  id               String        @id @default(cuid())
-  numero           String        @unique
-  clientId         String
-  genereeAt        DateTime?
-  genereeBy        String?
-  pdfUrl           String?
-  montantTotal     Float
-  montantTaxe      Float
-  montantNet       Float
-  dateEcheance     DateTime
-  statut           InvoiceStatus @default(DRAFT)
+  id                 String        @id @default(cuid())
+  numero             String        @unique
+  clientId           String
+  genereeAt          DateTime?
+  genereeBy          String?
+  pdfUrl             String?
+  montantTotal       Float
+  montantTaxe        Float
+  montantNet         Float
+  dateEcheance       DateTime
+  statut             InvoiceStatus @default(DRAFT)
   dernierRelanceDate DateTime?
-  relanceCount     Int           @default(0)
-  alerteImpayee    Boolean       @default(false)
-  submittedAt      DateTime?
-  submittedBy      String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  relanceCount       Int           @default(0)
+  alerteImpayee      Boolean       @default(false)
+  submittedAt        DateTime?
+  submittedBy        String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  client  Client         @relation(fields: [clientId], references: [id])
-  lignes  InvoiceLigne[]
+  client   Client         @relation(fields: [clientId], references: [id])
+  lignes   InvoiceLigne[]
   payments Payment[]
 
   @@index([clientId])
@@ -363,4 +363,3 @@ model Notification {
   @@index([userId, read])
   @@index([userId, createdAt])
 }
-
