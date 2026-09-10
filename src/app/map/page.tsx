@@ -22,7 +22,7 @@ export default function MapPage() {
   const selected = billboards.find((b) => b.id === selectedId) ?? null
 
   return (
-    <div className="flex h-[calc(100vh-56px)] flex-col gap-6 bg-slate-50 p-6">
+    <div className="flex h-screen flex-col gap-6 bg-slate-50 p-6">
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
           {error}
