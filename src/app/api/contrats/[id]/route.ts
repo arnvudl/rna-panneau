@@ -142,6 +142,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 
   // JSON.parse(JSON.stringify(...)) turns Date fields into ISO strings so the
   // snapshot is valid Prisma.InputJsonValue (Date instances are not).
+  //
+  // Deliberately a full-record snapshot, unlike PATCH's diff-only oldValues
+  // ({ statut: ... }) above: once this row is deleted, a diff has nothing to
+  // reconstruct from. AuditLog rows for Contrat are not uniform in shape
+  // across actions — readers should key off `action`, not assume one schema.
   const snapshot = JSON.parse(JSON.stringify(existing)) as Record<string, unknown>
 
   await prisma.$transaction(async (tx) => {
