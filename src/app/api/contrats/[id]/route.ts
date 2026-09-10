@@ -58,25 +58,32 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   try {
-    const contrat = await prisma.contrat.update({
-      where: { id: params.id },
-      data,
-      include: { faces: true },
-    })
-
-    // Only a real statut transition (sign/activate/end) is a "meaningful
-    // business event" worth auditing — plain field edits (numero, endDate
-    // alone) are not.
-    if (data.statut !== undefined && data.statut !== existing.statut) {
-      await logAudit({
-        userId: session.user.id,
-        action: 'update',
-        entityType: 'Contrat',
-        entityId: contrat.id,
-        oldValues: { statut: existing.statut },
-        newValues: { statut: data.statut },
+    const contrat = await prisma.$transaction(async (tx) => {
+      const updated = await tx.contrat.update({
+        where: { id: params.id },
+        data,
+        include: { faces: true },
       })
-    }
+
+      // Only a real statut transition (sign/activate/end) is a "meaningful
+      // business event" worth auditing — plain field edits (numero, endDate
+      // alone) are not.
+      if (data.statut !== undefined && data.statut !== existing.statut) {
+        await logAudit(
+          {
+            userId: session.user.id,
+            action: 'update',
+            entityType: 'Contrat',
+            entityId: updated.id,
+            oldValues: { statut: existing.statut },
+            newValues: { statut: data.statut },
+          },
+          tx
+        )
+      }
+
+      return updated
+    })
 
     return NextResponse.json(contrat)
   } catch (err) {

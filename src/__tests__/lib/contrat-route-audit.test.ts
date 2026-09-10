@@ -32,6 +32,12 @@ vi.mock('@/lib/prisma', () => ({
       findMany: (...args: unknown[]) => contratFindMany(...args),
       update: (...args: unknown[]) => contratUpdate(...args),
     },
+    $transaction: (fn: (tx: unknown) => unknown) =>
+      fn({
+        contrat: {
+          update: (...args: unknown[]) => contratUpdate(...args),
+        },
+      }),
   },
 }))
 
@@ -70,14 +76,17 @@ describe('PATCH /api/contrats/[id] audit logging', () => {
     const res = await PATCH(makeRequest({ status: 'ACTIVE' }), { params: { id: 'contrat-1' } })
 
     expect(res.status).toBe(200)
-    expect(logAudit).toHaveBeenCalledWith({
-      userId: 'user-1',
-      action: 'update',
-      entityType: 'Contrat',
-      entityId: 'contrat-1',
-      oldValues: { statut: 'ENDED' },
-      newValues: { statut: 'ACTIVE' },
-    })
+    expect(logAudit).toHaveBeenCalledWith(
+      {
+        userId: 'user-1',
+        action: 'update',
+        entityType: 'Contrat',
+        entityId: 'contrat-1',
+        oldValues: { statut: 'ENDED' },
+        newValues: { statut: 'ACTIVE' },
+      },
+      expect.anything()
+    )
   })
 
   it('does not log an audit row when statut is unchanged', async () => {
