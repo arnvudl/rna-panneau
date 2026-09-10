@@ -2,8 +2,10 @@
 
 import { useDroppable } from '@dnd-kit/core'
 import { ContratCard, type KanbanContrat } from '@/components/contrats/ContratCard'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { ContratStatusValue } from '@/lib/contrat-schema'
+import { CONTRAT_STATUS_STYLES } from '@/lib/status-labels'
 
 export function ContratColumn({
   status,
@@ -21,23 +23,26 @@ export function ContratColumn({
   disabled: boolean
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status, disabled })
+  const styles = CONTRAT_STATUS_STYLES[status]
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        'flex w-72 shrink-0 flex-col gap-2 rounded-xl border bg-muted/30 p-3 transition-colors',
-        isOver ? 'border-primary bg-primary/5' : 'border-border',
+        'flex h-full w-72 shrink-0 flex-col gap-2 rounded-xl border p-3 ring-1 ring-black/5 transition-colors',
+        styles.columnBg,
+        isOver ? 'border-primary ring-2 ring-primary/30' : 'border-transparent',
         disabled && 'opacity-60'
       )}
     >
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-sm font-semibold text-foreground">{label}</h2>
-        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-          {contrats.length}
-        </span>
+      <div className="flex shrink-0 items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className={cn('size-2 shrink-0 rounded-full', styles.headerDot)} aria-hidden="true" />
+          <h2 className="text-sm font-semibold text-foreground">{label}</h2>
+        </div>
+        <Badge variant={styles.badgeVariant}>{contrats.length}</Badge>
       </div>
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
         {contrats.map((contrat) => (
           <ContratCard
             key={contrat.id}

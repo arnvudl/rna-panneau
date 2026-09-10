@@ -164,7 +164,7 @@ export function ContratKanban() {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto p-6">
+      <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-6 pt-2">
         {CONTRAT_STATUS_VALUES.map((status) => (
           <ContratColumn
             key={status}

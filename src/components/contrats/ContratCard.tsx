@@ -5,7 +5,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { FACE_LABELS } from '@/lib/status-labels'
+import { CONTRAT_STATUS_STYLES, FACE_LABELS } from '@/lib/status-labels'
 import type { ContratStatusValue } from '@/lib/contrat-schema'
 
 export type KanbanContrat = {
@@ -47,6 +47,10 @@ export function ContratCard({
   const face = contrat.faces[0]?.face ?? 'BOTH'
   const dateDebut = formatDate(contrat.dateDebut)
   const dateFin = formatDate(contrat.dateFin)
+  const accent = CONTRAT_STATUS_STYLES[contrat.statut].cardAccent
+  const metaLabel = [FACE_LABELS[face], dateDebut || dateFin ? `${dateDebut ?? '?'} → ${dateFin ?? 'indéterminée'}` : null]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <Card
@@ -56,22 +60,21 @@ export function ContratCard({
       {...attributes}
       size="sm"
       className={cn(
-        'gap-1 shadow-sm transition-opacity',
+        'gap-1 border-l-4 shadow-sm transition-opacity',
+        accent,
         isDragging && 'opacity-50',
         pending ? 'cursor-wait opacity-60' : 'cursor-grab active:cursor-grabbing'
       )}
     >
       <CardContent className="space-y-1 text-sm">
-        <p className="font-semibold text-card-foreground">{contrat.numero}</p>
+        <p className="text-base font-bold leading-tight text-card-foreground">{contrat.numero}</p>
         <p className="text-muted-foreground">{contrat.client.name}</p>
-        <p className="text-xs text-muted-foreground">
-          {contrat.billboard.reference} · {FACE_LABELS[face]}
-        </p>
-        {(dateDebut || dateFin) && (
-          <p className="text-xs text-muted-foreground/70">
-            {dateDebut ?? '?'} → {dateFin ?? 'indéterminée'}
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground">{contrat.billboard.reference}</p>
+        <div className="flex flex-wrap gap-1 pt-0.5">
+          <Badge variant="outline" className="font-normal text-muted-foreground">
+            {metaLabel}
+          </Badge>
+        </div>
         {pending && <Badge variant="outline">Mise à jour…</Badge>}
         {pendingApproval && <Badge variant="expiring">En attente d&apos;approbation</Badge>}
       </CardContent>

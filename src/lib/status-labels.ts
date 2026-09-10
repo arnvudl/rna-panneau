@@ -44,3 +44,25 @@ export const CONTRAT_STATUS_LABELS: Record<'DRAFT' | 'SIGNED' | 'ACTIVE' | 'ENDE
   ENDED: 'Terminé',
   CANCELLED: 'Annulé',
 }
+
+// Per-status visual language for the Contrat Kanban board: a light column
+// tint, a header dot/count-badge color, and a card left-accent-bar color —
+// one color family per ContratStatus, reusing the same Tailwind color
+// families already established by badge.tsx's status variants (emerald =
+// healthy/active, blue = in-progress, orange = attention, slate = neutral,
+// red = destructive/cancelled) rather than inventing new ad hoc colors.
+export const CONTRAT_STATUS_STYLES: Record<
+  'DRAFT' | 'SIGNED' | 'ACTIVE' | 'ENDED' | 'CANCELLED',
+  {
+    badgeVariant: 'maintenance' | 'rented' | 'available' | 'destructive'
+    columnBg: string
+    headerDot: string
+    cardAccent: string
+  }
+> = {
+  DRAFT: { badgeVariant: 'maintenance', columnBg: 'bg-slate-50', headerDot: 'bg-slate-400', cardAccent: 'border-l-slate-400' },
+  SIGNED: { badgeVariant: 'rented', columnBg: 'bg-blue-50', headerDot: 'bg-blue-500', cardAccent: 'border-l-blue-500' },
+  ACTIVE: { badgeVariant: 'available', columnBg: 'bg-emerald-50', headerDot: 'bg-emerald-500', cardAccent: 'border-l-emerald-500' },
+  ENDED: { badgeVariant: 'maintenance', columnBg: 'bg-slate-100', headerDot: 'bg-slate-600', cardAccent: 'border-l-slate-600' },
+  CANCELLED: { badgeVariant: 'destructive', columnBg: 'bg-red-50', headerDot: 'bg-red-500', cardAccent: 'border-l-red-500' },
+}
