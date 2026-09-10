@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 
 // This page reads the database and must not be statically prerendered at
 // build time — Railway (and any environment where DATABASE_URL is only
@@ -9,7 +10,9 @@ export default async function RegionsPage() {
   const regions = await prisma.region.findMany({ orderBy: { name: 'asc' } })
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 p-6">
+    <div>
+      <Breadcrumbs segments={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Réglages' }]} />
+      <div className="mx-auto max-w-2xl space-y-4 p-6">
       <h1 className="text-2xl font-semibold">Régions</h1>
       <p className="text-sm text-slate-600">
         Liste fixe des 23 régions de Madagascar utilisée pour générer l&apos;identifiant des panneaux
@@ -23,6 +26,7 @@ export default async function RegionsPage() {
           </li>
         ))}
       </ul>
+      </div>
     </div>
   )
 }

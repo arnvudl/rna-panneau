@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { formatContactInfo } from '@/lib/client-format'
 import { ClientDetailActions } from '@/components/clients/ClientDetailActions'
 import { ContractPhotoLink } from '@/components/clients/ContractPhotoLink'
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 
 export default async function ClientPage({ params }: { params: { id: string } }) {
   const client = await prisma.client.findUnique({
@@ -13,7 +14,15 @@ export default async function ClientPage({ params }: { params: { id: string } })
   if (!client) notFound()
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 p-6">
+    <div>
+      <Breadcrumbs
+        segments={[
+          { label: 'Accueil', href: '/dashboard' },
+          { label: 'Clients', href: '/clients' },
+          { label: client.name },
+        ]}
+      />
+      <div className="mx-auto max-w-2xl space-y-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{client.name}</h1>
         <ClientDetailActions client={{ id: client.id, name: client.name, phone: client.phone, email: client.email }} />
@@ -39,6 +48,7 @@ export default async function ClientPage({ params }: { params: { id: string } })
           <li className="text-sm text-slate-500">Aucun contrat</li>
         )}
       </ul>
+      </div>
     </div>
   )
 }

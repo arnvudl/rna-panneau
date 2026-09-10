@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { ClientForm } from '@/components/clients/ClientForm'
 import { formatContactInfo } from '@/lib/client-format'
 import { getPermission } from '@/lib/permissions'
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 
 type Client = { id: string; name: string; phone: string | null; email: string | null }
 
@@ -49,8 +50,9 @@ export default function ClientsPage() {
   const reload = () => setReloadToken((t) => t + 1)
 
   return (
-    <div className="flex h-[calc(100vh-56px)] flex-col gap-6 bg-slate-50 p-6">
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 overflow-hidden">
+    <div className="flex h-screen flex-col gap-6 bg-slate-50">
+      <Breadcrumbs segments={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Clients' }]} />
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 overflow-hidden px-6 pb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Clients</h1>
           {canCreate && (

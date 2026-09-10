@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
 import { useBillboards } from '@/hooks/useBillboards'
 import { getPermission } from '@/lib/permissions'
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 
 export default function DatabasePage() {
   const router = useRouter()
@@ -67,7 +68,9 @@ export default function DatabasePage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-56px)] flex-col gap-6 bg-slate-50 p-6">
+    <div className="flex h-screen flex-col bg-slate-50">
+      <Breadcrumbs segments={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Inventaire' }]} />
+      <div className="flex flex-1 flex-col gap-6 overflow-hidden p-6">
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
           {error}
@@ -125,6 +128,7 @@ export default function DatabasePage() {
         onConfirm={deleteSelected}
       />
       <StatusLegend />
+      </div>
     </div>
   )
 }

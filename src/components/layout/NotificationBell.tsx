@@ -16,6 +16,12 @@ type Notification = {
   createdAt: string
 }
 
+/**
+ * Bell trigger + flyout panel. Rendered inline inside the sidebar rail, so
+ * the panel opens to the right of the trigger (`left-full`) rather than
+ * hanging off the trigger's own right edge, which would run off-screen in a
+ * narrow rail.
+ */
 export function NotificationBell() {
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
@@ -95,18 +101,18 @@ export function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+        className="relative flex h-5 w-5 items-center justify-center text-slate-500 transition-colors hover:text-slate-900"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border bg-white shadow-lg">
+        <div className="absolute left-full top-0 z-50 ml-2 w-80 rounded-lg border bg-white shadow-lg">
           <div className="flex items-center justify-between border-b px-4 py-2.5">
             <span className="text-sm font-semibold text-slate-900">Notifications</span>
             {unreadCount > 0 && (
@@ -152,3 +158,4 @@ export function NotificationBell() {
     </div>
   )
 }
+

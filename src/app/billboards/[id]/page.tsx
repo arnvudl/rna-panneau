@@ -11,6 +11,7 @@ import { MaintenancePanel } from '@/components/billboard/MaintenancePanel'
 import { ExportPdfButton } from '@/components/billboard/ExportPdfButton'
 import { BillboardDetailActions } from '@/components/billboard/BillboardDetailActions'
 import { StatusOverrideControl } from '@/components/billboard/StatusOverrideControl'
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 
 export default async function BillboardPage({ params }: { params: { id: string } }) {
   const billboard = await prisma.billboard.findUnique({
@@ -37,7 +38,15 @@ export default async function BillboardPage({ params }: { params: { id: string }
   const activeOccupancies = occupancies.filter((o) => o.status === 'ACTIVE')
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
+    <div>
+      <Breadcrumbs
+        segments={[
+          { label: 'Accueil', href: '/dashboard' },
+          { label: 'Inventaire', href: '/database' },
+          { label: billboard.reference },
+        ]}
+      />
+      <div className="mx-auto max-w-6xl space-y-6 p-6">
       {/* Header Section */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between rounded-xl bg-white p-6 shadow-sm border border-slate-200">
         <div>
@@ -144,6 +153,7 @@ export default async function BillboardPage({ params }: { params: { id: string }
             </Tabs>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

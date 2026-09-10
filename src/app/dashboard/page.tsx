@@ -3,6 +3,7 @@ import { deriveBillboardStatus } from '@/lib/status'
 import { requireRole } from '@/components/layout/RoleGate'
 import { ApprovalQueue } from '@/components/approvals/ApprovalQueue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { CheckCircle2, KeyRound, Clock3 } from 'lucide-react'
 
 export default async function DashboardPage() {
@@ -16,7 +17,9 @@ export default async function DashboardPage() {
   const expiringSoon = withStatus.filter((b) => b.status === 'EXPIRING_SOON').length
 
   return (
-    <div className="flex min-h-[calc(100vh-56px)] flex-col gap-6 bg-slate-50 p-6">
+    <div className="flex min-h-screen flex-col bg-slate-50">
+      <Breadcrumbs segments={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Tableau de bord' }]} />
+      <div className="flex flex-1 flex-col gap-6 p-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Tableau de bord</h1>
 
@@ -66,6 +69,7 @@ export default async function DashboardPage() {
             <ApprovalQueue />
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   )
