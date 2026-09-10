@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { handlePatchResponse } from './ContratKanban'
+import { handlePatchResponse, nextPendingApprovalIds } from './ContratKanban'
 import type { KanbanContrat } from './ContratCard'
 
 const baseContrat: KanbanContrat = {
@@ -57,5 +57,34 @@ describe('handlePatchResponse', () => {
     const result = await handlePatchResponse(res, baseContrat)
     expect(result.toast.type).toBe('error')
     expect(result.toast.message).toBe('Transition refusée')
+  })
+})
+
+describe('nextPendingApprovalIds', () => {
+  it('adds the contrat id on a 202 response (queued for approval)', () => {
+    const next = nextPendingApprovalIds(new Set(), 'c1', { nextStatut: null }, 202)
+    expect(next.has('c1')).toBe(true)
+  })
+
+  it('removes the contrat id once a real status transition resolves', () => {
+    const prev = new Set(['c1'])
+    const next = nextPendingApprovalIds(prev, 'c1', { nextStatut: 'SIGNED' }, 200)
+    expect(next.has('c1')).toBe(false)
+  })
+
+  it('leaves the set unchanged for a 400/409/500 response with no nextStatut', () => {
+    const prev = new Set(['other'])
+    for (const status of [400, 409, 500]) {
+      const next = nextPendingApprovalIds(prev, 'c1', { nextStatut: null }, status)
+      expect(next.has('c1')).toBe(false)
+      expect(Array.from(next)).toEqual(['other'])
+    }
+  })
+
+  it('preserves unrelated existing ids in prev across all cases', () => {
+    const prev = new Set(['other'])
+    expect(Array.from(nextPendingApprovalIds(prev, 'c1', { nextStatut: null }, 202)).sort()).toEqual(['c1', 'other'])
+    const prevWithBoth = new Set(['c1', 'other'])
+    expect(Array.from(nextPendingApprovalIds(prevWithBoth, 'c1', { nextStatut: 'SIGNED' }, 200))).toEqual(['other'])
   })
 })

@@ -42,11 +42,41 @@ export async function handlePatchResponse(
   return { nextStatut: null, toast: { type: 'error', message: 'Erreur lors de la mise à jour du contrat' } }
 }
 
+/**
+ * Computes the next set of contrat ids that should show the "pending
+ * approval" indicator, given the outcome of a status-change PATCH.
+ * Exported (and kept pure) so the indicator logic can be unit-tested
+ * without mounting the drag-and-drop board.
+ *
+ * - A 202 response means the change was deferred to an admin approval:
+ *   the contrat id is added, and the badge stays until either the
+ *   approval resolves (a later successful transition removes it) or the
+ *   board reloads (pendingApprovalIds is local state, reset on remount).
+ * - A resolved transition (server returned a new statut) means any
+ *   earlier pending-approval indicator for that contrat is stale.
+ */
+export function nextPendingApprovalIds(
+  prev: Set<string>,
+  contratId: string,
+  result: { nextStatut: ContratStatusValue | null },
+  responseStatus: number
+): Set<string> {
+  const next = new Set(prev)
+  if (result.nextStatut) {
+    next.delete(contratId)
+  }
+  if (responseStatus === 202) {
+    next.add(contratId)
+  }
+  return next
+}
+
 export function ContratKanban() {
   const [contrats, setContrats] = useState<KanbanContrat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
+  const [pendingApprovalIds, setPendingApprovalIds] = useState<Set<string>>(new Set())
   const [activeId, setActiveId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -113,6 +143,7 @@ export function ContratKanban() {
       if (result.nextStatut) {
         setContrats((prev) => prev.map((c) => (c.id === contrat.id ? { ...c, statut: result.nextStatut as ContratStatusValue } : c)))
       }
+      setPendingApprovalIds((prev) => nextPendingApprovalIds(prev, contrat.id, result, res.status))
 
       if (result.toast.type === 'success') toast.success(result.toast.message)
       else if (result.toast.type === 'info') toast.info(result.toast.message, { description: result.toast.description })
@@ -141,6 +172,7 @@ export function ContratKanban() {
             label={CONTRAT_STATUS_LABELS[status]}
             contrats={columns.get(status) ?? []}
             pendingIds={pendingIds}
+            pendingApprovalIds={pendingApprovalIds}
             disabled={activeContrat ? !isValidContratTransition(activeContrat.statut, status) : false}
           />
         ))}

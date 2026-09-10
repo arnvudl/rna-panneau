@@ -2,6 +2,9 @@
 
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { FACE_LABELS } from '@/lib/status-labels'
 import type { ContratStatusValue } from '@/lib/contrat-schema'
 
@@ -23,7 +26,15 @@ function formatDate(value: string | null): string | null {
   return date.toLocaleDateString('fr-FR')
 }
 
-export function ContratCard({ contrat, pending }: { contrat: KanbanContrat; pending: boolean }) {
+export function ContratCard({
+  contrat,
+  pending,
+  pendingApproval = false,
+}: {
+  contrat: KanbanContrat
+  pending: boolean
+  pendingApproval?: boolean
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: contrat.id,
     disabled: pending,
@@ -38,26 +49,32 @@ export function ContratCard({ contrat, pending }: { contrat: KanbanContrat; pend
   const dateFin = formatDate(contrat.dateFin)
 
   return (
-    <div
+    <Card
       ref={setNodeRef}
       style={style}
       {...listeners}
       {...attributes}
-      className={`space-y-1 rounded-lg border bg-white p-3 text-sm shadow-sm ${
-        isDragging ? 'opacity-50' : ''
-      } ${pending ? 'cursor-wait opacity-60' : 'cursor-grab active:cursor-grabbing'}`}
-    >
-      <p className="font-semibold text-slate-900">{contrat.numero}</p>
-      <p className="text-slate-700">{contrat.client.name}</p>
-      <p className="text-slate-500">
-        {contrat.billboard.reference} · {FACE_LABELS[face]}
-      </p>
-      {(dateDebut || dateFin) && (
-        <p className="text-xs text-slate-400">
-          {dateDebut ?? '?'} → {dateFin ?? 'indéterminée'}
-        </p>
+      size="sm"
+      className={cn(
+        'gap-1 shadow-sm transition-opacity',
+        isDragging && 'opacity-50',
+        pending ? 'cursor-wait opacity-60' : 'cursor-grab active:cursor-grabbing'
       )}
-      {pending && <p className="text-xs font-medium text-amber-600">Mise à jour…</p>}
-    </div>
+    >
+      <CardContent className="space-y-1 text-sm">
+        <p className="font-semibold text-card-foreground">{contrat.numero}</p>
+        <p className="text-muted-foreground">{contrat.client.name}</p>
+        <p className="text-xs text-muted-foreground">
+          {contrat.billboard.reference} · {FACE_LABELS[face]}
+        </p>
+        {(dateDebut || dateFin) && (
+          <p className="text-xs text-muted-foreground/70">
+            {dateDebut ?? '?'} → {dateFin ?? 'indéterminée'}
+          </p>
+        )}
+        {pending && <Badge variant="outline">Mise à jour…</Badge>}
+        {pendingApproval && <Badge variant="expiring">En attente d&apos;approbation</Badge>}
+      </CardContent>
+    </Card>
   )
 }
