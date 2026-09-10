@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
-import { OCCUPANCY_STATUS_MAP } from '@/lib/contrat-schema'
+import { LEGACY_STATUS_TO_CONTRAT_STATUS } from '@/lib/contrat-schema'
 
 // numero (Contrat.numero) is required + unique in the schema, unlike the old
 // optional contractRef — it cannot be cleared to null, only replaced.
@@ -22,7 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if ('error' in parsed) return parsed.error
   const body = parsed.data
   const data = {
-    statut: body.status === undefined ? undefined : OCCUPANCY_STATUS_MAP[body.status],
+    statut: body.status === undefined ? undefined : LEGACY_STATUS_TO_CONTRAT_STATUS[body.status],
     dateFin: body.endDate === undefined ? undefined : body.endDate ? new Date(body.endDate) : null,
     numero: body.numero,
   } as const
@@ -55,10 +56,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
 
-  const contrat = await prisma.contrat.update({
-    where: { id: params.id },
-    data,
-    include: { faces: true },
-  })
-  return NextResponse.json(contrat)
+  try {
+    const contrat = await prisma.contrat.update({
+      where: { id: params.id },
+      data,
+      include: { faces: true },
+    })
+    return NextResponse.json(contrat)
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json({ error: 'Could not update contrat', code: err.code }, { status: 400 })
+    }
+    throw err
+  }
 }

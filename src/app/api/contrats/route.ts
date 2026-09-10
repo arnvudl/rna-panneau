@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { getPermission } from '@/lib/permissions'
@@ -43,19 +44,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Cette face du panneau est déjà occupée' }, { status: 409 })
   }
 
-  const contrat = await prisma.contrat.create({
-    data: {
-      billboardId: body.billboardId,
-      clientId: body.clientId,
-      numero: body.numero ?? generateContratNumero(),
-      type: 'contrat',
-      typeReconduction: 'tacite',
-      statut: 'ACTIVE',
-      dateDebut: body.startDate ? new Date(body.startDate) : undefined,
-      dateFin: body.endDate ? new Date(body.endDate) : undefined,
-      faces: { create: { face: body.face } },
-    },
-    include: { faces: true },
-  })
-  return NextResponse.json(contrat, { status: 201 })
+  try {
+    const contrat = await prisma.contrat.create({
+      data: {
+        billboardId: body.billboardId,
+        clientId: body.clientId,
+        numero: body.numero ?? generateContratNumero(),
+        type: 'contrat',
+        typeReconduction: 'tacite',
+        statut: 'ACTIVE',
+        dateDebut: body.startDate ? new Date(body.startDate) : undefined,
+        dateFin: body.endDate ? new Date(body.endDate) : undefined,
+        faces: { create: { face: body.face } },
+      },
+      include: { faces: true },
+    })
+    return NextResponse.json(contrat, { status: 201 })
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json({ error: 'Could not create contrat', code: err.code }, { status: 400 })
+    }
+    throw err
+  }
 }

@@ -14,4 +14,4 @@ export type CreateContratInput = z.infer<typeof createContratSchema>
 // Old occupancy status values map onto the richer ContratStatus enum:
 // ACTIVE -> ACTIVE, TERMINATED -> ENDED. Shared by the direct PATCH route and
 // the approvals apply-handler so the mapping can't drift between the two.
-export const OCCUPANCY_STATUS_MAP = { ACTIVE: 'ACTIVE', TERMINATED: 'ENDED' } as const
+export const LEGACY_STATUS_TO_CONTRAT_STATUS = { ACTIVE: 'ACTIVE', TERMINATED: 'ENDED' } as const
