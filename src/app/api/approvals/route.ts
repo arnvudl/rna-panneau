@@ -119,7 +119,18 @@ async function attachBeforeState<
       if (r.type === 'EDIT_BILLBOARD' && typeof data.billboardId === 'string') {
         before = await prisma.billboard.findUnique({ where: { id: data.billboardId } })
       } else if (r.type === 'EDIT_OCCUPANCY' && typeof data.contratId === 'string') {
-        before = await prisma.contrat.findUnique({ where: { id: data.contratId } })
+        const contrat = await prisma.contrat.findUnique({ where: { id: data.contratId } })
+        // EDIT_OCCUPANCY payloads use the old occupancy-shaped keys
+        // (status/endDate) for backward compatibility — re-key the Contrat
+        // row the same way so PayloadSummary's before/payload diff compares
+        // like-for-like instead of statut/dateFin against status/endDate.
+        before = contrat
+          ? {
+              ...contrat,
+              status: contrat.statut === 'ACTIVE' ? 'ACTIVE' : 'TERMINATED',
+              endDate: contrat.dateFin,
+            }
+          : null
       } else if (r.type === 'EDIT_CLIENT' && typeof data.clientId === 'string') {
         before = await prisma.client.findUnique({ where: { id: data.clientId } })
       }

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireSession, parseOrBadRequest, createApprovalRequest } from '@/lib/api-helpers'
 import { getPermission } from '@/lib/permissions'
 import { isFaceAvailable } from '@/lib/face-occupancy'
+import { OCCUPANCY_STATUS_MAP } from '@/lib/contrat-schema'
 
 // numero (Contrat.numero) is required + unique in the schema, unlike the old
 // optional contractRef — it cannot be cleared to null, only replaced.
@@ -13,10 +14,6 @@ const patchSchema = z.object({
   numero: z.string().trim().min(1).max(200).optional(),
 })
 
-// Old occupancy status values map onto the richer ContratStatus enum:
-// ACTIVE -> ACTIVE, TERMINATED -> ENDED.
-const STATUS_MAP = { ACTIVE: 'ACTIVE', TERMINATED: 'ENDED' } as const
-
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireSession()
   if (error) return error
@@ -25,7 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if ('error' in parsed) return parsed.error
   const body = parsed.data
   const data = {
-    statut: body.status === undefined ? undefined : STATUS_MAP[body.status],
+    statut: body.status === undefined ? undefined : OCCUPANCY_STATUS_MAP[body.status],
     dateFin: body.endDate === undefined ? undefined : body.endDate ? new Date(body.endDate) : null,
     numero: body.numero,
   } as const

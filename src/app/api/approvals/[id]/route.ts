@@ -9,10 +9,7 @@ import { createNotification } from '@/lib/notifications'
 import { deleteBillboardCascade, removePhotoFiles } from '@/lib/billboard-delete'
 import { resolveGeoForCoordinates } from '@/lib/billboard-geo'
 import { generateContratNumero } from '@/lib/reference'
-
-// Old occupancy status values map onto the richer ContratStatus enum:
-// ACTIVE -> ACTIVE, TERMINATED -> ENDED.
-const STATUS_MAP = { ACTIVE: 'ACTIVE', TERMINATED: 'ENDED' } as const
+import { OCCUPANCY_STATUS_MAP } from '@/lib/contrat-schema'
 
 const patchSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']) })
 
@@ -121,8 +118,11 @@ async function applyApproval(
           statut:
             data.status === undefined
               ? undefined
-              : STATUS_MAP[data.status as 'ACTIVE' | 'TERMINATED'],
+              : OCCUPANCY_STATUS_MAP[data.status as 'ACTIVE' | 'TERMINATED'],
           dateFin: data.endDate === undefined ? undefined : data.endDate ? new Date(data.endDate as string) : null,
+          // numero is required+unique on Contrat — an explicit null (clear
+          // request, valid under the old optional contractRef) is dropped
+          // rather than applied, leaving the field unchanged.
           numero: (data.numero as string | undefined) || undefined,
         },
       })
