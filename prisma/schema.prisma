@@ -21,15 +21,33 @@ enum Dimension {
   D12X3
 }
 
-enum OccupancyStatus {
+enum ContratStatus {
+  DRAFT
+  SIGNED
   ACTIVE
-  TERMINATED
+  ENDED
+  CANCELLED
 }
 
-enum OccupancyFace {
+enum ContratFaceSide {
   FACE_1
   FACE_2
   BOTH
+}
+
+enum InvoiceStatus {
+  DRAFT
+  GENEREE
+  ENVOYEE
+  PAYEE
+  IMPAYEE
+}
+
+enum AlertStatus {
+  PENDING
+  SENT
+  ACKNOWLEDGED
+  RESOLVED
 }
 
 enum BillboardStatus {
@@ -122,7 +140,7 @@ model Billboard {
   district           District            @relation(fields: [districtId], references: [id])
   commune            Commune?            @relation(fields: [communeId], references: [id])
   photos             BillboardPhoto[]
-  occupancies        Occupancy[]
+  contrats           Contrat[]
   maintenanceRecords MaintenanceRecord[]
 
   @@index([regionId])
@@ -148,25 +166,154 @@ model Client {
   email     String?
   createdAt DateTime @default(now())
 
-  occupancies Occupancy[]
+  nif    String?
+  stat   String?
+  rcs    String?
+  carteF String?
+
+  caTotalMTD        Float     @default(0)
+  detteMTD          Float     @default(0)
+  facturesImpayees  Int       @default(0)
+  firstContractDate DateTime?
+
+  contrats Contrat[]
+  invoices Invoice[]
+  alerts   Alert[]
 }
 
-model Occupancy {
-  id          String          @id @default(cuid())
-  billboardId String
-  clientId    String
-  face        OccupancyFace   @default(BOTH)
-  contractRef String?
-  startDate   DateTime        @default(now())
-  endDate     DateTime?
-  status      OccupancyStatus @default(ACTIVE)
-  createdAt   DateTime        @default(now())
+model Contrat {
+  id                String        @id @default(cuid())
+  numero            String        @unique
+  type              String
+  clientId          String
+  billboardId       String
+  dateDebut         DateTime      @default(now())
+  dateFin           DateTime?
+  typeReconduction  String
+  statut            ContratStatus @default(DRAFT)
+  pdfUrl            String?
+  dateBAT           DateTime?
+  batValidated      Boolean       @default(false)
+  batValidatedDate  DateTime?
+  submittedAt       DateTime?
+  submittedBy       String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  billboard Billboard @relation(fields: [billboardId], references: [id])
-  client    Client    @relation(fields: [clientId], references: [id])
+  client    Client        @relation(fields: [clientId], references: [id])
+  billboard Billboard     @relation(fields: [billboardId], references: [id])
+  faces     ContratFace[]
 
-  @@index([billboardId])
   @@index([clientId])
+  @@index([billboardId])
+}
+
+model ContratFace {
+  id                 String          @id @default(cuid())
+  contratId          String
+  face               ContratFaceSide @default(BOTH)
+  tarifMensuel       Float?
+  tarifSemestriel    Float?
+  tarifAnnuel        Float?
+  dateImpressionDebut DateTime?
+  dateImpressionFin  DateTime?
+  typeImpression     String?
+  jourAlerte         Int             @default(7)
+  createdAt          DateTime        @default(now())
+
+  contrat Contrat @relation(fields: [contratId], references: [id], onDelete: Cascade)
+
+  @@index([contratId])
+}
+
+model Invoice {
+  id               String        @id @default(cuid())
+  numero           String        @unique
+  clientId         String
+  genereeAt        DateTime?
+  genereeBy        String?
+  pdfUrl           String?
+  montantTotal     Float
+  montantTaxe      Float
+  montantNet       Float
+  dateEcheance     DateTime
+  statut           InvoiceStatus @default(DRAFT)
+  dernierRelanceDate DateTime?
+  relanceCount     Int           @default(0)
+  alerteImpayee    Boolean       @default(false)
+  submittedAt      DateTime?
+  submittedBy      String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  client  Client         @relation(fields: [clientId], references: [id])
+  lignes  InvoiceLigne[]
+  payments Payment[]
+
+  @@index([clientId])
+}
+
+model InvoiceLigne {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  description String
+  contratId   String?
+  montantHT   Float
+  tauxTaxe    Float    @default(0.20)
+  montantTTC  Float
+  createdAt   DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  invoiceId     String?
+  montant       Float
+  dateReception DateTime
+  modePayement  String
+  createdAt     DateTime @default(now())
+
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId])
+}
+
+model Alert {
+  id          String      @id @default(cuid())
+  type        String
+  relatedId   String
+  relatedType String
+  clientId    String?
+  statut      AlertStatus @default(PENDING)
+  dateAlert   DateTime
+  dateEnvoi   DateTime?
+  dateLecture DateTime?
+  envoiEmail  Boolean     @default(true)
+  envoiApp    Boolean     @default(true)
+  envoiClient Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  client Client? @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  oldValues  Json?
+  newValues  Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
 }
 
 model MaintenanceRecord {
