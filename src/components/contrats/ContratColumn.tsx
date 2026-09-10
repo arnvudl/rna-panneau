@@ -23,8 +23,8 @@ export function ContratColumn({
     <div
       ref={setNodeRef}
       className={`flex w-72 shrink-0 flex-col gap-2 rounded-xl border p-3 transition-colors ${
-        isOver && !disabled ? 'border-primary bg-primary/5' : 'border-slate-200 bg-slate-50'
-      } ${isOver && disabled ? 'border-red-300 bg-red-50' : ''}`}
+        isOver ? 'border-primary bg-primary/5' : 'border-slate-200 bg-slate-50'
+      } ${disabled ? 'opacity-60' : ''}`}
     >
       <div className="flex items-center justify-between px-1">
         <h2 className="text-sm font-semibold text-slate-700">{label}</h2>
