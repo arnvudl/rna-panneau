@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-11T21:53:36Z",
+  "title": "Design System: RNA Panneau",
+  "extensions": {
+    "colorMeta": {
+      "control-navy": { "role": "primary", "displayName": "Control Navy", "canonical": "#102660", "tonalRamp": ["#050d24", "#0a1740", "#102660", "#1c3a8a", "#3457b8", "#5c7bd1", "#93aae4", "#d3ddf5"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#020817", "tonalRamp": ["#000000", "#020817", "#0f172a", "#1e293b", "#475569", "#64748b", "#94a3b8", "#cbd5e1"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#f8fafc", "tonalRamp": ["#e2e8f0", "#eef2f6", "#f1f5f9", "#f5f8fb", "#f8fafc", "#fafbfd", "#fcfdfe", "#ffffff"] },
+      "surface-white": { "role": "neutral", "displayName": "Surface White", "canonical": "#ffffff", "tonalRamp": ["#e2e8f0", "#eef2f6", "#f1f5f9", "#f5f8fb", "#f8fafc", "#fafbfd", "#fcfdfe", "#ffffff"] },
+      "slate-secondary": { "role": "neutral", "displayName": "Slate Secondary", "canonical": "#e2e8f0", "tonalRamp": ["#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9", "#f8fafc"] },
+      "slate-text": { "role": "neutral", "displayName": "Slate Text", "canonical": "#64748b", "tonalRamp": ["#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9"] },
+      "signal-emerald-text": { "role": "status", "displayName": "Signal Emerald", "canonical": "#047857", "tonalRamp": ["#022c22", "#064e3b", "#065f46", "#047857", "#059669", "#34d399", "#a7f3d0", "#d1fae5"] },
+      "working-blue-text": { "role": "status", "displayName": "Working Blue", "canonical": "#1d4ed8", "tonalRamp": ["#172554", "#1e3a8a", "#1e40af", "#1d4ed8", "#2563eb", "#60a5fa", "#bfdbfe", "#dbeafe"] },
+      "watch-orange-text": { "role": "status", "displayName": "Watch Orange", "canonical": "#c2410c", "tonalRamp": ["#431407", "#7c2d12", "#9a3412", "#c2410c", "#ea580c", "#fb923c", "#fed7aa", "#ffedd5"] },
+      "dormant-slate-text": { "role": "status", "displayName": "Dormant Slate", "canonical": "#334155", "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9"] },
+      "danger-text": { "role": "status", "displayName": "Danger Red", "canonical": "#b91c1c", "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#f87171", "#fecaca", "#fee2e2"] }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "Card titles, section/column headings." },
+      "body": { "displayName": "Body", "purpose": "Default text size for tables, cards, forms." },
+      "label": { "displayName": "Label", "purpose": "Form labels, badge text, counters, timestamps." },
+      "mono": { "displayName": "Mono", "purpose": "Reference numbers and monetary amounts only." }
+    },
+    "shadows": [
+      { "name": "floating-medium", "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", "purpose": "Dropdown menus, select menus, popovers at rest." },
+      { "name": "floating-high", "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)", "purpose": "Larger floating panels." }
+    ],
+    "motion": [],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action on a screen (e.g. + Nouveau contrat).",
+      "html": "<button class=\"ds-btn-primary\">+ Nouveau contrat</button>",
+      "css": ".ds-btn-primary { background: #102660; color: #f8fafc; padding: 6px 10px; border-radius: 12px; font-size: 0.875rem; font-weight: 500; border: none; transition: background 0.15s; } .ds-btn-primary:hover { background: color-mix(in oklch, #102660, black 10%); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(16,38,96,0.35); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Every secondary action.",
+      "html": "<button class=\"ds-btn-outline\">Annuler</button>",
+      "css": ".ds-btn-outline { background: #f8fafc; color: #020817; padding: 6px 10px; border-radius: 12px; font-size: 0.875rem; font-weight: 500; border: 1px solid #e2e8f0; transition: background 0.15s; } .ds-btn-outline:hover { background: #e2e8f0; }"
+    },
+    {
+      "name": "Status Badge (Active)",
+      "kind": "chip",
+      "refersTo": "badge-active",
+      "description": "Pill badge for 'fine / active' status meaning (available billboard, active contract, paid invoice).",
+      "html": "<span class=\"ds-badge-active\">Actif</span>",
+      "css": ".ds-badge-active { display: inline-flex; align-items: center; background: #d1fae5; color: #047857; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }"
+    },
+    {
+      "name": "Status Badge (Needs Attention)",
+      "kind": "chip",
+      "refersTo": "badge-alert",
+      "description": "Pill badge for 'needs attention soon' status meaning (expiring contract, invoice nearing its relance deadline).",
+      "html": "<span class=\"ds-badge-alert\">Échéance proche</span>",
+      "css": ".ds-badge-alert { display: inline-flex; align-items: center; background: #ffedd5; color: #c2410c; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat resting surface: tonal ring, no shadow.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">CT-0001</div><div class=\"ds-card-sub\">Orange Money</div></div>",
+      "css": ".ds-card { background: #ffffff; color: #020817; border-radius: 12px; padding: 16px; box-shadow: inset 0 0 0 1px rgba(2,8,23,0.1); } .ds-card-title { font-size: 1rem; font-weight: 500; } .ds-card-sub { font-size: 0.875rem; color: #64748b; margin-top: 2px; }"
+    },
+    {
+      "name": "Kanban Card",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Signature component: status-colored left accent bar, bold reference title, muted subtitle, separate face/date elements (never one wrapping badge).",
+      "html": "<div class=\"ds-kanban-card\"><div class=\"ds-kanban-accent\"></div><div class=\"ds-kanban-body\"><div class=\"ds-kanban-title\">CT-0001</div><div class=\"ds-kanban-sub\">Orange Money</div><div class=\"ds-kanban-meta\"><span class=\"ds-kanban-face\">Faces 1 et 2</span><span class=\"ds-kanban-date\">10/09/2026 → indéterminée</span></div></div></div>",
+      "css": ".ds-kanban-card { display: flex; background: #ffffff; border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(2,8,23,0.1); overflow: hidden; } .ds-kanban-accent { width: 4px; background: #1d4ed8; flex-shrink: 0; } .ds-kanban-body { padding: 12px; flex: 1; min-width: 0; } .ds-kanban-title { font-size: 1rem; font-weight: 700; color: #020817; } .ds-kanban-sub { font-size: 0.875rem; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-kanban-meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.75rem; color: #64748b; } .ds-kanban-face { display: inline-flex; padding: 2px 6px; border-radius: 6px; background: #f1f5f9; }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Vertical rail item; active state is a left accent bar plus a faint navy tint, never a full navy fill.",
+      "html": "<a class=\"ds-nav-item ds-nav-item--active\">Contrats</a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; color: #64748b; font-size: 0.875rem; font-weight: 500; } .ds-nav-item--active { color: #102660; background: rgba(16,38,96,0.05); box-shadow: inset 3px 0 0 0 #102660; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Control Room",
+    "overview": "RNA Panneau is the screen a small team stares at every day to keep a billboard park under control: which faces are occupied, which contracts are about to lapse, which invoices are unpaid. The system is not selling anything to anyone — it exists so nothing slips through. That makes the right posture a control room, not a storefront: calm, authoritative, built for fast triage rather than persuasion. Deep navy carries the authority (used sparingly — an accent for actions and identity, not a backdrop), while the real workhorse is a disciplined status-color vocabulary that lets a Comptable glance at a column of cards and immediately know what's fine and what's bleeding money.\n\nThe system is currently under-designed relative to this ambition: components exist (Card, Badge, Button, Select, Dropdown, Popover, Tooltip) but have been assembled without a consistent rhythm, several screens still show default/cramped spacing, and status colors were added incrementally without a documented vocabulary. This file exists to fix that going forward — every new surface should read as the same disciplined operations tool, not a new experiment.",
+    "keyCharacteristics": [
+      "Flat by default; elevation reserved for things that float above the page (menus, popovers, dialogs), never for resting content.",
+      "One accent color (navy) used deliberately and rarely; status colors carry the day-to-day information load.",
+      "Dense, scannable layouts — this is a tool used for hours a day by 2-3 people, not a marketing surface."
+    ],
+    "rules": [
+      { "name": "The Rare Navy Rule", "body": "Control Navy appears only on the primary action of a screen and on active-state indicators (active nav link, focused input, selected tab). It never fills a whole card or section.", "section": "colors" },
+      { "name": "The One Status Vocabulary Rule", "body": "Every status badge in the product must map to one of the five status colors by meaning (fine / in-progress / needs-attention / settled / wrong), not by picking a color that merely looks nice. A new status value gets assigned to the closest existing meaning before a sixth color is considered.", "section": "colors" },
+      { "name": "The Data-Over-Decoration Rule", "body": "There is no display/hero type scale in this system. The largest text on any screen is a page's h1 at Title size or one step up.", "section": "typography" },
+      { "name": "The No Dead Space Rule", "body": "A layout with a fixed number of columns/sections must stretch its columns/tiles to fill the viewport on wide screens. Horizontal scroll is only acceptable when the viewport genuinely can't fit the minimum readable width per item.", "section": "layout" },
+      { "name": "The Flat-Content, Lifted-Overlay Rule", "body": "If it's part of the page's normal reading flow, it gets a tonal ring only, never a shadow. If it floats above the page and can be dismissed by clicking outside it, it gets a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do reuse the five-color Status Vocabulary for any new status concept by mapping it to the closest existing meaning first.",
+      "Do stretch fixed-count layouts (Kanban columns, KPI tile rows) to fill the available width on desktop monitors.",
+      "Do use Control Navy sparingly — one primary action, active nav state, focus rings.",
+      "Do keep resting surfaces flat (tonal ring, no shadow); reserve shadows for floating/dismissible layers."
+    ],
+    "donts": [
+      "Don't introduce a new status color without first checking whether it maps to an existing one of the five vocabulary meanings.",
+      "Don't add hover-shadows or lift effects to cards/rows to signal 'interactive' — use a background tint or border-color shift instead.",
+      "Don't combine two different pieces of information into one wrapping badge/pill — give each its own short element instead.",
+      "Don't use font-heading — it's referenced in one legacy component but no such font family is actually defined; either define it properly or remove the class."
+    ]
+  }
+}
