@@ -106,6 +106,10 @@ describe('ContratCard delete affordance', () => {
     })
   })
 
+  // The near/far/no-dateFin/non-ACTIVE date-window branches of
+  // isContratExpiringSoon are exhaustively covered as a pure function in
+  // status-labels.test.ts. These two cases just confirm the badge actually
+  // renders (or doesn't) from that result at the component level.
   it('shows the "Échéance proche" badge for an ACTIVE contrat expiring within the window', () => {
     const soon = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
     render(
@@ -116,22 +120,6 @@ describe('ContratCard delete affordance', () => {
 
   it('does not show the "Échéance proche" badge for an ACTIVE contrat with no dateFin', () => {
     render(<ContratCard contrat={{ ...baseContrat, statut: 'ACTIVE', dateFin: null }} pending={false} />)
-    expect(screen.queryByText('Échéance proche')).not.toBeInTheDocument()
-  })
-
-  it('does not show the "Échéance proche" badge for an ACTIVE contrat expiring far in the future', () => {
-    const far = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
-    render(
-      <ContratCard contrat={{ ...baseContrat, statut: 'ACTIVE', dateFin: far }} pending={false} />
-    )
-    expect(screen.queryByText('Échéance proche')).not.toBeInTheDocument()
-  })
-
-  it('does not show the "Échéance proche" badge for a non-ACTIVE contrat, even with a near dateFin', () => {
-    const soon = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
-    render(
-      <ContratCard contrat={{ ...baseContrat, statut: 'SIGNED', dateFin: soon }} pending={false} />
-    )
     expect(screen.queryByText('Échéance proche')).not.toBeInTheDocument()
   })
 
