@@ -56,18 +56,66 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      // src/app/layout.tsx loads Geist Sans / Geist Mono through next/font/local
+      // and exposes them as --font-geist-sans / --font-geist-mono. Without this
+      // block `font-sans` / `font-mono` resolve to Tailwind's default system
+      // stacks and the loaded fonts are never actually used.
+      fontFamily: {
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
+      },
     },
   },
   plugins: [
-    // The shadcn/base-ui generated components (e.g. src/components/ui/tabs.tsx)
-    // use bare `data-active:` utilities, which is Tailwind v4 syntax. This
-    // project is on Tailwind v3.4, which has no built-in `data-active` variant
-    // (only bracketed `data-[foo=bar]:` arbitrary variants and a fixed set of
-    // built-in `aria-*` variants), so those utilities silently compiled to
-    // nothing. Register `data-active` as a real variant so `&[data-active]`
-    // selectors are generated.
-    function ({ addVariant }: { addVariant: (name: string, selector: string) => void }) {
-      addVariant("data-active", "&[data-active]")
+    // The shadcn/base-ui generated components in src/components/ui were emitted
+    // for Tailwind v4, but this project runs Tailwind v3.4. v4 introduced a set
+    // of bare / composed variants that v3.4 does not know about, so any utility
+    // carrying one of them silently compiled to nothing. Rather than rewriting
+    // every generated class string, register the v4 variants the primitives
+    // actually use so they produce the selectors they were written for.
+    function ({
+      addVariant,
+      matchVariant,
+    }: {
+      addVariant: (name: string, selector: string | string[]) => void
+      matchVariant: (
+        name: string,
+        cb: (value: string) => string | string[]
+      ) => void
+    }) {
+      // Bare `data-*:` variants (v4). v3.4 only supports the bracketed
+      // `data-[foo=bar]:` arbitrary form.
+      const bareDataVariants = [
+        "active",
+        "open",
+        "closed",
+        "disabled",
+        "inset",
+        "placeholder",
+        "selected",
+        "checked",
+        "highlighted",
+        "popup-open",
+        // Base UI drawer transition states.
+        "starting-style",
+        "ending-style",
+        "swiping",
+        "snap-points",
+        "nested-drawer-open",
+        "nested-drawer-swiping",
+      ]
+      for (const name of bareDataVariants) {
+        addVariant(`data-${name}`, `&[data-${name}]`)
+      }
+
+      // `has-data-[foo=bar]:` (v4) -> `&:has([data-foo=bar])`
+      matchVariant("has-data", (value) => `&:has([data-${value}])`)
+
+      // `in-data-[foo=bar]:` (v4) -> ancestor selector
+      matchVariant("in-data", (value) => `:where([data-${value}]) &`)
+
+      // `not-data-[foo=bar]:` (v4) -> `&:not([data-foo=bar])`
+      matchVariant("not-data", (value) => `&:not([data-${value}])`)
     },
   ],
 };
