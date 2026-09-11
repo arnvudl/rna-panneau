@@ -77,9 +77,6 @@ describe('ContratFilterBar', () => {
       if (url.includes('/api/clients')) {
         return new Response(JSON.stringify([{ id: 'cl1', name: 'Ambatovy' }]), { status: 200 })
       }
-      if (url.includes('/api/billboards')) {
-        return new Response(JSON.stringify([{ id: 'b1', reference: 'PAN-001' }]), { status: 200 })
-      }
       if (url.includes('/api/regions')) {
         return new Response(JSON.stringify([{ id: 'r1', name: 'Analamanga' }]), { status: 200 })
       }
@@ -111,11 +108,10 @@ describe('ContratFilterBar', () => {
     expect(onSearchChange).toHaveBeenCalledWith('CTR-001')
   })
 
-  it('fetches clients/billboards/regions on mount and populates the dropdowns', async () => {
+  it('fetches clients/regions on mount and populates the dropdowns', async () => {
     render(<ContratFilterBar search="" onSearchChange={vi.fn()} filters={{}} onFiltersChange={vi.fn()} />)
     await waitFor(() => {
       expect(screen.getByText('Tous les clients')).toBeInTheDocument()
-      expect(screen.getByText('Tous les panneaux')).toBeInTheDocument()
       expect(screen.getByText('Toutes les régions')).toBeInTheDocument()
     })
   })

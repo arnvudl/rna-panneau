@@ -19,7 +19,6 @@ import { CONTRAT_STATUS_LABELS } from '@/lib/status-labels'
 export function buildContratQuery(filters: ContratFilters): string {
   const params = new URLSearchParams()
   if (filters.clientId) params.set('clientId', filters.clientId)
-  if (filters.billboardId) params.set('billboardId', filters.billboardId)
   if (filters.regionId) params.set('regionId', filters.regionId)
   if (filters.districtId) params.set('districtId', filters.districtId)
   if (filters.communeId) params.set('communeId', filters.communeId)
@@ -204,7 +203,7 @@ export function ContratKanban() {
         <Button onClick={() => setCreateOpen(true)}>+ Nouveau contrat</Button>
       </div>
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-6 pt-2">
+        <div className="grid min-h-0 flex-1 grid-cols-[repeat(5,minmax(240px,1fr))] gap-4 overflow-x-auto p-6 pt-2">
           {CONTRAT_STATUS_VALUES.map((status) => (
             <ContratColumn
               key={status}

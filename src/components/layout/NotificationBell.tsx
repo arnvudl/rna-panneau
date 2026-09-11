@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { getPermission } from '@/lib/permissions'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 type Notification = {
   id: string
@@ -17,10 +18,11 @@ type Notification = {
 }
 
 /**
- * Bell trigger + flyout panel. Rendered inline inside the sidebar rail, so
- * the panel opens to the right of the trigger (`left-full`) rather than
- * hanging off the trigger's own right edge, which would run off-screen in a
- * narrow rail.
+ * Bell trigger + flyout panel. Rendered inline inside the sidebar rail. The
+ * flyout uses the Popover primitive (Base UI, same library as the
+ * DropdownMenu in Sidebar.tsx) so it portals out of the rail and repositions
+ * itself to stay within the viewport, instead of a hand-rolled `absolute`
+ * div that could grow past the bottom of the screen.
  */
 export function NotificationBell() {
   const router = useRouter()
@@ -31,7 +33,6 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -57,14 +58,6 @@ export function NotificationBell() {
     const interval = setInterval(fetchNotifications, 30000)
     return () => clearInterval(interval)
   }, [fetchNotifications, canManageNotifications, sessionStatus])
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
 
   const markAllRead = async () => {
     await fetch('/api/notifications/read-all', { method: 'POST' })
@@ -98,9 +91,8 @@ export function NotificationBell() {
   }
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
         className="relative flex h-5 w-5 items-center justify-center text-slate-500 transition-colors hover:text-slate-900"
       >
         <Bell className="h-5 w-5" />
@@ -109,53 +101,50 @@ export function NotificationBell() {
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
-      </button>
+      </PopoverTrigger>
 
-      {open && (
-        <div className="absolute left-full top-0 z-50 ml-2 w-80 rounded-lg border bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b px-4 py-2.5">
-            <span className="text-sm font-semibold text-slate-900">Notifications</span>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllRead}
-                className="text-xs text-primary hover:underline"
-              >
-                Tout marquer comme lu
-              </button>
-            )}
-          </div>
-
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-slate-400">
-                Aucune notification
-              </div>
-            ) : (
-              notifications.map((n) => (
-                <button
-                  key={n.id}
-                  onClick={() => handleClick(n)}
-                  className={`w-full border-b px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50 ${
-                    !n.read ? 'bg-blue-50/50' : ''
-                  }`}
-                >
-                  <div className="flex items-start gap-2">
-                    {!n.read && (
-                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-900">{n.title}</p>
-                      <p className="mt-0.5 truncate text-xs text-slate-500">{n.message}</p>
-                      <p className="mt-1 text-[11px] text-slate-400">{timeAgo(n.createdAt)}</p>
-                    </div>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
+      <PopoverContent side="right" align="start" className="w-80 gap-0 p-0">
+        <div className="flex items-center justify-between border-b px-4 py-2.5">
+          <span className="text-sm font-semibold text-slate-900">Notifications</span>
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllRead}
+              className="text-xs text-primary hover:underline"
+            >
+              Tout marquer comme lu
+            </button>
+          )}
         </div>
-      )}
-    </div>
+
+        <div className="max-h-80 overflow-y-auto">
+          {notifications.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-slate-400">
+              Aucune notification
+            </div>
+          ) : (
+            notifications.map((n) => (
+              <button
+                key={n.id}
+                onClick={() => handleClick(n)}
+                className={`w-full border-b px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50 ${
+                  !n.read ? 'bg-blue-50/50' : ''
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  {!n.read && (
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-900">{n.title}</p>
+                    <p className="mt-0.5 truncate text-xs text-slate-500">{n.message}</p>
+                    <p className="mt-1 text-[11px] text-slate-400">{timeAgo(n.createdAt)}</p>
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
-

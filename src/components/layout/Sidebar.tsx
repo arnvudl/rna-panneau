@@ -7,7 +7,6 @@ import { signOut, useSession } from 'next-auth/react'
 import {
   ChevronLeft,
   FileText,
-  Globe,
   LayoutDashboard,
   Map,
   Package,
@@ -33,8 +32,7 @@ const STORAGE_KEY = 'rna-sidebar-collapsed'
 
 const MAIN_LINKS = [
   { href: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-  { href: '/map', label: 'Vue Globale (Carte + Table)', icon: Map },
-  { href: '/map/full', label: 'Carte interactive', icon: Globe },
+  { href: '/map/full', label: 'Carte interactive', icon: Map },
   { href: '/database', label: 'Inventaire', icon: Package },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/contrats', label: 'Contrats', icon: FileText },

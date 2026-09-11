@@ -100,17 +100,15 @@ describe('buildContratQuery', () => {
     expect(buildContratQuery(filters)).toBe('clientId=cl1')
   })
 
-  it('includes region/district/commune filters alongside client/billboard', () => {
+  it('includes region/district/commune filters alongside client', () => {
     const filters: ContratFilters = {
       clientId: 'cl1',
-      billboardId: 'b1',
       regionId: 'r1',
       districtId: 'd1',
       communeId: 'co1',
     }
     const params = new URLSearchParams(buildContratQuery(filters))
     expect(params.get('clientId')).toBe('cl1')
-    expect(params.get('billboardId')).toBe('b1')
     expect(params.get('regionId')).toBe('r1')
     expect(params.get('districtId')).toBe('d1')
     expect(params.get('communeId')).toBe('co1')

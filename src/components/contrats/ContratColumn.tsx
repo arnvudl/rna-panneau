@@ -31,7 +31,7 @@ export function ContratColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex h-full w-72 shrink-0 flex-col gap-2 rounded-xl border p-3 ring-1 ring-black/5 transition-colors',
+        'flex h-full min-w-0 flex-col gap-2 rounded-xl border p-3 ring-1 ring-black/5 transition-colors',
         styles.columnBg,
         isOver ? 'border-primary ring-2 ring-primary/30' : 'border-transparent',
         disabled && 'opacity-60'

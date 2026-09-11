@@ -8,7 +8,6 @@ import type { KanbanContrat } from '@/components/contrats/ContratCard'
 
 export type ContratFilters = {
   clientId?: string
-  billboardId?: string
   regionId?: string
   districtId?: string
   communeId?: string
@@ -51,7 +50,6 @@ export function ContratFilterBar({
   onFiltersChange: (filters: ContratFilters) => void
 }) {
   const [clients, setClients] = useState<NamedOption[]>([])
-  const [billboards, setBillboards] = useState<{ id: string; reference: string }[]>([])
   const [regions, setRegions] = useState<NamedOption[]>([])
   const [districts, setDistricts] = useState<(NamedOption & { regionId: string })[]>([])
   const [communes, setCommunes] = useState<(NamedOption & { districtId: string })[]>([])
@@ -62,10 +60,6 @@ export function ContratFilterBar({
     fetch('/api/clients')
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => setClients(Array.isArray(data) ? data : []))
-      .catch(() => {})
-    fetch('/api/billboards')
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setBillboards(Array.isArray(data) ? data : []))
       .catch(() => {})
     fetch('/api/regions')
       .then((r) => (r.ok ? r.json() : []))
@@ -115,22 +109,6 @@ export function ContratFilterBar({
           <SelectItem value={ALL}>Tous les clients</SelectItem>
           {clients.map((c) => (
             <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        items={{ [ALL]: 'Tous les panneaux', ...Object.fromEntries(billboards.map((b) => [b.id, b.reference])) }}
-        value={filters.billboardId ?? ALL}
-        onValueChange={(v: string | null) =>
-          onFiltersChange({ ...filters, billboardId: v && v !== ALL ? v : undefined })
-        }
-      >
-        <SelectTrigger className="w-40 bg-white shadow-sm"><SelectValue placeholder="Tous les panneaux" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL}>Tous les panneaux</SelectItem>
-          {billboards.map((b) => (
-            <SelectItem key={b.id} value={b.id}>{b.reference}</SelectItem>
           ))}
         </SelectContent>
       </Select>

@@ -99,9 +99,7 @@ export function ContratCard({
   const dateDebut = formatDate(contrat.dateDebut)
   const dateFin = formatDate(contrat.dateFin)
   const accent = CONTRAT_STATUS_STYLES[contrat.statut].cardAccent
-  const metaLabel = [FACE_LABELS[face], dateDebut || dateFin ? `${dateDebut ?? '?'} → ${dateFin ?? 'indéterminée'}` : null]
-    .filter(Boolean)
-    .join(' · ')
+  const dateRangeLabel = dateDebut || dateFin ? `${dateDebut ?? '?'} → ${dateFin ?? 'indéterminée'}` : null
 
   return (
     <Card
@@ -117,17 +115,24 @@ export function ContratCard({
         pending ? 'cursor-wait opacity-60' : 'cursor-grab active:cursor-grabbing'
       )}
     >
-      <CardContent className="space-y-1 text-sm">
-        <p className="text-base font-bold leading-tight text-card-foreground">{contrat.numero}</p>
-        <p className="text-muted-foreground">{contrat.client.name}</p>
-        <p className="text-xs text-muted-foreground">{contrat.billboard.reference}</p>
-        <div className="flex flex-wrap gap-1 pt-0.5">
-          <Badge variant="outline" className="font-normal text-muted-foreground">
-            {metaLabel}
-          </Badge>
+      <CardContent className="space-y-2 text-sm">
+        <div className="space-y-0.5">
+          <p className="text-base font-bold leading-tight text-card-foreground">{contrat.numero}</p>
+          <p className="truncate text-muted-foreground">{contrat.client.name}</p>
         </div>
-        {pending && <Badge variant="outline">Mise à jour…</Badge>}
-        {pendingApproval && <Badge variant="expiring">En attente d&apos;approbation</Badge>}
+        <p className="truncate text-xs text-muted-foreground">{contrat.billboard.reference}</p>
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <Badge variant="outline" className="font-normal text-muted-foreground">
+            {FACE_LABELS[face]}
+          </Badge>
+          {dateRangeLabel && <span className="truncate">{dateRangeLabel}</span>}
+        </div>
+        {(pending || pendingApproval) && (
+          <div className="flex flex-wrap gap-1">
+            {pending && <Badge variant="outline">Mise à jour…</Badge>}
+            {pendingApproval && <Badge variant="expiring">En attente d&apos;approbation</Badge>}
+          </div>
+        )}
         {contrat.statut === 'DRAFT' && (
           <div className="flex justify-end pt-0.5">
             <TooltipProvider>
