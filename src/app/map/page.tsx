@@ -7,6 +7,7 @@ import { FilterBar, type Filters } from '@/components/table/FilterBar'
 import { BillboardDrawer } from '@/components/billboard/BillboardDrawer'
 import { StatusLegend } from '@/components/map/StatusLegend'
 import { useBillboards } from '@/hooks/useBillboards'
+import { FormError } from '@/components/shared/FormError'
 
 export default function MapPage() {
   const [filters, setFilters] = useState<Filters>({})
@@ -23,11 +24,7 @@ export default function MapPage() {
 
   return (
     <div className="flex h-screen flex-col gap-6 bg-background p-6">
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      <FormError variant="banner">{error}</FormError>
       
       <div className="flex flex-1 gap-6 overflow-hidden">
         {/* MAP CONTAINER */}

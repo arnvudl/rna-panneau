@@ -21,13 +21,19 @@ export const STATUS_BADGE_VARIANTS: Record<
   MAINTENANCE: 'maintenance',
 }
 
-// Hex colors for non-Tailwind contexts (map markers, inline styles).
+// Solid status color for the two non-Tailwind call sites (map markers,
+// StatusLegend dots), which set it through an inline `style` rather than a
+// class. These are CSS var references, not literal hexes, so they resolve to
+// the same Status Vocabulary defined once in src/app/globals.css — there is no
+// second list of status hexes to keep in sync any more. The *text* (solid) half
+// of each pair is used, since a marker is a small solid dot that needs the
+// saturated color, not the pale badge background.
 export const STATUS_COLORS: Record<BillboardStatus, string> = {
-  AVAILABLE: '#16a34a',
-  RENTED: '#2563eb',
-  EXPIRING_SOON: '#f97316',
-  EXPIRED: '#dc2626',
-  MAINTENANCE: '#6b7280',
+  AVAILABLE: 'var(--status-ok-text)',
+  RENTED: 'var(--status-progress-text)',
+  EXPIRING_SOON: 'var(--status-watch-text)',
+  EXPIRED: 'var(--status-danger-text)',
+  MAINTENANCE: 'var(--status-dormant-text)',
 }
 
 export const FACE_LABELS: Record<'FACE_1' | 'FACE_2' | 'BOTH', string> = {
@@ -47,22 +53,24 @@ export const CONTRAT_STATUS_LABELS: Record<'DRAFT' | 'SIGNED' | 'ACTIVE' | 'ENDE
   CANCELLED: 'Annulé',
 }
 
-// Per-status visual language for the Contrat Kanban board: a light column
-// tint, a header dot/count-badge color, a card left-accent-bar color, and the
-// column's empty-state muted-text color — one color family per ContratStatus,
-// reusing the same Tailwind color families already established by badge.tsx's
-// status variants (emerald = healthy/active, blue = in-progress, orange =
-// attention, slate = neutral, red = destructive/cancelled) rather than
-// inventing new ad hoc colors. Keeping all four fields on one map (rather
-// than a second parallel Record keyed by the same statuses) means a future
-// status only has to be added in one place.
+// Per-status visual language for the Contrat Kanban board: a faint column
+// tint, a header dot color, a card left-accent-bar color, and the column's
+// empty-state muted-text color.
 //
-// mutedText: text-muted-foreground (#64748b) reads at ~4.35:1 on the
-// CANCELLED column's bg-red-50 tint — just under WCAG AA's 4.5:1 minimum for
-// body text. Every other column tint stays legible with the shared
-// muted-foreground token, so only CANCELLED gets a darker, status-specific
-// override (mirroring the danger-text color badge.tsx's own destructive
-// variant already uses) rather than darkening muted-foreground globally.
+// Every value here is drawn from the one Status Vocabulary (globals.css /
+// tailwind.config.ts) rather than from an ad hoc Tailwind palette step: the
+// column wash is the meaning's `-tint`, and the dot / accent bar / empty-state
+// text are its solid `-text`. Previously these were hand-picked `-50`/`-400`/
+// `-500`/`-600` steps that drifted from the badge colors sitting right next to
+// them in the same column header.
+//
+// mutedText is now the status's own `-text` everywhere rather than the shared
+// muted-foreground token: `-text` is the darkest half of each pair and clears
+// WCAG AA comfortably on that pair's own `-tint` wash, which also removes the
+// CANCELLED-only contrast exception the previous version needed.
+//
+// Keeping all five fields on one map (rather than parallel Records keyed by
+// the same statuses) means a future status is added in exactly one place.
 export const CONTRAT_STATUS_STYLES: Record<
   'DRAFT' | 'SIGNED' | 'ACTIVE' | 'ENDED' | 'CANCELLED',
   {
@@ -73,11 +81,16 @@ export const CONTRAT_STATUS_STYLES: Record<
     mutedText: string
   }
 > = {
-  DRAFT: { badgeVariant: 'maintenance', columnBg: 'bg-slate-50', headerDot: 'bg-slate-400', cardAccent: 'border-l-slate-400', mutedText: 'text-muted-foreground' },
-  SIGNED: { badgeVariant: 'rented', columnBg: 'bg-blue-50', headerDot: 'bg-blue-500', cardAccent: 'border-l-blue-500', mutedText: 'text-muted-foreground' },
-  ACTIVE: { badgeVariant: 'available', columnBg: 'bg-emerald-50', headerDot: 'bg-emerald-500', cardAccent: 'border-l-emerald-500', mutedText: 'text-muted-foreground' },
-  ENDED: { badgeVariant: 'maintenance', columnBg: 'bg-slate-100', headerDot: 'bg-slate-600', cardAccent: 'border-l-slate-600', mutedText: 'text-muted-foreground' },
-  CANCELLED: { badgeVariant: 'destructive', columnBg: 'bg-red-50', headerDot: 'bg-red-500', cardAccent: 'border-l-red-500', mutedText: 'text-red-700' },
+  // DRAFT and ENDED intentionally share Dormant Slate: DESIGN.md assigns both
+  // "a draft not yet started" and "a contract that ended normally" to that one
+  // meaning. They used to differ by a half-step of slate (50 vs 100, 400 vs
+  // 600), which implied a distinction the vocabulary does not make; the column
+  // label and header dot position still tell them apart.
+  DRAFT: { badgeVariant: 'maintenance', columnBg: 'bg-status-dormant-tint', headerDot: 'bg-status-dormant-text', cardAccent: 'border-l-status-dormant-text', mutedText: 'text-status-dormant-text' },
+  SIGNED: { badgeVariant: 'rented', columnBg: 'bg-status-progress-tint', headerDot: 'bg-status-progress-text', cardAccent: 'border-l-status-progress-text', mutedText: 'text-status-progress-text' },
+  ACTIVE: { badgeVariant: 'available', columnBg: 'bg-status-ok-tint', headerDot: 'bg-status-ok-text', cardAccent: 'border-l-status-ok-text', mutedText: 'text-status-ok-text' },
+  ENDED: { badgeVariant: 'maintenance', columnBg: 'bg-status-dormant-tint', headerDot: 'bg-status-dormant-text', cardAccent: 'border-l-status-dormant-text', mutedText: 'text-status-dormant-text' },
+  CANCELLED: { badgeVariant: 'destructive', columnBg: 'bg-status-danger-tint', headerDot: 'bg-status-danger-text', cardAccent: 'border-l-status-danger-text', mutedText: 'text-status-danger-text' },
 }
 
 // Lead time (in days) before an ACTIVE contrat's dateFin at which its Kanban

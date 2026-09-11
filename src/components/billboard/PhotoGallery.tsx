@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ImageOff, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { FormError } from '@/components/shared/FormError'
 
 type Photo = { id: string; filename: string; createdAt: string }
 
@@ -71,7 +72,7 @@ export function PhotoGallery({
   if (photos.length === 0 && !uploading) {
     return (
       <div className="space-y-2">
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <FormError>{error}</FormError>
         <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-muted/40 text-muted-foreground">
           <ImageOff className="h-10 w-10" />
           <p className="text-sm font-medium">Aucune photo</p>
@@ -97,7 +98,7 @@ export function PhotoGallery({
 
   return (
     <div className="space-y-2">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <FormError>{error}</FormError>
       <div className="grid grid-cols-2 gap-2">
         {photos.map((p) => (
           <div key={p.id} className="group relative">

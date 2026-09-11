@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DndContext, DragOverlay, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { FormError } from '@/components/shared/FormError'
 import { ContratColumn } from '@/components/contrats/ContratColumn'
 import { ContratCard, type KanbanContrat } from '@/components/contrats/ContratCard'
 import { ContratCreateForm } from '@/components/contrats/ContratCreateForm'
@@ -88,14 +88,25 @@ export function nextPendingApprovalIds(
   return next
 }
 
-export function ContratKanban() {
+/**
+ * `createOpen` / `onCreateOpenChange` are owned by the page, which renders the
+ * "+ Nouveau contrat" button in its PageHeader alongside every other page's
+ * primary action. The dialog itself stays here because its onCreated has to
+ * refetch the board.
+ */
+export function ContratKanban({
+  createOpen,
+  onCreateOpenChange,
+}: {
+  createOpen: boolean
+  onCreateOpenChange: (open: boolean) => void
+}) {
   const [contrats, setContrats] = useState<KanbanContrat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
   const [pendingApprovalIds, setPendingApprovalIds] = useState<Set<string>>(new Set())
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [createOpen, setCreateOpen] = useState(false)
   const [filters, setFilters] = useState<ContratFilters>({})
   const [search, setSearch] = useState('')
 
@@ -193,17 +204,16 @@ export function ContratKanban() {
     }
   }
 
-  if (loading) return <p className="p-6 text-sm text-muted-foreground">Chargement des contrats…</p>
-  if (error) return <p className="p-6 text-sm text-red-600">{error}</p>
+  if (loading) return <p className="py-4 text-sm text-muted-foreground">Chargement des contrats…</p>
+  if (error) return <FormError className="py-4">{error}</FormError>
 
   return (
     <>
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-6 pb-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
         <ContratFilterBar search={search} onSearchChange={setSearch} filters={filters} onFiltersChange={setFilters} />
-        <Button onClick={() => setCreateOpen(true)}>+ Nouveau contrat</Button>
       </div>
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="grid min-h-0 flex-1 grid-cols-[repeat(5,minmax(240px,1fr))] gap-4 overflow-x-auto p-6 pt-2">
+        <div className="grid min-h-0 flex-1 grid-cols-[repeat(5,minmax(240px,1fr))] gap-4 overflow-x-auto">
           {CONTRAT_STATUS_VALUES.map((status) => (
             <ContratColumn
               key={status}
@@ -221,7 +231,7 @@ export function ContratKanban() {
           {activeContrat ? <ContratCard contrat={activeContrat} pending={false} /> : null}
         </DragOverlay>
       </DndContext>
-      <ContratCreateForm open={createOpen} onOpenChange={setCreateOpen} onCreated={() => fetchContrats(undefined, { silent: true })} />
+      <ContratCreateForm open={createOpen} onOpenChange={onCreateOpenChange} onCreated={() => fetchContrats(undefined, { silent: true })} />
     </>
   )
 }

@@ -5,8 +5,10 @@ import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { FormError } from '@/components/shared/FormError'
 
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
@@ -177,7 +179,7 @@ export function BillboardForm(props: BillboardFormProps) {
           <DialogTitle>{mode === 'create' ? 'Ajouter un panneau' : 'Modifier le panneau'}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          <FormError>{error}</FormError>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label>Latitude</Label>
@@ -270,8 +272,7 @@ export function BillboardForm(props: BillboardFormProps) {
           </div>
           <div className="space-y-1">
             <Label>Note</Label>
-            <textarea
-              className="w-full rounded-md border border-border p-2 text-sm"
+            <Textarea
               rows={3}
               maxLength={2000}
               value={note}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { APPROVAL_LABELS } from '@/lib/approval-labels'
 import type { ApprovalType } from '@prisma/client'
+import { FormError } from '@/components/shared/FormError'
 
 type Approval = {
   id: string
@@ -158,7 +159,7 @@ export function ApprovalQueue() {
 
   return (
     <div className="space-y-2">
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      <FormError>{error}</FormError>
       {approvals.length === 0 ? (
         <p className="text-sm text-muted-foreground">Aucune demande en attente.</p>
       ) : (

@@ -1,8 +1,14 @@
 'use client'
 
-import { useState } from 'react'
 import { FileText, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { Filters } from '@/components/table/FilterBar'
 
 function buildQuery(params: Record<string, string>, filters: Filters) {
@@ -22,51 +28,44 @@ function downloadFile(url: string) {
   link.remove()
 }
 
+/**
+ * Export menu for the inventory.
+ *
+ * This was a hand-rolled dropdown: local `open` state, a full-screen invisible
+ * div as the outside-click catcher, an absolutely-positioned panel with its own
+ * `rounded-md bg-popover shadow-lg`, and raw `<button>` rows with their own
+ * hover style — a second, worse implementation of ui/dropdown-menu, which the
+ * sidebar's account menu already uses. It now uses the primitive, which brings
+ * keyboard navigation, focus return, escape-to-close and portal positioning
+ * that the hand-rolled version never had.
+ */
 export function ExportParkPdfButton({ filters }: { filters: Filters }) {
-  const [open, setOpen] = useState(false)
-
   return (
-    <div className="relative">
-      <Button variant="outline" size="sm" onClick={() => setOpen((o) => !o)}>
+    <DropdownMenu>
+      {/* Button-wraps-Trigger rather than Trigger-wraps-Button: `Button` is a
+          Base UI Button, and passing it into the trigger's `render` drops the
+          menu's own trigger props, leaving a button that opens nothing. */}
+      <Button variant="outline" size="sm" render={<DropdownMenuTrigger />}>
         <FileText className="mr-1 h-4 w-4" />
         Exporter
         <ChevronDown className="ml-1 h-3 w-3" />
       </Button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-50 mt-1 w-56 rounded-md bg-popover py-1 ring-1 ring-foreground/10 shadow-lg">
-            <button
-              className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
-              onClick={() => {
-                window.open(`/api/billboards/pdf?${buildQuery({ mode: 'summary' }, filters)}`, '_blank')
-                setOpen(false)
-              }}
-            >
-              PDF — Récapitulatif (tableau)
-            </button>
-            <button
-              className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
-              onClick={() => {
-                window.open(`/api/billboards/pdf?${buildQuery({ mode: 'full' }, filters)}`, '_blank')
-                setOpen(false)
-              }}
-            >
-              PDF — Complet (1 page/panneau)
-            </button>
-            <div className="my-1 border-t" />
-            <button
-              className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
-              onClick={() => {
-                downloadFile(`/api/billboards/xlsx?${buildQuery({}, filters)}`)
-                setOpen(false)
-              }}
-            >
-              Excel (.xlsx)
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem
+          onClick={() => window.open(`/api/billboards/pdf?${buildQuery({ mode: 'summary' }, filters)}`, '_blank')}
+        >
+          PDF — Récapitulatif (tableau)
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => window.open(`/api/billboards/pdf?${buildQuery({ mode: 'full' }, filters)}`, '_blank')}
+        >
+          PDF — Complet (1 page/panneau)
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => downloadFile(`/api/billboards/xlsx?${buildQuery({}, filters)}`)}>
+          Excel (.xlsx)
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

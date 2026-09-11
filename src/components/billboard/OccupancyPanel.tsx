@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { OccupancyForm } from '@/components/billboard/OccupancyForm'
 import { isFaceAvailable } from '@/lib/face-occupancy'
 import { FACE_LABELS } from '@/lib/status-labels'
+import { FormError } from '@/components/shared/FormError'
 
 export type OccupancyPanelOccupancy = {
   id: string
@@ -49,7 +50,7 @@ function OccupancyCard({ occupancy }: { occupancy: OccupancyPanelOccupancy }) {
 
   return (
     <div className="space-y-2 rounded-lg border p-4">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <FormError>{error}</FormError>
       <p className="text-xs font-medium text-muted-foreground">{FACE_LABELS[occupancy.face]}</p>
       <p className="font-medium">{occupancy.client.name}</p>
       {occupancy.numero && <p className="text-sm text-muted-foreground">Contrat : {occupancy.numero}</p>}

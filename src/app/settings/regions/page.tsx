@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
+import { PageShell } from '@/components/shared/PageShell'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { Card } from '@/components/ui/card'
 
 // This page reads the database and must not be statically prerendered at
@@ -11,15 +12,24 @@ export default async function RegionsPage() {
   const regions = await prisma.region.findMany({ orderBy: { name: 'asc' } })
 
   return (
-    <div>
-      <Breadcrumbs segments={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Réglages' }]} />
-      <div className="mx-auto max-w-2xl space-y-4 p-6">
-      <h1 className="text-2xl font-semibold text-foreground">Régions</h1>
-      <p className="text-sm text-muted-foreground">
+    <PageShell>
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Accueil', href: '/dashboard' },
+          { label: 'Réglages' },
+          { label: 'Régions' },
+        ]}
+        title="Régions"
+      />
+      <p className="max-w-2xl text-sm text-muted-foreground">
         Liste fixe des 23 régions de Madagascar utilisée pour générer l&apos;identifiant des panneaux
         (ex: DIA-0001). Cette liste n&apos;est pas modifiable.
       </p>
-      <Card className="py-0">
+      {/* Capped for measure, not for page width: this is a fixed 23-row
+          name/code list, and stretching two short columns across a wide
+          monitor would leave a river of empty space between them. The page
+          gutter and width still come from PageShell. */}
+      <Card className="max-w-2xl py-0">
         <ul className="divide-y divide-border">
           {regions.map((r) => (
             <li key={r.id} className="flex items-center justify-between px-4 py-2 text-sm">
@@ -29,7 +39,6 @@ export default async function RegionsPage() {
           ))}
         </ul>
       </Card>
-      </div>
-    </div>
+    </PageShell>
   )
 }

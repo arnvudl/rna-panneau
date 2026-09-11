@@ -1,7 +1,18 @@
 import type { Config } from "tailwindcss";
 
+// No `darkMode` key: this is a desktop-only internal tool, DESIGN.md defines a
+// single light palette, and nothing in the app ever sets a `.dark` class. The
+// previous `darkMode: ["class"]` paired with a block of generic grey shadcn
+// defaults in globals.css that no user could ever reach; both were deleted
+// rather than left as a half-built theme.
+//
+// The `dark:` utilities that shipped inside the generated src/components/ui/*
+// primitives were deleted in the same pass, deliberately. Without an explicit
+// `darkMode` key Tailwind falls back to `media`, which would have compiled
+// those utilities into `prefers-color-scheme: dark` queries — so on a machine
+// set to dark mode they would have started applying to a light-only palette,
+// turning a previously inert class into a live half-theme.
 const config: Config = {
-  darkMode: ["class"],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -39,6 +50,42 @@ const config: Config = {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+        },
+        // The five-meaning Status Vocabulary (DESIGN.md). Values live once, in
+        // src/app/globals.css; this block only exposes them to Tailwind so
+        // consumers can write `bg-status-ok-bg text-status-ok-text` instead of
+        // hand-picking `bg-emerald-100 text-emerald-700` per screen.
+        //   ok       — fine / active            (Signal Emerald)
+        //   progress — in motion, unresolved    (Working Blue)
+        //   watch    — needs attention soon     (Watch Orange)
+        //   dormant  — settled / closed         (Dormant Slate)
+        //   danger   — actually wrong           (Danger Red)
+        status: {
+          ok: {
+            bg: "var(--status-ok-bg)",
+            text: "var(--status-ok-text)",
+            tint: "var(--status-ok-tint)",
+          },
+          progress: {
+            bg: "var(--status-progress-bg)",
+            text: "var(--status-progress-text)",
+            tint: "var(--status-progress-tint)",
+          },
+          watch: {
+            bg: "var(--status-watch-bg)",
+            text: "var(--status-watch-text)",
+            tint: "var(--status-watch-tint)",
+          },
+          dormant: {
+            bg: "var(--status-dormant-bg)",
+            text: "var(--status-dormant-text)",
+            tint: "var(--status-dormant-tint)",
+          },
+          danger: {
+            bg: "var(--status-danger-bg)",
+            text: "var(--status-danger-text)",
+            tint: "var(--status-danger-tint)",
+          },
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

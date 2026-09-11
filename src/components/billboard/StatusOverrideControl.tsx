@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { STATUS_LABELS } from '@/lib/status-labels'
 import type { BillboardStatus } from '@/lib/status'
+import { FormError } from '@/components/shared/FormError'
 
 const OPTIONS: BillboardStatus[] = ['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EXPIRED', 'MAINTENANCE']
 
@@ -43,7 +44,7 @@ export function StatusOverrideControl({
 
   return (
     <div className="space-y-1">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <FormError>{error}</FormError>
       <Select
         items={{ auto: 'Automatique', ...Object.fromEntries(OPTIONS.map((s) => [s, STATUS_LABELS[s]])) }}
         value={statusOverride ?? 'auto'}

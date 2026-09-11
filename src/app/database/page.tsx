@@ -12,9 +12,11 @@ import { StatusLegend } from '@/components/map/StatusLegend'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
+import { FormError } from '@/components/shared/FormError'
+import { PageShell } from '@/components/shared/PageShell'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { useBillboards } from '@/hooks/useBillboards'
 import { getPermission } from '@/lib/permissions'
-import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 
 export default function DatabasePage() {
   const router = useRouter()
@@ -69,36 +71,30 @@ export default function DatabasePage() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-background">
-      <Breadcrumbs segments={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Inventaire' }]} />
-      <div className="flex flex-1 flex-col gap-6 overflow-hidden p-6">
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+    // Full-bleed: the inventory table has many columns and is meant to use the
+    // whole monitor (DESIGN.md, The No Dead Space Rule). `fill` keeps the
+    // header and filter bar fixed while the table body scrolls.
+    <PageShell fullBleed fill>
+      <PageHeader
+        breadcrumbs={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Inventaire' }]}
+        title="Base de données"
+        meta={!loading ? `${billboards.length} panneau${billboards.length !== 1 ? 'x' : ''}` : undefined}
+        actions={
+          <>
+            {canDelete && selectedIds.size > 0 && (
+              <Button variant="destructive" size="sm" disabled={deleting} onClick={() => setDeleteConfirmOpen(true)}>
+                {deleting ? 'Suppression…' : `Supprimer la sélection (${selectedIds.size})`}
+              </Button>
+            )}
+            <ExportParkPdfButton filters={filters} />
+            <Button onClick={() => setFormOpen(true)}>+ Ajouter un panneau</Button>
+          </>
+        }
+      />
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-semibold text-foreground">Base de données</h1>
-          {!loading && (
-            <span className="text-sm font-medium text-muted-foreground">
-              {billboards.length} panneau{billboards.length !== 1 ? 'x' : ''}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-4">
-          {canDelete && selectedIds.size > 0 && (
-            <Button variant="destructive" size="sm" disabled={deleting} onClick={() => setDeleteConfirmOpen(true)}>
-              {deleting ? 'Suppression…' : `Supprimer la sélection (${selectedIds.size})`}
-            </Button>
-          )}
-          <ExportParkPdfButton filters={filters} />
-          <Button onClick={() => setFormOpen(true)}>+ Ajouter un panneau</Button>
-        </div>
-      </div>
+      <FormError variant="banner">{error}</FormError>
 
-      <Card className="flex flex-1 flex-col gap-0 overflow-hidden py-0">
+      <Card className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden py-0">
         <FilterBar filters={filters} onChange={setFilters} />
         <div className="flex-1 overflow-auto">
           {loading ? (
@@ -127,7 +123,6 @@ export default function DatabasePage() {
         onConfirm={deleteSelected}
       />
       <StatusLegend />
-      </div>
-    </div>
+    </PageShell>
   )
 }

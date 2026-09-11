@@ -12,7 +12,8 @@ import { MaintenancePanel } from '@/components/billboard/MaintenancePanel'
 import { ExportPdfButton } from '@/components/billboard/ExportPdfButton'
 import { BillboardDetailActions } from '@/components/billboard/BillboardDetailActions'
 import { StatusOverrideControl } from '@/components/billboard/StatusOverrideControl'
-import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
+import { PageShell } from '@/components/shared/PageShell'
+import { PageHeader } from '@/components/shared/PageHeader'
 
 export default async function BillboardPage({ params }: { params: { id: string } }) {
   const billboard = await prisma.billboard.findUnique({
@@ -39,22 +40,22 @@ export default async function BillboardPage({ params }: { params: { id: string }
   const activeOccupancies = occupancies.filter((o) => o.status === 'ACTIVE')
 
   return (
-    <div>
-      <Breadcrumbs
-        segments={[
+    <PageShell>
+      <PageHeader
+        breadcrumbs={[
           { label: 'Accueil', href: '/dashboard' },
           { label: 'Inventaire', href: '/database' },
           { label: billboard.reference },
         ]}
+        title={billboard.reference}
+        meta={<Badge variant={STATUS_BADGE_VARIANTS[status]}>{STATUS_LABELS[status]}</Badge>}
       />
-      <div className="mx-auto max-w-6xl space-y-6 p-6">
-      {/* Header Section */}
+
+      {/* Summary card. The reference and status badge moved up into PageHeader
+          so this page's title sits where every other page's title sits; what
+          remains here is the identifying detail line plus the record actions. */}
       <Card className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between px-4">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl font-semibold text-foreground">{billboard.reference}</h1>
-            <Badge variant={STATUS_BADGE_VARIANTS[status]}>{STATUS_LABELS[status]}</Badge>
-          </div>
           <p className="text-muted-foreground font-medium">{billboard.region?.name ?? '—'} — {billboard.district?.name ?? '—'} — {billboard.dimension} — {billboard.sides} face(s)</p>
           <p className="text-sm text-muted-foreground mt-1">
             Créé le {billboard.createdAt.toLocaleDateString('fr-FR')}
@@ -155,7 +156,6 @@ export default async function BillboardPage({ params }: { params: { id: string }
           </Card>
         </div>
       </div>
-      </div>
-    </div>
+    </PageShell>
   )
 }

@@ -8,6 +8,7 @@ import { BillboardForm } from '@/components/billboard/BillboardForm'
 import { StatusLegend } from '@/components/map/StatusLegend'
 import { Button } from '@/components/ui/button'
 import { useBillboards } from '@/hooks/useBillboards'
+import { FormError } from '@/components/shared/FormError'
 
 export default function MapFullPage() {
   const [filters, setFilters] = useState<Filters>({})
@@ -26,11 +27,10 @@ export default function MapFullPage() {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      {error && (
-        <div className="border-b border-red-200 bg-red-50 px-6 py-2 text-sm font-medium text-red-700">
-          {error}
-        </div>
-      )}
+      {/* rounded-none: this banner spans a full-bleed edge-to-edge page. */}
+      <FormError variant="banner" className="rounded-none px-6 py-2">
+        {error}
+      </FormError>
 
       {/* Solid Top Bar for Filters and Actions */}
       <div className="flex flex-col border-b bg-card sm:flex-row sm:items-center sm:justify-between pr-0 sm:pr-6 z-10">

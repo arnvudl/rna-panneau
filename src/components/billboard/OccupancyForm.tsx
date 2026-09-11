@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { FormError } from '@/components/shared/FormError'
 
 type Client = { id: string; name: string }
 type Face = 'FACE_1' | 'FACE_2' | 'BOTH'
@@ -108,7 +109,7 @@ export function OccupancyForm({
       <DialogContent>
         <DialogHeader><DialogTitle>Nouveau contrat</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          <FormError>{error}</FormError>
           <div className="space-y-1">
             <Label>Client</Label>
             <div className="rounded-lg border bg-muted/40 p-3 space-y-3">

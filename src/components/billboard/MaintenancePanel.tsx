@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { FormError } from '@/components/shared/FormError'
 
 export type MaintenanceRecordItem = {
   id: string
@@ -61,7 +62,7 @@ export function MaintenancePanel({
         </ul>
       )}
       <div className="space-y-2 rounded-lg border p-3">
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <FormError>{error}</FormError>
         <Input placeholder="Type (ex: antirouille)" value={type} onChange={(e) => setType(e.target.value)} />
         <Textarea placeholder="Commentaire" value={comment} onChange={(e) => setComment(e.target.value)} />
         <Button onClick={submit} disabled={submitting || !type}>

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { isFaceAvailable, type OccupancyFace } from '@/lib/face-occupancy'
+import { FormError } from '@/components/shared/FormError'
 
 type Client = { id: string; name: string }
 type Face = OccupancyFace
@@ -182,7 +183,7 @@ export function ContratCreateForm({
       <DialogContent>
         <DialogHeader><DialogTitle>Nouveau contrat</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          <FormError>{error}</FormError>
           <div className="space-y-1">
             <Label>Panneau</Label>
             <div className="rounded-lg border bg-muted/40 p-3 space-y-3">
@@ -237,7 +238,7 @@ export function ContratCreateForm({
             </div>
           </div>
           {selectedBillboard && availableFaces.length === 0 && (
-            <p className="text-sm text-red-600">Aucune face disponible sur ce panneau.</p>
+            <FormError>Aucune face disponible sur ce panneau.</FormError>
           )}
           {selectedBillboard && sides === 2 && availableFaces.length > 0 && (
             <div className="space-y-1">

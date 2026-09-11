@@ -10,12 +10,17 @@ export type BreadcrumbSegment = {
  * Per-page "where am I" strip, replacing the old top navbar's active-link
  * underline. Every segment except the last is a link back to that level;
  * the last segment is the current page and renders as plain text.
+ *
+ * Carries no padding of its own: the page gutter belongs to PageShell, and
+ * this component's own `px-6 pt-4` used to stack on top of it so the
+ * breadcrumb never lined up with the `<h1>` below it. Rendered through
+ * PageHeader rather than placed by hand.
  */
 export function Breadcrumbs({ segments }: { segments: BreadcrumbSegment[] }) {
   if (segments.length === 0) return null
 
   return (
-    <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 px-6 pt-4 text-sm text-muted-foreground">
+    <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-sm text-muted-foreground">
       {segments.map((segment, i) => {
         const isLast = i === segments.length - 1
         return (

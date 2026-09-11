@@ -9,7 +9,9 @@ import { Card } from '@/components/ui/card'
 import { ClientForm } from '@/components/clients/ClientForm'
 import { formatContactInfo } from '@/lib/client-format'
 import { getPermission } from '@/lib/permissions'
-import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
+import { FormError } from '@/components/shared/FormError'
+import { PageShell } from '@/components/shared/PageShell'
+import { PageHeader } from '@/components/shared/PageHeader'
 
 type Client = { id: string; name: string; phone: string | null; email: string | null }
 
@@ -51,15 +53,16 @@ export default function ClientsPage() {
   const reload = () => setReloadToken((t) => t + 1)
 
   return (
-    <div className="flex h-screen flex-col gap-6 bg-background">
-      <Breadcrumbs segments={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Clients' }]} />
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 overflow-hidden px-6 pb-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-foreground">Clients</h1>
-          {canCreate && <Button onClick={() => setFormOpen(true)}>+ Nouveau client</Button>}
-        </div>
+    // `fill`: the client list is one long scrolling pane, so the search box
+    // and header stay put while the list scrolls under them.
+    <PageShell fill>
+      <PageHeader
+        breadcrumbs={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Clients' }]}
+        title="Clients"
+        actions={canCreate ? <Button onClick={() => setFormOpen(true)}>+ Nouveau client</Button> : undefined}
+      />
 
-        <Card className="flex flex-1 flex-col overflow-hidden px-4">
+        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden px-4">
           <div className="shrink-0">
             <Input
               placeholder="Rechercher un client..."
@@ -69,7 +72,7 @@ export default function ClientsPage() {
             />
           </div>
 
-          {error && <p className="shrink-0 text-sm font-medium text-destructive">{error}</p>}
+          <FormError className="shrink-0">{error}</FormError>
 
           {loading ? (
             <div className="py-8 text-center text-sm font-medium text-muted-foreground">Chargement…</div>
@@ -89,9 +92,8 @@ export default function ClientsPage() {
             </ul>
           )}
         </Card>
-      </div>
 
       {canCreate && <ClientForm mode="create" open={formOpen} onOpenChange={setFormOpen} onSaved={reload} />}
-    </div>
+    </PageShell>
   )
 }

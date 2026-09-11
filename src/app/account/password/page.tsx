@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { FormError } from '@/components/shared/FormError'
+import { PageShell } from '@/components/shared/PageShell'
+import { PageHeader } from '@/components/shared/PageHeader'
 
 export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState('')
@@ -51,13 +54,20 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-6 p-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Changer le mot de passe</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Modifiez votre mot de passe de connexion.</p>
-      </div>
+    <PageShell>
+      {/* This page was the only one in the app with no breadcrumb trail at all.
+          Adding it is consistency with the other eight, not new navigation. */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Accueil', href: '/dashboard' },
+          { label: 'Compte' },
+          { label: 'Mot de passe' },
+        ]}
+        title="Changer le mot de passe"
+      />
+      <p className="text-sm text-muted-foreground">Modifiez votre mot de passe de connexion.</p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="max-w-md space-y-4">
         <div className="space-y-2">
           <Label htmlFor="current">Mot de passe actuel</Label>
           <Input id="current" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
@@ -71,13 +81,15 @@ export default function ChangePasswordPage() {
           <Input id="confirm" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
         </div>
 
-        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
-        {success && <p className="text-sm font-medium text-emerald-600">Mot de passe modifié avec succès</p>}
+        <FormError>{error}</FormError>
+        {success && (
+          <p className="text-sm font-medium text-status-ok-text">Mot de passe modifié avec succès</p>
+        )}
 
         <Button type="submit" className="w-full" disabled={submitting}>
           {submitting ? 'Modification…' : 'Modifier le mot de passe'}
         </Button>
       </form>
-    </div>
+    </PageShell>
   )
 }

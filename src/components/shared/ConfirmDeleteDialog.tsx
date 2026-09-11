@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { FormError } from '@/components/shared/FormError'
 
 export function ConfirmDeleteDialog({
   open,
@@ -47,7 +48,7 @@ export function ConfirmDeleteDialog({
       <DialogContent>
         <DialogHeader><DialogTitle>Supprimer {entityLabel}</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          <FormError>{error}</FormError>
           <p className="text-sm text-muted-foreground">
             Cette action est irréversible. Pour confirmer, tapez exactement <strong>{entityName}</strong> ci-dessous.
           </p>

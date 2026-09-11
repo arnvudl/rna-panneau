@@ -2,6 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { STATUS_LABELS, STATUS_BADGE_VARIANTS } from '@/lib/status-labels'
 import type { BillboardStatus } from '@/lib/status'
 
@@ -51,11 +52,11 @@ export function BillboardTable({
         <TableRow>
           {selectable && (
             <TableHead className="w-10 px-4 text-center">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={allSelected}
-                onChange={(e) => onToggleSelectAll?.(e.target.checked)}
+                onCheckedChange={(checked) => onToggleSelectAll?.(checked === true)}
                 aria-label="Tout sélectionner"
+                className="mx-auto"
               />
             </TableHead>
           )}
@@ -80,11 +81,11 @@ export function BillboardTable({
           >
             {selectable && (
               <TableCell className="w-10 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedIds!.has(r.id)}
-                  onChange={() => onToggleSelect!(r.id)}
+                  onCheckedChange={() => onToggleSelect!(r.id)}
                   aria-label={`Sélectionner ${r.reference}`}
+                  className="mx-auto"
                 />
               </TableCell>
             )}
