@@ -281,6 +281,23 @@ Bulk import from Excel
 
 ---
 
+## FEATURE REQUESTS SURFACED DURING DESIGN WORK (not built — log only)
+
+Captured from the 2026-09-08 scoping meeting and later design-session feedback. Explicitly **not** in scope for the current design/refinement pass — record here, don't implement ahead of a dedicated task.
+
+- Un contrat peut couvrir plusieurs panneaux (plusieurs faces sur plusieurs panneaux différents pour un même client) — actuellement un Contrat est lié à un seul `billboardId`.
+- Colonnes affichables/choisies par l'utilisateur dans la BD (page Inventaire) et dans l'export — actuellement colonnes fixes.
+- Admin doit pouvoir changer les droits des autres utilisateurs directement dans l'app (pas seulement au niveau code/seed).
+- Facturation directe intégrée au CRM (génération de facture depuis la fiche contrat/client, pas un module séparé).
+- Alerte facture-non-éditée récurrente : si une facture n'est pas éditée, relance tous les 15 jours (pas une alerte unique).
+- Double-face : statut/couleur visuellement distincts dans l'inventaire pour les panneaux double-face vs simple-face (sans ajouter de nouveaux champs — juste un affichage différencié).
+- Formats de panneaux "déformatés" (dimensions sur-mesure, hors 2x1/4x3/6x3/8x3/12x3) — le modèle actuel de `Dimension` est un enum fixe.
+- Réglages : pouvoir ajouter un type d'impression directement depuis les paramètres (actuellement Éco-solvant/UV hardcodés), avec délai d'expiration paramétrable par type (6 mois éco-solvant, 1 an UV, doublé si laminé).
+- Vue "société globale" au-delà du parc de panneaux (KPIs financiers/opérationnels transverses), au-delà du dashboard actuel centré panneaux.
+- Automatisation avancée / IA (mentionné comme aspiration à terme, non cadré).
+
+---
+
 ## BEFORE YOU LAUNCH
 
 ### Checklist

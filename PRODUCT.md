@@ -8,7 +8,7 @@ web
 
 ## Users
 
-Internal operations team at RNA (a billboard/outdoor-advertising regie in Madagascar), currently 2–3 people total, across four roles: Dirigeant/Admin (full access, audit logs, rights management), Commercial (clients, contracts, renewal quotes), Technicien (print tracking, installs, maintenance), Comptable (invoicing, payment tracking, financial reports). Desktop-only usage — no mobile/responsive requirement.
+Internal operations team at RNA (a billboard/outdoor-advertising regie in Madagascar), currently fewer than 3 people (confirmed in the 2026-09-08 scoping meeting) — primarily Dirigeant/Admin and Commercial today, with Technicien and Comptable as roles the system supports for when the team grows. Desktop-only usage — no mobile/responsive requirement.
 
 ## Product Purpose
 
@@ -24,12 +24,14 @@ Core workflow: BC signé → contrat created in system → BAT sent to client by
 
 ## Capabilities and Constraints
 
-- No 2FA in V2 (small team, explicitly out of scope for now).
-- Role-based permissions, granular; optional geographic (region/district) restriction per user.
-- Audit logging is mandatory for sensitive actions: delete, invoice edits, payment relance, contract state changes.
-- NIF, STAT, RCS, and Carte Fiscale are encrypted at rest.
+- No 2FA in V2 (small team), but the 2026-09-08 meeting was explicit that **security must be solid regardless** ("il faut sécuriser à fond") — this is a real constraint on how sensitive endpoints/data are handled, not a relaxed one, even though 2FA itself is out of scope.
+- Role-based permissions, granular; admin can change other users' rights. Geographic restriction is not needed today, but sensitive/financial actions (deletion, financial data) should be independently configurable/restrictable.
+- Audit logging only for sensitive actions (delete, financial actions) — confirmed explicitly, not blanket logging.
+- NIF, STAT, RCS, and Carte Fiscale are encrypted at rest; Carte Fiscale is renewed annually (a recurring per-client fact, not a one-time field).
 - Standard VAT rate is 20%.
 - Desktop-only; no mobile/tablet layout requirement.
+- Hosting/running costs must be minimal ("on est des rats" — very budget-conscious on hosting/licensing).
+- Target production timeline was under one month from the 2026-09-08 meeting.
 
 ## Brand Commitments
 
@@ -39,13 +41,17 @@ Name: "RNA Panneau". Existing logo and a navy-blue primary color are already in 
 
 No real customer names, testimonials, or case studies should be used in any surface. Client names currently appearing in dev/seed data (e.g. "Orange Money", "LFL farm shop") are placeholder test fixtures, not real references — do not treat them as evidence or reuse them as if they were real.
 
+## Future Direction (confirmed priorities, not yet built)
+
+From the 2026-09-08 meeting, in priority order: payment relance & contract-expiration follow-up; in-app invoicing; automation (including real AI-driven automation, aspirational); a detailed payment-tracking system; and eventually a whole-company view, not just the billboard park (financial/operational KPIs beyond occupancy). Dashboards are explicitly preferred over written reports (exportable when needed). These are durable direction, not a build queue — do not implement ahead of an explicit task; record concrete feature requests in `docs/IMPLEMENTATION-FINAL.md` when they surface during other work.
+
 ## Product Principles
 
 1. Single source of truth over scattered tools — every workflow this product owns should make a separate spreadsheet/tool for that job unnecessary.
 2. Preventing revenue leakage is the top business priority: payment relance and contract-expiration follow-up must be impossible to miss, not buried in a general-purpose list.
 3. Manual control over automation for financial actions — invoice generation is deliberately a manual, deliberate act by a user, not triggered automatically by contract events.
 4. Model the vertical's real objects (faces, BAT, per-face tariffs) rather than generic CRM/ERP abstractions.
-5. The codebase is written with eventual resale/adaptation to other ad regies in mind, but this is a code/architecture concern, not a design one — visual design and page selection are expected to be customized per future client, so don't invest in generic multi-tenant theming now; keep today's design coherent and specific to RNA.
+5. Confirmed in the 2026-09-08 meeting: this is an **internal tool** for RNA, not built for resale. (A separate in-session remark floated eventual resale to other regies as a loose long-term possibility, framed as a code/architecture concern rather than a design one — but the formal, meeting-confirmed answer is internal-only. Don't invest in generic multi-tenant theming; keep the design coherent and specific to RNA.)
 
 ## Accessibility & Inclusion
 
