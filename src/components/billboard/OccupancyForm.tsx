@@ -111,18 +111,18 @@ export function OccupancyForm({
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="space-y-1">
             <Label>Client</Label>
-            <div className="rounded-lg border bg-slate-50 p-3 space-y-3 shadow-sm">
+            <div className="rounded-lg border bg-muted/40 p-3 space-y-3">
               <Input 
                 placeholder="Tapez pour rechercher un client…" 
                 onChange={(e) => loadClients(e.target.value)} 
-                className="bg-white shadow-sm"
+                className="bg-card"
               />
               <Select
                 items={Object.fromEntries(clients.map((c) => [c.id, c.name]))}
                 value={clientId}
                 onValueChange={(v: string | null) => v && setClientId(v)}
               >
-                <SelectTrigger className="w-full bg-white shadow-sm">
+                <SelectTrigger className="w-full bg-card">
                   <SelectValue placeholder="Sélectionnez un client dans la liste" />
                 </SelectTrigger>
                 <SelectContent>
@@ -159,7 +159,7 @@ export function OccupancyForm({
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Le contrat lui-même reste sur l&apos;ordinateur de l&apos;admin — cette référence sert juste à le retrouver.
             </p>
           </div>

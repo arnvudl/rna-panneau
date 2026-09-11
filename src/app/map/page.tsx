@@ -22,19 +22,19 @@ export default function MapPage() {
   const selected = billboards.find((b) => b.id === selectedId) ?? null
 
   return (
-    <div className="flex h-screen flex-col gap-6 bg-slate-50 p-6">
+    <div className="flex h-screen flex-col gap-6 bg-background p-6">
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
       
       <div className="flex flex-1 gap-6 overflow-hidden">
         {/* MAP CONTAINER */}
-        <div className="relative flex w-1/2 flex-col overflow-hidden rounded-xl border bg-white shadow-sm">
+        <div className="relative flex w-1/2 flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
           <BillboardMap billboards={billboards} onSelect={select} selectedId={selectedId} />
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/60 text-sm font-medium text-slate-500 backdrop-blur-sm">
+            <div className="absolute inset-0 flex items-center justify-center bg-card/60 text-sm font-medium text-muted-foreground backdrop-blur-sm">
               Chargement de la carte…
             </div>
           )}
@@ -42,11 +42,11 @@ export default function MapPage() {
         </div>
 
         {/* TABLE CONTAINER */}
-        <div className="flex w-1/2 flex-col overflow-hidden rounded-xl border bg-white shadow-sm">
+        <div className="flex w-1/2 flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
           <FilterBar filters={filters} onChange={setFilters} />
           <div className="flex-1 overflow-auto">
             {loading ? (
-              <div className="flex h-full items-center justify-center text-sm font-medium text-slate-500">
+              <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">
                 Chargement des données…
               </div>
             ) : (

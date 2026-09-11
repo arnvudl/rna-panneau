@@ -93,7 +93,7 @@ export function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        className="relative flex h-5 w-5 items-center justify-center text-slate-500 transition-colors hover:text-slate-900"
+        className="relative flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -105,7 +105,7 @@ export function NotificationBell() {
 
       <PopoverContent side="right" align="start" className="w-80 gap-0 p-0">
         <div className="flex items-center justify-between border-b px-4 py-2.5">
-          <span className="text-sm font-semibold text-slate-900">Notifications</span>
+          <span className="text-sm font-semibold text-foreground">Notifications</span>
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
@@ -118,7 +118,7 @@ export function NotificationBell() {
 
         <div className="max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm text-slate-400">
+            <div className="px-4 py-8 text-center text-sm text-muted-foreground">
               Aucune notification
             </div>
           ) : (
@@ -126,7 +126,7 @@ export function NotificationBell() {
               <button
                 key={n.id}
                 onClick={() => handleClick(n)}
-                className={`w-full border-b px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50 ${
+                className={`w-full border-b px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-muted ${
                   !n.read ? 'bg-blue-50/50' : ''
                 }`}
               >
@@ -135,9 +135,9 @@ export function NotificationBell() {
                     <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-900">{n.title}</p>
-                    <p className="mt-0.5 truncate text-xs text-slate-500">{n.message}</p>
-                    <p className="mt-1 text-[11px] text-slate-400">{timeAgo(n.createdAt)}</p>
+                    <p className="text-sm font-medium text-foreground">{n.title}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{n.message}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{timeAgo(n.createdAt)}</p>
                   </div>
                 </div>
               </button>

@@ -29,7 +29,7 @@ export function ContractPhotoLink({ billboardId, billboardReference }: { billboa
     <>
       <button
         onClick={handleOpen}
-        className="text-sm font-medium text-blue-700 hover:underline"
+        className="text-sm font-medium text-primary hover:underline"
       >
         Voir photo
       </button>
@@ -39,7 +39,7 @@ export function ContractPhotoLink({ billboardId, billboardReference }: { billboa
             <DialogTitle>Photos — {billboardReference}</DialogTitle>
           </DialogHeader>
           {loading ? (
-            <p className="text-sm text-slate-500">Chargement…</p>
+            <p className="text-sm text-muted-foreground">Chargement…</p>
           ) : (
             <PhotoGallery billboardId={billboardId} photos={photos} />
           )}

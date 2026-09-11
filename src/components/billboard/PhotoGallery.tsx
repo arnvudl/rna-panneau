@@ -72,7 +72,7 @@ export function PhotoGallery({
     return (
       <div className="space-y-2">
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-slate-50 text-slate-400">
+        <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-muted/40 text-muted-foreground">
           <ImageOff className="h-10 w-10" />
           <p className="text-sm font-medium">Aucune photo</p>
           <Button

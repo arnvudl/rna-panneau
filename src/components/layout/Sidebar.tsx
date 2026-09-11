@@ -78,7 +78,7 @@ function NavItem({
         'flex h-10 items-center gap-3 rounded-r-md border-l-4 px-3 text-sm font-medium transition-colors',
         active
           ? 'border-l-primary bg-primary/5 text-primary'
-          : 'border-l-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+          : 'border-l-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
     >
       <Icon className="h-5 w-5 shrink-0" />
@@ -122,7 +122,7 @@ export function Sidebar() {
     <TooltipProvider>
       <aside
         className={cn(
-          'flex h-screen shrink-0 flex-col border-r bg-white shadow-sm transition-all duration-200',
+          'flex h-screen shrink-0 flex-col border-r bg-card transition-all duration-200',
           collapsed ? 'w-16' : 'w-56'
         )}
       >
@@ -133,7 +133,7 @@ export function Sidebar() {
           <button
             onClick={toggle}
             aria-label={collapsed ? 'Développer le menu' : 'Réduire le menu'}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
           </button>
@@ -157,7 +157,7 @@ export function Sidebar() {
             {status === 'authenticated' && (
               <div
                 className={cn(
-                  'flex h-10 items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-slate-500'
+                  'flex h-10 items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-muted-foreground'
                 )}
               >
                 {collapsed ? (
@@ -198,7 +198,7 @@ export function Sidebar() {
                   <Tooltip>
                     <TooltipTrigger
                       render={
-                        <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-slate-500 transition-colors outline-none hover:bg-slate-100 hover:text-slate-900">
+                        <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground">
                           <User className="h-5 w-5 shrink-0" />
                         </DropdownMenuTrigger>
                       }
@@ -206,7 +206,7 @@ export function Sidebar() {
                     <TooltipContent side="right">Mon Compte</TooltipContent>
                   </Tooltip>
                 ) : (
-                  <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-slate-500 transition-colors outline-none hover:bg-slate-100 hover:text-slate-900">
+                  <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground">
                     <User className="h-5 w-5 shrink-0" />
                     <span className="truncate">Mon Compte</span>
                   </DropdownMenuTrigger>
@@ -214,7 +214,7 @@ export function Sidebar() {
                 <DropdownMenuContent side="right" align="end">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel className="flex flex-col gap-0.5 py-1.5">
-                      <span className="truncate text-sm font-medium text-slate-900">
+                      <span className="truncate text-sm font-medium text-foreground">
                         {session?.user?.email ?? 'Compte'}
                       </span>
                       <span className="text-xs font-normal text-muted-foreground">

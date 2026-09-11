@@ -35,9 +35,9 @@ export function ExportParkPdfButton({ filters }: { filters: Filters }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-50 mt-1 w-56 rounded-md border bg-white py-1 shadow-lg">
+          <div className="absolute right-0 z-50 mt-1 w-56 rounded-md bg-popover py-1 ring-1 ring-foreground/10 shadow-lg">
             <button
-              className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
+              className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
               onClick={() => {
                 window.open(`/api/billboards/pdf?${buildQuery({ mode: 'summary' }, filters)}`, '_blank')
                 setOpen(false)
@@ -46,7 +46,7 @@ export function ExportParkPdfButton({ filters }: { filters: Filters }) {
               PDF — Récapitulatif (tableau)
             </button>
             <button
-              className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
+              className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
               onClick={() => {
                 window.open(`/api/billboards/pdf?${buildQuery({ mode: 'full' }, filters)}`, '_blank')
                 setOpen(false)
@@ -56,7 +56,7 @@ export function ExportParkPdfButton({ filters }: { filters: Filters }) {
             </button>
             <div className="my-1 border-t" />
             <button
-              className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
+              className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
               onClick={() => {
                 downloadFile(`/api/billboards/xlsx?${buildQuery({}, filters)}`)
                 setOpen(false)

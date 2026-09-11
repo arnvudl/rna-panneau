@@ -190,7 +190,7 @@ export function BillboardForm(props: BillboardFormProps) {
           </div>
 
           {mode === 'edit' && !geoFallback && (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               {props.billboard.regionName} — {props.billboard.districtName}
             </p>
           )}
@@ -271,7 +271,7 @@ export function BillboardForm(props: BillboardFormProps) {
           <div className="space-y-1">
             <Label>Note</Label>
             <textarea
-              className="w-full rounded-md border border-slate-200 p-2 text-sm"
+              className="w-full rounded-md border border-border p-2 text-sm"
               rows={3}
               maxLength={2000}
               value={note}

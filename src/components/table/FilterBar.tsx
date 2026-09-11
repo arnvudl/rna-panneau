@@ -20,7 +20,7 @@ const STATUSES: BillboardStatus[] = ['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EX
 const DIMENSIONS = ['D2X1', 'D4X3', 'D6X3', 'D8X3', 'D12X3']
 
 const selectClass =
-  'h-9 flex-1 min-w-[95px] rounded-md border border-slate-200 bg-white px-3 pr-8 text-sm text-slate-700 shadow-sm outline-none transition-colors hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer bg-[url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27none%27%20stroke%3D%27%2394a3b8%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M4%206l4%204%204-4%27/%3E%3C/svg%3E")] bg-[length:16px] bg-[right_8px_center] bg-no-repeat'
+  'h-9 flex-1 min-w-[95px] rounded-md border border-border bg-card px-3 pr-8 text-sm text-foreground outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer bg-[url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27none%27%20stroke%3D%27%2394a3b8%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M4%206l4%204%204-4%27/%3E%3C/svg%3E")] bg-[length:16px] bg-[right_8px_center] bg-no-repeat'
 
 export function FilterBar({ filters, onChange, className }: { filters: Filters; onChange: (f: Filters) => void; className?: string }) {
   const [clients, setClients] = useState<{ id: string; name: string }[]>([])
@@ -49,7 +49,7 @@ export function FilterBar({ filters, onChange, className }: { filters: Filters; 
   const hasActiveFilters = Object.values(filters).some((v) => v !== undefined)
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-2 border-b bg-slate-50/50 px-4 py-3 sm:px-6 sm:py-4", className)}>
+    <div className={cn("flex flex-wrap items-center gap-2 border-b bg-muted/40 px-4 py-3 sm:px-6 sm:py-4", className)}>
       <select
         className={selectClass}
         value={filters.regionId ?? ''}
@@ -123,7 +123,7 @@ export function FilterBar({ filters, onChange, className }: { filters: Filters; 
           onClick={() => onChange({})}
           title="Supprimer tous les filtres"
           aria-label="Supprimer tous les filtres"
-          className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-600"
         >
           <Trash2 className="h-4 w-4" />
         </button>

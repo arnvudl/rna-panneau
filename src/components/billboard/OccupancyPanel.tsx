@@ -50,10 +50,10 @@ function OccupancyCard({ occupancy }: { occupancy: OccupancyPanelOccupancy }) {
   return (
     <div className="space-y-2 rounded-lg border p-4">
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <p className="text-xs font-semibold uppercase text-slate-400">{FACE_LABELS[occupancy.face]}</p>
+      <p className="text-xs font-medium text-muted-foreground">{FACE_LABELS[occupancy.face]}</p>
       <p className="font-medium">{occupancy.client.name}</p>
-      {occupancy.numero && <p className="text-sm text-slate-600">Contrat : {occupancy.numero}</p>}
-      <p className="text-sm text-slate-600">
+      {occupancy.numero && <p className="text-sm text-muted-foreground">Contrat : {occupancy.numero}</p>}
+      <p className="text-sm text-muted-foreground">
         {occupancy.endDate ? `Jusqu'au ${occupancy.endDate.toLocaleDateString('fr-FR')}` : 'Durée indéterminée'}
       </p>
       <Button variant="outline" onClick={terminate} disabled={terminating}>
@@ -82,7 +82,7 @@ export function OccupancyPanel({
 
   return (
     <div className="space-y-3">
-      {occupancies.length === 0 && <p className="text-sm text-slate-500">Aucun contrat en cours.</p>}
+      {occupancies.length === 0 && <p className="text-sm text-muted-foreground">Aucun contrat en cours.</p>}
       {occupancies.map((o) => <OccupancyCard key={o.id} occupancy={o} />)}
       {availableFaces.length > 0 && (
         <Button onClick={() => setFormOpen(true)}>+ Nouveau contrat</Button>

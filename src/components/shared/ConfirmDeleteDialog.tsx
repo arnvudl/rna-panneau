@@ -48,7 +48,7 @@ export function ConfirmDeleteDialog({
         <DialogHeader><DialogTitle>Supprimer {entityLabel}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             Cette action est irréversible. Pour confirmer, tapez exactement <strong>{entityName}</strong> ci-dessous.
           </p>
           <div className="space-y-1">

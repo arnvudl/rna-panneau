@@ -77,12 +77,12 @@ function PayloadSummary({
     })
     if (changed.length === 0) return null
     return (
-      <ul className="mt-1 space-y-0.5 text-xs text-slate-500">
+      <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
         {changed.map(([key, value]) => (
           <li key={key}>
             <span className="font-medium">{PAYLOAD_LABELS[key] ?? key}:</span>{' '}
             <span className="line-through">{formatFieldValue(before[key])}</span>{' '}
-            → <span className="font-medium text-slate-700">{formatFieldValue(value)}</span>
+            → <span className="font-medium text-foreground">{formatFieldValue(value)}</span>
           </li>
         ))}
       </ul>
@@ -90,7 +90,7 @@ function PayloadSummary({
   }
 
   return (
-    <ul className="mt-1 space-y-0.5 text-xs text-slate-500">
+    <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
       {entries.map(([key, value]) => {
         const resolved = resolvedNames?.[key]
         const display = resolved ?? formatFieldValue(value)
@@ -154,20 +154,20 @@ export function ApprovalQueue() {
     }
   }
 
-  if (loading) return <p className="text-sm text-slate-500">Chargement…</p>
+  if (loading) return <p className="text-sm text-muted-foreground">Chargement…</p>
 
   return (
     <div className="space-y-2">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
       {approvals.length === 0 ? (
-        <p className="text-sm text-slate-500">Aucune demande en attente.</p>
+        <p className="text-sm text-muted-foreground">Aucune demande en attente.</p>
       ) : (
         <ul className="space-y-2">
           {approvals.map((a) => (
-            <li key={a.id} className="flex items-center justify-between rounded-lg border p-3">
+            <li key={a.id} className="flex items-center justify-between rounded-xl bg-card p-4 ring-1 ring-foreground/10">
               <div>
                 <p className="font-medium">{APPROVAL_LABELS[a.type as ApprovalType] ?? a.type}</p>
-                <p className="text-sm text-slate-500">Demandé par {a.requestedBy.email}</p>
+                <p className="text-sm text-muted-foreground">Demandé par {a.requestedBy.email}</p>
                 <PayloadSummary payload={a.payload} resolvedNames={a.resolvedNames} before={a.before} />
               </div>
               <div className="flex gap-2">

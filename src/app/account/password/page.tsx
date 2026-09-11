@@ -53,8 +53,8 @@ export default function ChangePasswordPage() {
   return (
     <div className="mx-auto max-w-md space-y-6 p-8">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Changer le mot de passe</h1>
-        <p className="mt-1 text-sm text-slate-500">Modifiez votre mot de passe de connexion.</p>
+        <h1 className="text-2xl font-semibold text-foreground">Changer le mot de passe</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Modifiez votre mot de passe de connexion.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

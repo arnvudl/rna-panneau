@@ -30,14 +30,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-background">
       {/* Left side - Form */}
       <div className="flex w-full flex-col justify-center px-8 sm:px-12 md:w-1/2 lg:w-1/3 xl:px-24">
         <div className="mx-auto w-full max-w-sm space-y-8">
           <div>
             <img src="/logo.png" alt="RNA" className="mx-auto h-14 w-auto" />
-            <h2 className="mt-6 text-2xl font-semibold text-slate-900">Bienvenue</h2>
-            <p className="mt-2 text-sm text-slate-500">
+            <h2 className="mt-6 text-2xl font-semibold text-foreground">Bienvenue</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
               Veuillez entrer vos identifiants pour accéder au dashboard.
             </p>
           </div>
@@ -45,16 +45,16 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="font-medium text-slate-700">Email</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 shadow-sm" />
+                <Label htmlFor="email" className="font-medium text-foreground">Email</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="font-medium text-slate-700">Mot de passe</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 shadow-sm" />
+                <Label htmlFor="password" className="font-medium text-foreground">Mot de passe</Label>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11" />
               </div>
             </div>
             
-            {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
             
             <Button
               type="submit"
@@ -72,10 +72,10 @@ export default function LoginPage() {
       <div className="hidden md:block md:w-1/2 lg:w-2/3">
         <div className="flex h-full items-center justify-center bg-primary p-12 lg:p-24">
           <div className="w-full max-w-lg space-y-6 text-white">
-            <h2 className="text-4xl font-bold leading-tight">
+            <h2 className="text-2xl font-semibold leading-tight">
               Gérez votre parc en toute simplicité.
             </h2>
-            <p className="text-lg text-primary-foreground/80">
+            <p className="text-sm text-primary-foreground/80">
               Plateforme centralisée pour suivre vos contrats, l&apos;état de vos infrastructures et vos clients en temps réel.
             </p>
           </div>

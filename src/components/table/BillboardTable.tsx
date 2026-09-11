@@ -38,9 +38,9 @@ export function BillboardTable({
 
   if (rows.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-1 p-8 text-center text-slate-500">
+      <div className="flex h-full flex-col items-center justify-center gap-1 p-8 text-center text-muted-foreground">
         <p className="text-sm font-medium">Aucun panneau ne correspond à ces filtres.</p>
-        <p className="text-xs text-slate-400">Essayez d&apos;ajuster vos critères de recherche.</p>
+        <p className="text-xs text-muted-foreground">Essayez d&apos;ajuster vos critères de recherche.</p>
       </div>
     )
   }
@@ -74,7 +74,7 @@ export function BillboardTable({
           <TableRow
             key={r.id}
             onClick={() => onSelect(r.id)}
-            className={`cursor-pointer transition-all hover:bg-slate-50/80 ${
+            className={`cursor-pointer transition-all hover:bg-muted/80 ${
               selectedId === r.id ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'
             }`}
           >
@@ -88,7 +88,7 @@ export function BillboardTable({
                 />
               </TableCell>
             )}
-            <TableCell className="font-semibold text-slate-700 pl-4">{r.reference}</TableCell>
+            <TableCell className="font-medium text-foreground pl-4">{r.reference}</TableCell>
             <TableCell>{r.regionName}</TableCell>
             <TableCell>{r.districtName}</TableCell>
             <TableCell>{r.communeName ?? '—'}</TableCell>

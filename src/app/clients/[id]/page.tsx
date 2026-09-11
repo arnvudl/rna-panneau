@@ -24,28 +24,28 @@ export default async function ClientPage({ params }: { params: { id: string } })
       />
       <div className="mx-auto max-w-2xl space-y-4 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{client.name}</h1>
+        <h1 className="text-2xl font-semibold text-foreground">{client.name}</h1>
         <ClientDetailActions client={{ id: client.id, name: client.name, phone: client.phone, email: client.email }} />
       </div>
-      <p className="text-slate-600">{formatContactInfo(client.phone, client.email)}</p>
-      <h2 className="text-lg font-medium">Historique des contrats</h2>
+      <p className="text-muted-foreground">{formatContactInfo(client.phone, client.email)}</p>
+      <h2 className="text-base font-medium text-foreground">Historique des contrats</h2>
       <ul className="space-y-2">
         {client.contrats.map((o) => (
-          <li key={o.id} className="rounded-lg border p-3">
+          <li key={o.id} className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
             <div className="flex items-center justify-between">
-              <Link href={`/billboards/${o.billboardId}`} className="font-medium text-blue-700">
+              <Link href={`/billboards/${o.billboardId}`} className="font-medium text-primary">
                 {o.billboard.reference}
               </Link>
               <ContractPhotoLink billboardId={o.billboardId} billboardReference={o.billboard.reference} />
             </div>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted-foreground">
               {o.numero ? `Contrat : ${o.numero}` : 'Sans référence'}
               {o.dateFin ? ` — jusqu'au ${new Date(o.dateFin).toLocaleDateString('fr-FR')}` : ' — durée indéterminée'}
             </p>
           </li>
         ))}
         {client.contrats.length === 0 && (
-          <li className="text-sm text-slate-500">Aucun contrat</li>
+          <li className="text-sm text-muted-foreground">Aucun contrat</li>
         )}
       </ul>
       </div>

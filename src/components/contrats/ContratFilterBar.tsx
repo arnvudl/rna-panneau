@@ -94,7 +94,7 @@ export function ContratFilterBar({
         placeholder="Rechercher un numéro ou un client…"
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="w-56 bg-white shadow-sm"
+        className="w-56 bg-card"
       />
 
       <Select
@@ -104,7 +104,7 @@ export function ContratFilterBar({
           onFiltersChange({ ...filters, clientId: v && v !== ALL ? v : undefined })
         }
       >
-        <SelectTrigger className="w-auto min-w-32 shrink-0 bg-white shadow-sm"><SelectValue placeholder="Tous les clients" /></SelectTrigger>
+        <SelectTrigger className="w-auto min-w-32 shrink-0 bg-card"><SelectValue placeholder="Tous les clients" /></SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>Tous les clients</SelectItem>
           {clients.map((c) => (
@@ -125,7 +125,7 @@ export function ContratFilterBar({
           })
         }
       >
-        <SelectTrigger className="w-auto min-w-32 shrink-0 bg-white shadow-sm"><SelectValue placeholder="Toutes les régions" /></SelectTrigger>
+        <SelectTrigger className="w-auto min-w-32 shrink-0 bg-card"><SelectValue placeholder="Toutes les régions" /></SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>Toutes les régions</SelectItem>
           {regions.map((r) => (
@@ -141,7 +141,7 @@ export function ContratFilterBar({
           onFiltersChange({ ...filters, districtId: v && v !== ALL ? v : undefined, communeId: undefined })
         }
       >
-        <SelectTrigger className="w-auto min-w-32 shrink-0 bg-white shadow-sm"><SelectValue placeholder="Tous les districts" /></SelectTrigger>
+        <SelectTrigger className="w-auto min-w-32 shrink-0 bg-card"><SelectValue placeholder="Tous les districts" /></SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>Tous les districts</SelectItem>
           {districts.map((d) => (
@@ -157,7 +157,7 @@ export function ContratFilterBar({
           onFiltersChange({ ...filters, communeId: v && v !== ALL ? v : undefined })
         }
       >
-        <SelectTrigger className="w-auto min-w-32 shrink-0 bg-white shadow-sm"><SelectValue placeholder="Toutes les communes" /></SelectTrigger>
+        <SelectTrigger className="w-auto min-w-32 shrink-0 bg-card"><SelectValue placeholder="Toutes les communes" /></SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>Toutes les communes</SelectItem>
           {communes.map((c) => (

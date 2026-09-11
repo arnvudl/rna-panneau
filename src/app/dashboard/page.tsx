@@ -17,55 +17,55 @@ export default async function DashboardPage() {
   const expiringSoon = withStatus.filter((b) => b.status === 'EXPIRING_SOON').length
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-background">
       <Breadcrumbs segments={[{ label: 'Accueil', href: '/dashboard' }, { label: 'Tableau de bord' }]} />
       <div className="flex flex-1 flex-col gap-6 p-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Tableau de bord</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Tableau de bord</h1>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          <Card className="rounded-xl border-slate-200 bg-white p-0 shadow-sm transition-shadow hover:shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-              <CardTitle className="text-sm font-semibold tracking-wider text-slate-500 uppercase">Disponibles</CardTitle>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Disponibles</CardTitle>
               <div className="rounded-full bg-emerald-100 p-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               </div>
             </CardHeader>
-            <CardContent className="px-6 pb-6 pt-0">
-              <span className="text-4xl font-bold text-slate-900">{available}</span>
+            <CardContent>
+              <span className="text-2xl font-semibold text-foreground">{available}</span>
             </CardContent>
           </Card>
 
-          <Card className="rounded-xl border-slate-200 bg-white p-0 shadow-sm transition-shadow hover:shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-              <CardTitle className="text-sm font-semibold tracking-wider text-slate-500 uppercase">En Location</CardTitle>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xs font-medium text-muted-foreground">En Location</CardTitle>
               <div className="rounded-full bg-blue-100 p-2">
                 <KeyRound className="h-4 w-4 text-blue-600" />
               </div>
             </CardHeader>
-            <CardContent className="px-6 pb-6 pt-0">
-              <span className="text-4xl font-bold text-slate-900">{rented}</span>
+            <CardContent>
+              <span className="text-2xl font-semibold text-foreground">{rented}</span>
             </CardContent>
           </Card>
 
-          <Card className="rounded-xl border-slate-200 bg-white p-0 shadow-sm transition-shadow hover:shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-              <CardTitle className="text-sm font-semibold tracking-wider text-slate-500 uppercase">Expirent Bientôt</CardTitle>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Expirent Bientôt</CardTitle>
               <div className="rounded-full bg-orange-100 p-2">
                 <Clock3 className="h-4 w-4 text-orange-600" />
               </div>
             </CardHeader>
-            <CardContent className="px-6 pb-6 pt-0">
-              <span className="text-4xl font-bold text-slate-900">{expiringSoon}</span>
+            <CardContent>
+              <span className="text-2xl font-semibold text-foreground">{expiringSoon}</span>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="overflow-hidden rounded-xl border-slate-200 bg-white p-0 shadow-sm">
-          <CardHeader className="border-b bg-slate-50/50 p-6">
-            <CardTitle className="text-lg font-semibold text-slate-800">Demandes d&apos;approbation en attente</CardTitle>
+        <Card>
+          <CardHeader className="border-b">
+            <CardTitle className="text-base font-medium text-foreground">Demandes d&apos;approbation en attente</CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent>
             <ApprovalQueue />
           </CardContent>
         </Card>

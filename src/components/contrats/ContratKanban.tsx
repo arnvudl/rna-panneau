@@ -193,7 +193,7 @@ export function ContratKanban() {
     }
   }
 
-  if (loading) return <p className="p-6 text-sm text-slate-500">Chargement des contrats…</p>
+  if (loading) return <p className="p-6 text-sm text-muted-foreground">Chargement des contrats…</p>
   if (error) return <p className="p-6 text-sm text-red-600">{error}</p>
 
   return (

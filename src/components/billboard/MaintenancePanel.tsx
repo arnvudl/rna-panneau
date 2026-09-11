@@ -50,7 +50,7 @@ export function MaintenancePanel({
   return (
     <div className="space-y-4">
       {records.length === 0 ? (
-        <p className="text-sm text-slate-500">Aucune intervention.</p>
+        <p className="text-sm text-muted-foreground">Aucune intervention.</p>
       ) : (
         <ul className="space-y-2">
           {records.map((r) => (

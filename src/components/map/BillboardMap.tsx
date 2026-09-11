@@ -74,7 +74,7 @@ export function BillboardMap({
       </Map>
       <button
         onClick={() => setSatellite((s) => !s)}
-        className="absolute right-3 top-3 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-md transition-colors hover:bg-slate-50"
+        className="absolute right-3 top-3 rounded-md bg-card px-3 py-1.5 text-sm font-medium text-foreground ring-1 ring-foreground/10 transition-colors hover:bg-muted"
       >
         {satellite ? 'Vue plan' : 'Vue satellite'}
       </button>
