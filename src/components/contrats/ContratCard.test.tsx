@@ -56,6 +56,14 @@ describe('ContratCard delete affordance', () => {
     vi.restoreAllMocks()
   })
 
+  it('uses a flat tonal ring (not a shadow) on the resting card, per DESIGN.md\'s Flat-Content rule', () => {
+    const { container } = render(<ContratCard contrat={baseContrat} pending={false} />)
+    const card = container.querySelector('[data-slot="card"]')
+    expect(card).not.toBeNull()
+    expect(card).toHaveClass('ring-1', 'ring-foreground/10')
+    expect(card?.className).not.toMatch(/shadow-sm/)
+  })
+
   it('renders the delete button for a DRAFT contrat', () => {
     render(<ContratCard contrat={baseContrat} pending={false} />)
     expect(screen.getByText('Supprimer')).toBeInTheDocument()
@@ -96,6 +104,55 @@ describe('ContratCard delete affordance', () => {
       expect(globalThis.fetch).toHaveBeenCalledWith('/api/contrats/c1', { method: 'DELETE' })
       expect(onDeleted).toHaveBeenCalledWith('c1')
     })
+  })
+
+  it('shows the "Échéance proche" badge for an ACTIVE contrat expiring within the window', () => {
+    const soon = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+    render(
+      <ContratCard contrat={{ ...baseContrat, statut: 'ACTIVE', dateFin: soon }} pending={false} />
+    )
+    expect(screen.getByText('Échéance proche')).toBeInTheDocument()
+  })
+
+  it('does not show the "Échéance proche" badge for an ACTIVE contrat with no dateFin', () => {
+    render(<ContratCard contrat={{ ...baseContrat, statut: 'ACTIVE', dateFin: null }} pending={false} />)
+    expect(screen.queryByText('Échéance proche')).not.toBeInTheDocument()
+  })
+
+  it('does not show the "Échéance proche" badge for an ACTIVE contrat expiring far in the future', () => {
+    const far = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+    render(
+      <ContratCard contrat={{ ...baseContrat, statut: 'ACTIVE', dateFin: far }} pending={false} />
+    )
+    expect(screen.queryByText('Échéance proche')).not.toBeInTheDocument()
+  })
+
+  it('does not show the "Échéance proche" badge for a non-ACTIVE contrat, even with a near dateFin', () => {
+    const soon = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+    render(
+      <ContratCard contrat={{ ...baseContrat, statut: 'SIGNED', dateFin: soon }} pending={false} />
+    )
+    expect(screen.queryByText('Échéance proche')).not.toBeInTheDocument()
+  })
+
+  it('renders long client name/billboard reference text with a tooltip so the truncated full value can still be read', async () => {
+    const longContrat: KanbanContrat = {
+      ...baseContrat,
+      client: { id: 'cl1', name: 'Société Anonyme Internationale de Distribution et Logistique' },
+      billboard: { id: 'b1', reference: 'PAN-MADAGASCAR-ANTANANARIVO-2026-000123456789' },
+    }
+    render(<ContratCard contrat={longContrat} pending={false} />)
+    // Confirms the truncation this fix is meant to compensate for: both
+    // lines are visually clipped (CSS `truncate`), so recovering the full
+    // value requires the Tooltip wrapping added below them.
+    const clientNode = screen.getByText(longContrat.client.name)
+    const billboardNode = screen.getByText(longContrat.billboard.reference)
+    expect(clientNode).toHaveClass('truncate')
+    expect(billboardNode).toHaveClass('truncate')
+    // Each is wrapped in a Tooltip trigger, so the full value is still
+    // reachable (via hover) rather than lost.
+    expect(clientNode.closest('[data-slot="tooltip-trigger"]')).not.toBeNull()
+    expect(billboardNode.closest('[data-slot="tooltip-trigger"]')).not.toBeNull()
   })
 
   it('shows an error toast and keeps the card when the DELETE call fails', async () => {

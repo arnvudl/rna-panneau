@@ -5,7 +5,10 @@ export type BillboardStatus =
   | 'EXPIRED'
   | 'MAINTENANCE'
 
-const EXPIRING_SOON_WINDOW_DAYS = 30
+// Exported so other "near-term expiration" checks (e.g. the Contrat Kanban
+// card's expiry badge in status-labels.ts) reuse the same lead time instead
+// of hard-coding their own 30.
+export const EXPIRING_SOON_WINDOW_DAYS = 30
 // Most urgent first: an EXPIRED face outranks a RENTED one on the same billboard.
 const STATUS_PRIORITY: Array<'EXPIRED' | 'EXPIRING_SOON' | 'RENTED'> = [
   'EXPIRED',

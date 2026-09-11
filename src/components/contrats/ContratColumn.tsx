@@ -5,7 +5,7 @@ import { ContratCard, type KanbanContrat } from '@/components/contrats/ContratCa
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { ContratStatusValue } from '@/lib/contrat-schema'
-import { CONTRAT_STATUS_STYLES } from '@/lib/status-labels'
+import { CONTRAT_STATUS_STYLES, CONTRAT_COLUMN_MUTED_TEXT } from '@/lib/status-labels'
 
 export function ContratColumn({
   status,
@@ -54,7 +54,9 @@ export function ContratColumn({
             onDeleted={onDeleted}
           />
         ))}
-        {contrats.length === 0 && <p className="px-1 text-xs text-muted-foreground">Aucun contrat</p>}
+        {contrats.length === 0 && (
+          <p className={cn('px-1 text-xs', CONTRAT_COLUMN_MUTED_TEXT[status])}>Aucun contrat</p>
+        )}
       </div>
     </div>
   )

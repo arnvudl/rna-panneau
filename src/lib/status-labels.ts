@@ -1,4 +1,6 @@
 import type { BillboardStatus } from '@/lib/status'
+import { EXPIRING_SOON_WINDOW_DAYS } from '@/lib/status'
+import type { ContratStatusValue } from '@/lib/contrat-schema'
 
 export const STATUS_LABELS: Record<BillboardStatus, string> = {
   AVAILABLE: 'Disponible',
@@ -65,4 +67,45 @@ export const CONTRAT_STATUS_STYLES: Record<
   ACTIVE: { badgeVariant: 'available', columnBg: 'bg-emerald-50', headerDot: 'bg-emerald-500', cardAccent: 'border-l-emerald-500' },
   ENDED: { badgeVariant: 'maintenance', columnBg: 'bg-slate-100', headerDot: 'bg-slate-600', cardAccent: 'border-l-slate-600' },
   CANCELLED: { badgeVariant: 'destructive', columnBg: 'bg-red-50', headerDot: 'bg-red-500', cardAccent: 'border-l-red-500' },
+}
+
+// text-muted-foreground (#64748b) reads at ~4.35:1 on the CANCELLED column's
+// bg-red-50 tint — just under WCAG AA's 4.5:1 minimum for body text. Every
+// other column tint stays legible with the shared muted-foreground token, so
+// only the CANCELLED column gets a darker, status-specific override here
+// (mirroring the danger-text color badge.tsx's own destructive variant
+// already uses) rather than darkening muted-foreground globally.
+export const CONTRAT_COLUMN_MUTED_TEXT: Record<'DRAFT' | 'SIGNED' | 'ACTIVE' | 'ENDED' | 'CANCELLED', string> = {
+  DRAFT: 'text-muted-foreground',
+  SIGNED: 'text-muted-foreground',
+  ACTIVE: 'text-muted-foreground',
+  ENDED: 'text-muted-foreground',
+  CANCELLED: 'text-red-700',
+}
+
+// Lead time (in days) before an ACTIVE contrat's dateFin at which its Kanban
+// card surfaces a Watch-Orange "expiring soon" badge. Reuses the same
+// EXPIRING_SOON_WINDOW_DAYS constant status.ts already uses for billboard
+// face status, rather than introducing a second, possibly-diverging lead
+// time for the same underlying concept.
+export const CONTRAT_EXPIRING_SOON_WINDOW_DAYS = EXPIRING_SOON_WINDOW_DAYS
+
+/**
+ * Whether a Contrat's card should show the "expiring soon" badge: it must be
+ * ACTIVE, have a dateFin (open-ended contrats never trigger it), and that
+ * dateFin must fall within the next CONTRAT_EXPIRING_SOON_WINDOW_DAYS days
+ * (not already past — an overdue ACTIVE contrat is a data anomaly outside
+ * this fix's scope, not a "coming up soon" signal). Kept pure/exported so
+ * the date-window logic is unit-testable without mounting ContratCard.
+ */
+export function isContratExpiringSoon(
+  contrat: { statut: ContratStatusValue; dateFin: string | Date | null },
+  now: Date = new Date()
+): boolean {
+  if (contrat.statut !== 'ACTIVE') return false
+  if (!contrat.dateFin) return false
+  const end = contrat.dateFin instanceof Date ? contrat.dateFin : new Date(contrat.dateFin)
+  if (Number.isNaN(end.getTime())) return false
+  const daysUntilEnd = (end.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
+  return daysUntilEnd >= 0 && daysUntilEnd <= CONTRAT_EXPIRING_SOON_WINDOW_DAYS
 }

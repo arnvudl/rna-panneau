@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { CONTRAT_STATUS_STYLES, FACE_LABELS } from '@/lib/status-labels'
+import { CONTRAT_STATUS_STYLES, FACE_LABELS, isContratExpiringSoon } from '@/lib/status-labels'
 import type { ContratStatusValue } from '@/lib/contrat-schema'
 
 export type KanbanContrat = {
@@ -100,6 +100,7 @@ export function ContratCard({
   const dateFin = formatDate(contrat.dateFin)
   const accent = CONTRAT_STATUS_STYLES[contrat.statut].cardAccent
   const dateRangeLabel = dateDebut || dateFin ? `${dateDebut ?? '?'} → ${dateFin ?? 'indéterminée'}` : null
+  const expiringSoon = isContratExpiringSoon(contrat)
 
   return (
     <Card
@@ -109,28 +110,41 @@ export function ContratCard({
       {...attributes}
       size="sm"
       className={cn(
-        'gap-1 border-l-4 shadow-sm transition-opacity',
+        'gap-1 border-l-4 ring-1 ring-foreground/10 transition-opacity',
         accent,
         isDragging && 'opacity-50',
         pending ? 'cursor-wait opacity-60' : 'cursor-grab active:cursor-grabbing'
       )}
     >
-      <CardContent className="space-y-2 text-sm">
+      <CardContent className="space-y-2 pl-4 text-sm">
         <div className="space-y-0.5">
           <p className="text-base font-bold leading-tight text-card-foreground">{contrat.numero}</p>
-          <p className="truncate text-muted-foreground">{contrat.client.name}</p>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger render={<p className="truncate text-muted-foreground">{contrat.client.name}</p>} />
+              <TooltipContent>{contrat.client.name}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
-        <p className="truncate text-xs text-muted-foreground">{contrat.billboard.reference}</p>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger
+              render={<p className="truncate text-xs text-muted-foreground">{contrat.billboard.reference}</p>}
+            />
+            <TooltipContent>{contrat.billboard.reference}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <Badge variant="outline" className="font-normal text-muted-foreground">
             {FACE_LABELS[face]}
           </Badge>
           {dateRangeLabel && <span className="truncate">{dateRangeLabel}</span>}
         </div>
-        {(pending || pendingApproval) && (
+        {(pending || pendingApproval || expiringSoon) && (
           <div className="flex flex-wrap gap-1">
             {pending && <Badge variant="outline">Mise à jour…</Badge>}
             {pendingApproval && <Badge variant="expiring">En attente d&apos;approbation</Badge>}
+            {expiringSoon && <Badge variant="expiring">Échéance proche</Badge>}
           </div>
         )}
         {contrat.statut === 'DRAFT' && (
