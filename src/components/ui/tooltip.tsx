@@ -1,8 +1,12 @@
 "use client"
 
+import * as React from "react"
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 import { cn } from "@/lib/utils"
 
+// Tooltip.Provider and Tooltip.Root render no DOM element of their own (they
+// are context providers), so there is nothing for a ref to attach to and they
+// stay plain function components.
 function TooltipProvider({
   delay = 0,
   ...props
@@ -20,23 +24,41 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
   return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
 }
 
-function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
-}
+const TooltipTrigger = React.forwardRef<
+  HTMLButtonElement,
+  TooltipPrimitive.Trigger.Props
+>(function TooltipTrigger({ ...props }, ref) {
+  return (
+    <TooltipPrimitive.Trigger
+      ref={ref}
+      data-slot="tooltip-trigger"
+      {...props}
+    />
+  )
+})
+TooltipTrigger.displayName = "TooltipTrigger"
 
-function TooltipContent({
-  className,
-  side = "top",
-  sideOffset = 4,
-  align = "center",
-  alignOffset = 0,
-  children,
-  ...props
-}: TooltipPrimitive.Popup.Props &
-  Pick<
-    TooltipPrimitive.Positioner.Props,
-    "align" | "alignOffset" | "side" | "sideOffset"
-  >) {
+// The ref targets the popup, which is the element consumers measure or focus;
+// the Portal/Positioner wrappers around it are layout plumbing.
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Popup>,
+  TooltipPrimitive.Popup.Props &
+    Pick<
+      TooltipPrimitive.Positioner.Props,
+      "align" | "alignOffset" | "side" | "sideOffset"
+    >
+>(function TooltipContent(
+  {
+    className,
+    side = "top",
+    sideOffset = 4,
+    align = "center",
+    alignOffset = 0,
+    children,
+    ...props
+  },
+  ref
+) {
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Positioner
@@ -47,6 +69,7 @@ function TooltipContent({
         className="isolate z-50"
       >
         <TooltipPrimitive.Popup
+          ref={ref}
           data-slot="tooltip-content"
           className={cn(
             "z-50 inline-flex w-fit max-w-xs origin-[var(--transform-origin)] items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs text-background has-data-[slot=kbd]:pr-1.5 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [&_[data-slot=kbd]]:relative [&_[data-slot=kbd]]:isolate [&_[data-slot=kbd]]:z-50 [&_[data-slot=kbd]]:rounded-sm data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
@@ -60,6 +83,7 @@ function TooltipContent({
       </TooltipPrimitive.Positioner>
     </TooltipPrimitive.Portal>
   )
-}
+})
+TooltipContent.displayName = "TooltipContent"
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
