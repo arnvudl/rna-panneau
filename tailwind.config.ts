@@ -17,6 +17,10 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    // src/lib holds class strings too (status-labels.ts maps each status to its
+    // bg/text/accent classes). Without this glob those classes are purged and
+    // the Kanban renders with no status colours at all.
+    "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
