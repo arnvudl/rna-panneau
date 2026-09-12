@@ -295,6 +295,7 @@ Captured from the 2026-09-08 scoping meeting and later design-session feedback. 
 - Réglages : pouvoir ajouter un type d'impression directement depuis les paramètres (actuellement Éco-solvant/UV hardcodés), avec délai d'expiration paramétrable par type (6 mois éco-solvant, 1 an UV, doublé si laminé).
 - Vue "société globale" au-delà du parc de panneaux (KPIs financiers/opérationnels transverses), au-delà du dashboard actuel centré panneaux.
 - Automatisation avancée / IA (mentionné comme aspiration à terme, non cadré).
+- Rétention des notifications : garder tout l'historique ne sert à rien. Purge hebdomadaire automatique des notifications de plus d'une semaine, durée réglable dans les paramètres. (Aujourd'hui : aucune purge, la table `Notification` grossit indéfiniment.)
 
 ---
 
