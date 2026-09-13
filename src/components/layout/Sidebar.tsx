@@ -122,7 +122,11 @@ export function Sidebar() {
     <TooltipProvider>
       <aside
         className={cn(
-          'flex h-screen shrink-0 flex-col border-r bg-card transition-all duration-200',
+          // sticky, not just h-screen: a page taller than the viewport
+          // (e.g. the 23-row regions list) scrolls the whole document, and
+          // without sticky the sidebar — a normal flex child — scrolls away
+          // with it instead of staying put.
+          'sticky top-0 flex h-screen shrink-0 flex-col border-r bg-card transition-all duration-200',
           collapsed ? 'w-16' : 'w-56'
         )}
       >
