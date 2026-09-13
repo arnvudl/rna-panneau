@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { CONTRAT_STATUS_STYLES, FACE_LABELS, isContratExpiringSoon } from '@/lib/status-labels'
+import { FACE_LABELS, isContratExpiringSoon } from '@/lib/status-labels'
 import type { ContratStatusValue } from '@/lib/contrat-schema'
 
 export type KanbanContrat = {
@@ -98,7 +98,6 @@ export function ContratCard({
   const face = contrat.faces[0]?.face ?? 'BOTH'
   const dateDebut = formatDate(contrat.dateDebut)
   const dateFin = formatDate(contrat.dateFin)
-  const accent = CONTRAT_STATUS_STYLES[contrat.statut].cardAccent
   const dateRangeLabel = dateDebut || dateFin ? `${dateDebut ?? '?'} → ${dateFin ?? 'indéterminée'}` : null
   const expiringSoon = isContratExpiringSoon(contrat)
 
@@ -110,8 +109,7 @@ export function ContratCard({
       {...attributes}
       size="sm"
       className={cn(
-        'gap-1 border-l-4 ring-1 ring-foreground/10 transition-opacity',
-        accent,
+        'gap-1 ring-1 ring-foreground/10 transition-opacity',
         isDragging && 'opacity-50',
         pending ? 'cursor-wait opacity-60' : 'cursor-grab active:cursor-grabbing'
       )}

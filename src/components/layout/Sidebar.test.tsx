@@ -66,8 +66,9 @@ describe('Sidebar', () => {
     const active = container.querySelector('a[href="/database"]')
     const inactive = container.querySelector('a[href="/dashboard"]')
 
-    expect(active?.className).toContain('border-l-primary')
-    expect(inactive?.className).not.toContain('border-l-primary')
+    expect(active?.className).toContain('bg-primary/5')
+    expect(active?.className).toContain('text-primary')
+    expect(inactive?.className).not.toContain('bg-primary/5')
   })
 
   it('shows the Réglages link for a role with view_settings permission', () => {

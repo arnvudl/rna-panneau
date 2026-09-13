@@ -54,22 +54,26 @@ export const CONTRAT_STATUS_LABELS: Record<'DRAFT' | 'SIGNED' | 'ACTIVE' | 'ENDE
 }
 
 // Per-status visual language for the Contrat Kanban board: a faint column
-// tint, a header dot color, a card left-accent-bar color, and the column's
-// empty-state muted-text color.
+// tint, a header dot color, and the column's empty-state muted-text color.
 //
 // Every value here is drawn from the one Status Vocabulary (globals.css /
 // tailwind.config.ts) rather than from an ad hoc Tailwind palette step: the
-// column wash is the meaning's `-tint`, and the dot / accent bar / empty-state
-// text are its solid `-text`. Previously these were hand-picked `-50`/`-400`/
-// `-500`/`-600` steps that drifted from the badge colors sitting right next to
-// them in the same column header.
+// column wash is the meaning's `-tint`, and the dot / empty-state text are its
+// solid `-text`. Previously these were hand-picked `-50`/`-400`/`-500`/`-600`
+// steps that drifted from the badge colors sitting right next to them in the
+// same column header.
+//
+// A `cardAccent` field used to live here too (a `border-l-*` color for each
+// card's left accent bar), but DESIGN.md's No Side-Tabs Rule retired that
+// pattern: status on the card is now carried entirely by the column's own
+// tint, so there is nothing left for a per-status card class to do.
 //
 // mutedText is now the status's own `-text` everywhere rather than the shared
 // muted-foreground token: `-text` is the darkest half of each pair and clears
 // WCAG AA comfortably on that pair's own `-tint` wash, which also removes the
 // CANCELLED-only contrast exception the previous version needed.
 //
-// Keeping all five fields on one map (rather than parallel Records keyed by
+// Keeping all four fields on one map (rather than parallel Records keyed by
 // the same statuses) means a future status is added in exactly one place.
 export const CONTRAT_STATUS_STYLES: Record<
   'DRAFT' | 'SIGNED' | 'ACTIVE' | 'ENDED' | 'CANCELLED',
@@ -77,7 +81,6 @@ export const CONTRAT_STATUS_STYLES: Record<
     badgeVariant: 'maintenance' | 'rented' | 'available' | 'destructive'
     columnBg: string
     headerDot: string
-    cardAccent: string
     mutedText: string
   }
 > = {
@@ -86,11 +89,11 @@ export const CONTRAT_STATUS_STYLES: Record<
   // meaning. They used to differ by a half-step of slate (50 vs 100, 400 vs
   // 600), which implied a distinction the vocabulary does not make; the column
   // label and header dot position still tell them apart.
-  DRAFT: { badgeVariant: 'maintenance', columnBg: 'bg-status-dormant-tint', headerDot: 'bg-status-dormant-text', cardAccent: 'border-l-status-dormant-text', mutedText: 'text-status-dormant-text' },
-  SIGNED: { badgeVariant: 'rented', columnBg: 'bg-status-progress-tint', headerDot: 'bg-status-progress-text', cardAccent: 'border-l-status-progress-text', mutedText: 'text-status-progress-text' },
-  ACTIVE: { badgeVariant: 'available', columnBg: 'bg-status-ok-tint', headerDot: 'bg-status-ok-text', cardAccent: 'border-l-status-ok-text', mutedText: 'text-status-ok-text' },
-  ENDED: { badgeVariant: 'maintenance', columnBg: 'bg-status-dormant-tint', headerDot: 'bg-status-dormant-text', cardAccent: 'border-l-status-dormant-text', mutedText: 'text-status-dormant-text' },
-  CANCELLED: { badgeVariant: 'destructive', columnBg: 'bg-status-danger-tint', headerDot: 'bg-status-danger-text', cardAccent: 'border-l-status-danger-text', mutedText: 'text-status-danger-text' },
+  DRAFT: { badgeVariant: 'maintenance', columnBg: 'bg-status-dormant-tint', headerDot: 'bg-status-dormant-text', mutedText: 'text-status-dormant-text' },
+  SIGNED: { badgeVariant: 'rented', columnBg: 'bg-status-progress-tint', headerDot: 'bg-status-progress-text', mutedText: 'text-status-progress-text' },
+  ACTIVE: { badgeVariant: 'available', columnBg: 'bg-status-ok-tint', headerDot: 'bg-status-ok-text', mutedText: 'text-status-ok-text' },
+  ENDED: { badgeVariant: 'maintenance', columnBg: 'bg-status-dormant-tint', headerDot: 'bg-status-dormant-text', mutedText: 'text-status-dormant-text' },
+  CANCELLED: { badgeVariant: 'destructive', columnBg: 'bg-status-danger-tint', headerDot: 'bg-status-danger-text', mutedText: 'text-status-danger-text' },
 }
 
 // Lead time (in days) before an ACTIVE contrat's dateFin at which its Kanban

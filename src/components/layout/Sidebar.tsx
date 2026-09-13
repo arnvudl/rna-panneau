@@ -75,10 +75,10 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        'flex h-10 items-center gap-3 rounded-r-md border-l-4 px-3 text-sm font-medium transition-colors',
+        'flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
         active
-          ? 'border-l-primary bg-primary/5 text-primary'
-          : 'border-l-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
+          ? 'bg-primary/5 text-primary'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
     >
       <Icon className="h-5 w-5 shrink-0" />
@@ -157,7 +157,7 @@ export function Sidebar() {
             {status === 'authenticated' && (
               <div
                 className={cn(
-                  'flex h-10 items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-muted-foreground'
+                  'flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground'
                 )}
               >
                 {collapsed ? (
@@ -198,7 +198,7 @@ export function Sidebar() {
                   <Tooltip>
                     <TooltipTrigger
                       render={
-                        <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground">
+                        <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground">
                           <User className="h-5 w-5 shrink-0" />
                         </DropdownMenuTrigger>
                       }
@@ -206,7 +206,7 @@ export function Sidebar() {
                     <TooltipContent side="right">Mon Compte</TooltipContent>
                   </Tooltip>
                 ) : (
-                  <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-r-md border-l-4 border-l-transparent px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground">
+                  <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground">
                     <User className="h-5 w-5 shrink-0" />
                     <span className="truncate">Mon Compte</span>
                   </DropdownMenuTrigger>

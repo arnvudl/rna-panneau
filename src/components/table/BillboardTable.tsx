@@ -76,7 +76,7 @@ export function BillboardTable({
             key={r.id}
             onClick={() => onSelect(r.id)}
             className={`cursor-pointer transition-all hover:bg-muted/80 ${
-              selectedId === r.id ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'
+              selectedId === r.id ? 'bg-primary/5 hover:bg-primary/10' : ''
             }`}
           >
             {selectable && (
