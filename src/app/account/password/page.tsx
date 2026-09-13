@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { FormError } from '@/components/shared/FormError'
 import { PageShell } from '@/components/shared/PageShell'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState('')
@@ -65,31 +66,35 @@ export default function ChangePasswordPage() {
         ]}
         title="Changer le mot de passe"
       />
-      <p className="text-sm text-muted-foreground">Modifiez votre mot de passe de connexion.</p>
+      <Card className="max-w-md">
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">Modifiez votre mot de passe de connexion.</p>
 
-      <form onSubmit={handleSubmit} className="max-w-md space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="current">Mot de passe actuel</Label>
-          <Input id="current" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="new">Nouveau mot de passe</Label>
-          <Input id="new" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirm">Confirmer le nouveau mot de passe</Label>
-          <Input id="confirm" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-        </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="current">Mot de passe actuel</Label>
+              <Input id="current" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new">Nouveau mot de passe</Label>
+              <Input id="new" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm">Confirmer le nouveau mot de passe</Label>
+              <Input id="confirm" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+            </div>
 
-        <FormError>{error}</FormError>
-        {success && (
-          <p className="text-sm font-medium text-status-ok-text">Mot de passe modifié avec succès</p>
-        )}
+            <FormError>{error}</FormError>
+            {success && (
+              <p className="text-sm font-medium text-status-ok-text">Mot de passe modifié avec succès</p>
+            )}
 
-        <Button type="submit" className="w-full" disabled={submitting}>
-          {submitting ? 'Modification…' : 'Modifier le mot de passe'}
-        </Button>
-      </form>
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? 'Modification…' : 'Modifier le mot de passe'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </PageShell>
   )
 }

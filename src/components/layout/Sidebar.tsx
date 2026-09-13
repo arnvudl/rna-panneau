@@ -75,7 +75,7 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        'flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
+        'flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium outline-none transition-colors focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20',
         active
           ? 'bg-primary/5 text-primary'
           : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -127,13 +127,16 @@ export function Sidebar() {
         )}
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b px-3">
-          <Link href="/dashboard" className="flex min-w-0 items-center">
-            <img src="/logo.png" alt="RNA" className="h-8 w-8 shrink-0 object-contain" />
+          <Link
+            href="/dashboard"
+            className="flex min-w-0 items-center rounded-md outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
+          >
+            <img src="/logo.png" alt="RNA" className="h-10 w-10 shrink-0 object-contain" />
           </Link>
           <button
             onClick={toggle}
             aria-label={collapsed ? 'Développer le menu' : 'Réduire le menu'}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
           >
             <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
           </button>
@@ -198,7 +201,7 @@ export function Sidebar() {
                   <Tooltip>
                     <TooltipTrigger
                       render={
-                        <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground">
+                        <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20">
                           <User className="h-5 w-5 shrink-0" />
                         </DropdownMenuTrigger>
                       }
@@ -206,7 +209,7 @@ export function Sidebar() {
                     <TooltipContent side="right">Mon Compte</TooltipContent>
                   </Tooltip>
                 ) : (
-                  <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground">
+                  <DropdownMenuTrigger className="flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20">
                     <User className="h-5 w-5 shrink-0" />
                     <span className="truncate">Mon Compte</span>
                   </DropdownMenuTrigger>
