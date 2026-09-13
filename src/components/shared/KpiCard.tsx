@@ -36,12 +36,12 @@ export function KpiCard({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-xs font-medium text-muted-foreground">{label}</CardTitle>
-        <div className={cn('rounded-full p-2', CHIP_CLASSES[meaning])}>
+        <div className={cn('rounded-full p-2.5', CHIP_CLASSES[meaning])}>
           <Icon className="h-4 w-4" />
         </div>
       </CardHeader>
       <CardContent>
-        <span className="text-2xl font-semibold text-foreground">{value}</span>
+        <span className="text-3xl font-semibold tracking-tight text-foreground">{value}</span>
       </CardContent>
     </Card>
   )

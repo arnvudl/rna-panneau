@@ -1,10 +1,32 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { formatDistanceToNowStrict } from 'date-fns'
+import { fr } from 'date-fns/locale'
+import { FilePlus2, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { APPROVAL_LABELS } from '@/lib/approval-labels'
 import type { ApprovalType } from '@prisma/client'
 import { FormError } from '@/components/shared/FormError'
+
+// Maps each approval type to the closest Status Vocabulary meaning
+// (DESIGN.md) so the row's icon chip reuses the same five-color palette as
+// the dashboard's KPI tiles — creations read as "ok", edits as "in
+// progress", deletions as "danger" — rather than inventing a sixth palette.
+const TYPE_CHIP: Record<ApprovalType, { icon: typeof Pencil; className: string }> = {
+  CREATE_OCCUPANCY: { icon: FilePlus2, className: 'bg-status-ok-bg text-status-ok-text' },
+  EDIT_OCCUPANCY: { icon: Pencil, className: 'bg-status-progress-bg text-status-progress-text' },
+  EDIT_BILLBOARD: { icon: Pencil, className: 'bg-status-progress-bg text-status-progress-text' },
+  EDIT_CLIENT: { icon: Pencil, className: 'bg-status-progress-bg text-status-progress-text' },
+  DELETE_BILLBOARD: { icon: Trash2, className: 'bg-status-danger-bg text-status-danger-text' },
+  DELETE_CLIENT: { icon: Trash2, className: 'bg-status-danger-bg text-status-danger-text' },
+  DELETE_PHOTO: { icon: Trash2, className: 'bg-status-danger-bg text-status-danger-text' },
+}
+
+function relativeTime(iso: string): string {
+  return formatDistanceToNowStrict(new Date(iso), { addSuffix: true, locale: fr })
+}
 
 type Approval = {
   id: string
@@ -164,32 +186,46 @@ export function ApprovalQueue() {
         <p className="text-sm text-muted-foreground">Aucune demande en attente.</p>
       ) : (
         <ul className="space-y-2">
-          {approvals.map((a) => (
-            <li key={a.id} className="flex items-center justify-between rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-              <div>
-                <p className="font-medium">{APPROVAL_LABELS[a.type as ApprovalType] ?? a.type}</p>
-                <p className="text-sm text-muted-foreground">Demandé par {a.requestedBy.email}</p>
-                <PayloadSummary payload={a.payload} resolvedNames={a.resolvedNames} before={a.before} />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  disabled={processingId === a.id}
-                  onClick={() => decide(a.id, 'APPROVED')}
+          {approvals.map((a) => {
+            const chip = TYPE_CHIP[a.type as ApprovalType]
+            const Icon = chip?.icon ?? Pencil
+            return (
+              <li key={a.id} className="flex items-start gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+                <div
+                  className={cn(
+                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                    chip?.className ?? 'bg-status-dormant-bg text-status-dormant-text'
+                  )}
                 >
-                  Approuver
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={processingId === a.id}
-                  onClick={() => decide(a.id, 'REJECTED')}
-                >
-                  Rejeter
-                </Button>
-              </div>
-            </li>
-          ))}
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-foreground">
+                    {a.requestedBy.email} — {APPROVAL_LABELS[a.type as ApprovalType] ?? a.type}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{relativeTime(a.createdAt)}</p>
+                  <PayloadSummary payload={a.payload} resolvedNames={a.resolvedNames} before={a.before} />
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <Button
+                    size="sm"
+                    disabled={processingId === a.id}
+                    onClick={() => decide(a.id, 'APPROVED')}
+                  >
+                    Approuver
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={processingId === a.id}
+                    onClick={() => decide(a.id, 'REJECTED')}
+                  >
+                    Rejeter
+                  </Button>
+                </div>
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>
