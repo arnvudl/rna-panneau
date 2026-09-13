@@ -109,7 +109,7 @@ export function ContratCard({
       {...attributes}
       size="sm"
       className={cn(
-        'gap-1 ring-1 ring-foreground/10 transition-opacity',
+        'gap-1 transition-opacity',
         isDragging && 'opacity-50',
         pending ? 'cursor-wait opacity-60' : 'cursor-grab active:cursor-grabbing'
       )}
@@ -117,21 +117,9 @@ export function ContratCard({
       <CardContent className="space-y-2 pl-4 text-sm">
         <div className="space-y-0.5">
           <p className="text-base font-bold leading-tight text-card-foreground">{contrat.numero}</p>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger render={<p className="truncate text-muted-foreground">{contrat.client.name}</p>} />
-              <TooltipContent>{contrat.client.name}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <p className="truncate text-muted-foreground">{contrat.client.name}</p>
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger
-              render={<p className="truncate text-xs text-muted-foreground">{contrat.billboard.reference}</p>}
-            />
-            <TooltipContent>{contrat.billboard.reference}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <p className="truncate text-xs text-muted-foreground">{contrat.billboard.reference}</p>
         <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <Badge variant="outline" className="font-normal text-muted-foreground">
             {FACE_LABELS[face]}

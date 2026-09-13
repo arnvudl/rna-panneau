@@ -63,7 +63,7 @@ export default function MapFullPage() {
 
         {/* Bottom Floating Legend */}
         <div className="pointer-events-none absolute bottom-6 left-6 z-10 hidden sm:block">
-          <div className="pointer-events-auto rounded-lg bg-card/95 ring-1 ring-foreground/10 backdrop-blur-sm">
+          <div className="pointer-events-auto overflow-hidden rounded-lg bg-card/95 ring-1 ring-foreground/10 backdrop-blur-sm">
             <StatusLegend />
           </div>
         </div>

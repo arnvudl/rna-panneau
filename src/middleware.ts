@@ -30,7 +30,7 @@ export default auth((req) => {
     return redirectTo('/login', req)
   }
   if (isLoggedIn && isLoginPage) {
-    return redirectTo('/map', req)
+    return redirectTo('/dashboard', req)
   }
 })
 

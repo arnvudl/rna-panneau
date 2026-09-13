@@ -123,24 +123,22 @@ describe('ContratCard delete affordance', () => {
     expect(screen.queryByText('Échéance proche')).not.toBeInTheDocument()
   })
 
-  it('renders long client name/billboard reference text with a tooltip so the truncated full value can still be read', async () => {
+  it('renders long client name/billboard reference text truncated, without a hover tooltip', async () => {
     const longContrat: KanbanContrat = {
       ...baseContrat,
       client: { id: 'cl1', name: 'Société Anonyme Internationale de Distribution et Logistique' },
       billboard: { id: 'b1', reference: 'PAN-MADAGASCAR-ANTANANARIVO-2026-000123456789' },
     }
     render(<ContratCard contrat={longContrat} pending={false} />)
-    // Confirms the truncation this fix is meant to compensate for: both
-    // lines are visually clipped (CSS `truncate`), so recovering the full
-    // value requires the Tooltip wrapping added below them.
+    // Both lines stay visually clipped (CSS `truncate`)...
     const clientNode = screen.getByText(longContrat.client.name)
     const billboardNode = screen.getByText(longContrat.billboard.reference)
     expect(clientNode).toHaveClass('truncate')
     expect(billboardNode).toHaveClass('truncate')
-    // Each is wrapped in a Tooltip trigger, so the full value is still
-    // reachable (via hover) rather than lost.
-    expect(clientNode.closest('[data-slot="tooltip-trigger"]')).not.toBeNull()
-    expect(billboardNode.closest('[data-slot="tooltip-trigger"]')).not.toBeNull()
+    // ...but no longer wrapped in a hover tooltip (removed as unnecessary UX
+    // friction on the kanban card).
+    expect(clientNode.closest('[data-slot="tooltip-trigger"]')).toBeNull()
+    expect(billboardNode.closest('[data-slot="tooltip-trigger"]')).toBeNull()
   })
 
   it('shows an error toast and keeps the card when the DELETE call fails', async () => {

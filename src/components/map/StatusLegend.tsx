@@ -5,7 +5,7 @@ const ORDER: BillboardStatus[] = ['AVAILABLE', 'RENTED', 'EXPIRING_SOON', 'EXPIR
 
 export function StatusLegend() {
   return (
-    <div className="flex flex-wrap items-center gap-3 border-t bg-card px-4 py-2 text-xs text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-3 bg-card px-4 py-2 text-xs text-muted-foreground">
       {ORDER.map((s) => (
         <span key={s} className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: STATUS_COLORS[s] }} />

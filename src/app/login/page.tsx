@@ -27,7 +27,7 @@ export default function LoginPage() {
       return
     }
     setSuccess(true)
-    router.push('/map')
+    router.push('/dashboard')
   }
 
   return (
