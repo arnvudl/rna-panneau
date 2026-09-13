@@ -140,6 +140,8 @@ This is the vocabulary a Comptable or Commercial reads at a glance. It must be r
 ### Named Rules
 **The Data-Over-Decoration Rule.** There is no display/hero type scale in this system. The largest text on any screen is a page's `<h1>` at Title size or one step up; nothing here needs to shout, because nobody visits this product to be impressed by it — they visit to find a number fast.
 
+**Print exception.** Generated PDF documents (`BillboardPdfDocument`, `ParkFullPdf`, `ParkSummaryPdf`) intentionally use Helvetica, not Geist — `@react-pdf/renderer` ships a fixed set of print-safe base fonts, and Helvetica is the standard choice for print/export documents regardless of the on-screen type system. This is a deliberate, documented exception, not a gap to fix.
+
 ## Layout
 
 Fixed desktop-only layout (confirmed: no mobile/tablet requirement). The shell is a persistent left sidebar (collapsible between an icon-only rail and an icon+label expanded state, user-toggled, default collapsed) plus a content column that fills the remaining width. Content pages use a per-page breadcrumb at the top instead of a global top bar — there is no top navigation bar in this system.
@@ -163,6 +165,9 @@ Flat by default, elevation only for floating layers. Resting surfaces (cards, pa
 ## Shapes
 
 Rounded corners throughout, `12px` (`--radius`, exposed as `rounded-lg`) as the base radius for cards, buttons, and popovers; `10px`/`6px` derived steps for smaller elements (`rounded-md`/`rounded-sm`). Fully rounded (`9999px`, pill shape) for badges and status pills specifically — this is what visually distinguishes "a status label" from "a card or button" at a glance. Borders are thin (1px) and low-contrast (`border-border`, a light slate), used for structural separation (table rows, card outlines) rather than as a decorative accent.
+
+### Named Rules
+**The No Side-Tabs Rule.** Never use a thick colored `border-l-*` bar to carry status/active-state meaning (on a card, a nav item, a table row). An automated design-quality scan (Impeccable's detector) flags this specific pattern — a solid vertical accent stripe down one edge — as the single most recognizable tell of an AI-generated interface, and a 2026-09-13 audit found it copied across 6 components (Sidebar active state, the Kanban card, the billboard table row). Carry the same meaning instead with a background tint (the status-tinted column/row background already does this) plus a small colored dot, or a text/icon color change — never a border stripe.
 
 ## Components
 
@@ -188,10 +193,10 @@ Rounded corners throughout, `12px` (`--radius`, exposed as `rounded-lg`) as the 
 - **Focus:** border shifts to Control Navy plus a soft navy focus ring — the one place navy is allowed to appear per-field, since it's confirming "this is where you're typing," not decoration.
 
 ### Navigation (Sidebar)
-- **Style:** vertical icon rail, collapsible to icon+label. Active link: a left accent bar in Control Navy plus a faint navy-tinted background, not a full navy fill (see The Rare Navy Rule). Icon+label both shown when expanded; icon only, with a hover tooltip revealing the label, when collapsed.
+- **Style:** vertical icon rail, collapsible to icon+label. Active link: a faint navy-tinted background plus navy icon/text color — no left border bar (see The No Side-Tabs Rule below). Icon+label both shown when expanded; icon only, with a hover tooltip revealing the label, when collapsed.
 
 ### Kanban Card (signature component)
-The product's most-used custom component. Each card carries a colored left accent bar matching its column's status color (drawn from the Status Vocabulary), a bold numero as its title, the client name as a muted subtitle, and a compact face/date-range line below — deliberately not crammed into one wrapping badge (an earlier version did this and it read as cluttered; the current version keeps face and date as visually separate short elements). Column backgrounds carry a faint tint of their status color so the whole column reads as "the emerald column" or "the orange column" from a distance, before any individual card is read.
+The product's most-used custom component. Status is carried by the column's tinted background and a small colored dot in the column header — not by a bar on the card itself (see The No Side-Tabs Rule). Each card shows a bold numero as its title, the client name as a muted subtitle, and a compact face/date-range line below — deliberately not crammed into one wrapping badge (an earlier version did this and it read as cluttered; the current version keeps face and date as visually separate short elements). Column backgrounds carry a faint tint of their status color so the whole column reads as "the emerald column" or "the orange column" from a distance, before any individual card is read.
 
 ## Do's and Don'ts
 
@@ -206,3 +211,5 @@ The product's most-used custom component. Each card carries a colored left accen
 - **Don't** add hover-shadows or lift effects to cards/rows to signal "interactive" — use a background tint or border-color shift instead, consistent with the flat-by-default system.
 - **Don't** combine two different pieces of information into one wrapping badge/pill (e.g. "face · date range") — give each its own short element instead, so nothing wraps mid-word on a narrow card.
 - **Don't** use `font-heading` — it's referenced in one legacy component (`CardTitle`) but no such font family is actually defined in this project; it silently falls back to the body font. Either define it properly or remove the class; don't propagate it to new components.
+- **Don't** use a `border-l-4`-style colored side bar to carry status or active-state meaning anywhere (see The No Side-Tabs Rule under Shapes) — it's a recognized AI-generated-UI tell, not a neutral stylistic choice.
+- **Don't** use a raw pixel font-size (e.g. `text-[10px]`, `text-[11px]`) — every size must be one of the four documented steps (Title/Body/Label/Mono); an off-ramp size is a sign something should have reused Label (12px) instead of inventing a smaller one.
