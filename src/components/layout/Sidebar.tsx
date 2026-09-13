@@ -39,7 +39,7 @@ const MAIN_LINKS = [
 ]
 
 function isActive(pathname: string | null, href: string) {
-  return pathname === href || (href !== '/map' && pathname?.startsWith(`${href}/`))
+  return pathname === href || pathname?.startsWith(`${href}/`)
 }
 
 function readStoredCollapsed(): boolean {
